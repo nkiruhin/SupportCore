@@ -1,0 +1,13 @@
+﻿@model SupportCore.Models.TicketThread
+
+<h5>Вы действительно хотите удалить событие @Model.Title от @Model.DateCreate?</h5>
+
+    
+    <form asp-action="Delete" id="end"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#history"
+          data-ajax-mode="update">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="TicketId" />
+    </form>

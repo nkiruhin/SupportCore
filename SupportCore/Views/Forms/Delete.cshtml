@@ -1,0 +1,25 @@
+﻿@model SupportCore.Models.Form
+
+<dl>
+    <dt>
+        <label asp-for="Name"></label>
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+</dl>
+
+
+<form asp-action="Delete" id="end"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update">
+    <input type="hidden" asp-for="Id" />
+</form>
+<script>
+    $(document).on('click', '#end', function () {
+        $('#end').submit();
+        metroDialog.close($('.dialog'));
+    })
+</script>

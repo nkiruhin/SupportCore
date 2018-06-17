@@ -1,0 +1,85 @@
+﻿@model SupportCore.Models.Tasks
+
+<div class="p-4-md">
+    <h5>Задача @Model.Id </h5>
+    <hr class="thin bg-grayLighter" />
+    <form asp-action="Edit"
+          id="TaskEdit"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#Tasks"
+          data-ajax-begin="closeWin()"
+          data-ajax-mode="update">
+        <button type="submit" class="button primary" id="tThreadCreate">Сохранить</button>
+        <input asp-for="TicketId" hidden />
+        <input asp-for="Id" hidden />
+        <div class="form-group">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" />
+            <span asp-validation-for="Title"></span>
+        </div>
+        <div class="row">
+            <div class="cell-md-4">
+                <label asp-for="Number"></label>
+                <input asp-for="Number">
+                <span asp-validation-for="Number"></span>
+            </div>
+            <div class="cell-md-4">
+                <label asp-for="StaffId"></label>
+                <select asp-for="StaffId" class="jselect2"
+                        id="Staffer"
+                        data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = true },"http")">
+                    <option value="@Model.StaffId" selected="selected">@Model.Staff?.Name</option>
+                </select>
+                <span asp-validation-for="StaffId"></span>
+            </div>
+            <div class="cell-md-4">
+                <label asp-for="OrganizationId"></label>
+                <select asp-for="OrganizationId"
+                        class="jselect2"
+                        data-ajax-url="@Url.Action("List","Organizations",null,"http")">
+                    <option value="@Model.OrganizationId" selected="selected">@Model.Organization?.Name</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Body"></label>
+            <textarea asp-for="Body" id="Body" cols="100" rows="3" class="html" >@Html.Raw(Model.Body)</textarea>
+            <span asp-validation-for="Body"></span>
+        </div>
+    </form>
+</div>
+<script>
+    $(function () {
+        var form = $.validator.unobtrusive.parse('#TaskCreate');
+        var editor = $('#Body').trumbowyg(
+            {
+                lang: 'ru',
+                btns: [
+                    ['undo', 'redo'], // Only supported in Blink browsers
+                    ['formatting'],
+                    ['strong', 'em', 'del'],
+                    ['superscript', 'subscript'],
+                    ['link'],
+                    ['insertImage'],
+                    ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                    ['unorderedList', 'orderedList'],
+                    ['horizontalRule'],
+                    ['removeformat'],
+                ]
+            });
+    })
+    $('#OrganizationId').select2({
+        placeholder: 'Выберите организацию',
+        language: 'ru',
+        templateResult: formatData
+    });
+    $('#Staffer').select2({
+        placeholder: 'Выберите сотрудника',
+        language: 'ru'
+    });
+    function disableButton() {
+        var submit = document.getElementById("tThreadCreate")
+        submit.disabled = "disabled"
+    }
+</script>

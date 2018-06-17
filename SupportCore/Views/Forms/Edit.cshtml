@@ -1,0 +1,48 @@
+﻿@model SupportCore.Models.Form
+
+@{
+    Layout = null;
+}
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2 class="text-light">Редактирование <span class="mif-pencil place-right"></span></h2>
+<h4>Формы</h4>
+<hr />
+@if (Model.Type == 0)
+{
+    @Html.DisplayForModel()
+    <div class="pb-4-md">
+    <a asp-action="Index"
+       data-ajax="true"
+       data-ajax-method="POST"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       class="button secondary" data-role="button">К списку</a>
+    </div>
+    }
+    else
+    {
+
+    <form asp-action="Edit"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#cell-content"
+          data-ajax-mode="update">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        @Html.EditorForModel()
+        <div class="pb-4-md">
+            <button type="submit" class="button primary">Сохранить</button>
+            <a asp-action="Index"
+               data-ajax="true"
+               data-ajax-method="POST"
+               data-ajax-update="#cell-content"
+               data-ajax-mode="update"
+               class="button secondary" data-role="button">К списку</a>
+        </div>
+    </form>
+    }
+    @{await Html.RenderPartialAsync("Fields", new Field { FormId = Model.Id });}
+    @*@await Component.InvokeAsync("Fields", new { FormId = Model.Id })*@

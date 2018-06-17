@@ -1,0 +1,204 @@
+﻿@model SupportCore.Models.Ticket
+
+@{
+    Layout = null;
+}
+
+@{
+    ViewData["Title"] = "Создать";
+    ViewData["Edit"] = true ; //Flag for PartialView
+}
+
+@{ 
+    string[] Status ={
+            "",
+            "открыта",
+            "закрыта",
+            "отложена",
+            "",
+            "выполнена"
+            }; }
+
+
+<h3 class="text-light">Редактирование <span class="mif-pencil place-right"></span></h3>
+<div id="editPreloader" style="display:none">
+    <div data-role="activity" data-type="metro" data-style="dark"></div>
+</div>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<ul class="tabs-expand-md" data-role="tabs">
+    <li class="active"><a href="#main">ГЛАВНАЯ</a></li>
+    <li><a href="#history">ИСТОРИЯ ЗАЯВКИ (<b id="count">@Model.TicketThreads.Count</b>)</a></li>
+    <li><a href="#info">ДОПОЛНИТЕЛЬНО</a></li>
+</ul>
+
+<div class="border bd-default no-border-top p-2">
+    <div id="main">
+        <h5>Заявка № @Model.Id создана @Model.DateCreate</h5>
+        <div style="position: relative" class="active-container">
+            <b>Статус:</b>  @switch (Model.StatusId)
+            {
+                case 1:
+                    <a href="" class="dropdown-toggle"><code class="alert">Открыта</code></a>
+                    break;
+                case 2:
+                    <a href="" class="dropdown-toggle"><code class="success">Закрыта</code></a>@Model.Closed
+                    break;
+                case 3:
+                    <a href="" class="dropdown-toggle"><code class="default">Отложена</code></a>
+                    break;
+                case 5:
+                    <a href="" class="dropdown-toggle"><code class="info">Выполнена</code></a>
+                    break;
+                default:
+                    break;
+            }
+
+            <ul class="d-menu" data-role="dropdown">
+                @if (Model.StatusId != 1)
+                {
+                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=1','mif-pencil','Открытие',true)">Открыта</a></li>}
+                @if (Model.StatusId != 2)
+                {
+                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=2','mif-pencil','Закрытие',true)">Закрыта</a></li>}
+                @if (Model.StatusId != 3)
+                {
+                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=3','mif-pencil','Отложить',true)">Отложена</a></li>}
+                @if (Model.StatusId != 5)
+                {
+                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=5','mif-pencil','Выполнение',true)">Выполнена</a></li>}
+            </ul>
+        </div>
+        <hr />
+
+        <form asp-action="Edit" id="EditTicket" enctype="multipart/form-data">
+            <div class="row">
+                <div class="cell-md-4">
+                    <label asp-for="PersonId"></label>
+                    <div class="p-0">
+                        <select asp-for="PersonId"
+                                data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = false }, "http")">
+                            <option value="@Model.PersonId" selected="selected">@Model.Person?.Name</option>
+                        </select><div class="inbutton"><a href="#" class="button" onclick="openCustomWin('/Person/CreateDialog', 'mif-user-plus', 'Пользователь..', true)"><span class="mif-user-plus"></span></a></div>
+                        
+                    </div>
+                    <div class="form-group m-0">
+                        <label asp-for="CategoryId"></label>
+                        <select asp-for="CategoryId" asp-items="ViewBag.CategoryId">
+                            <option value="">Укажите категорию</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group m-0">
+                        <label asp-for="StaffId"></label>
+                        <select asp-for="StaffId"
+                                data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = true }, "http")">
+                            <option value="@Model.StaffId" selected="selected">@Model.Stuff.Name</option>
+                        </select>
+                    </div>
+                    <div class="form-group m-0">
+                        <label asp-for="SourceId" class="control-label"></label>
+                        <select asp-for="SourceId" class="form-control" asp-items="ViewBag.SourceId">
+                            <option>Укажите источник</option>
+                        </select>
+                    </div>
+                    <div class="form-group m-0">
+                        <label asp-for="DueDate" class="control-label"></label>
+                        <input asp-for="DueDate" />
+                    </div>
+                    <div class="pt-8-md">
+                        <button type="submit" class="button primary" onclick="return Save();">Сохранить</button>
+                        <a asp-action="Index" asp-controller="Tickets"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update"
+                           class="button secondary" data-role="button">К списку</a>
+                    </div>
+                </div>
+                <div class="cell-md-8">
+                    <div class="form-group m-0">
+                        <label asp-for="Name" class="control-label"></label>
+                        <input asp-for="Name" />
+                    </div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    @await Component.InvokeAsync("Form", new { FormId = 0, TicketId = Model.Id, Edit = true })
+                    @*</form>*@
+                </div>
+            </div>
+            <div id="CustomForm">
+                @if (Model.Category.FormId != null)
+                {
+                    @await Component.InvokeAsync("Form", new { FormId = Model.Category.FormId, TicketId = Model.Id, Edit = true })
+                }
+            </div>
+        </form>
+    </div>
+    <div id="history">
+        @await Html.PartialAsync("../TicketThreads/Index", Model.TicketThreads.OrderByDescending(i => i.DateCreate))
+    </div>
+    <div id="info">
+        @{string[] coauthors = Model.CoAuthors.Select(n => n.PersonId).ToArray<string>();}
+        <form asp-action="AddCoAuthors"
+              data-ajax="true"
+              data-ajax-method="POST"
+              data-ajax-update="#history"
+              data-ajax-loading ="#editPreloader"
+              data-ajax-mode="update">
+            <div class="form-group">
+                <label asp-for="CoAuthors"></label>
+                <select asp-for="@coauthors" id="CoAuthors"
+                        asp-items="@{new SelectList(Model.CoAuthors,"PersonId","Person.Name")}"
+                        data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = false }, "http")"></select>
+            </div>
+            <div class="form-group pb-4-md">
+                <input asp-for="Id" hidden />
+                <input asp-for="Name" hidden />
+                <button type="submit" class="button primary">Сохранить</button>
+                </div>
+            </form>
+            <div id="Tasks">
+                 @await Html.PartialAsync("../Tasks/Index", Model)
+            </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var form = $.validator.unobtrusive.parse('#EditTicket');
+    })
+    var personSelect = $('#PersonId').select2({
+        placeholder: 'Выберите пользователя',
+        language: 'ru'
+    });
+    personSelect.data('select2').$container.addClass("wbutton");
+    $('#StaffId').select2({
+        placeholder: 'Выберите сотрудника',
+        language: 'ru'
+    });
+    $('#CoAuthors').select2({
+        placeholder: 'Добавьте соавторов',
+        language: 'ru'
+    });
+    function formatData(data) {
+        if (data.loading) {
+            return data.text;
+        }
+        var markup = data.text + " <" + data.email + ">"
+        return markup;
+    }
+        $('#CategoryId').on('change', function () {
+            if (!this.value) {
+                $('#CustomForm').empty();
+                return null;
+            }
+            url = '@Url.Action("GetCustomForm")' + '?CategoryId=' + this.value;
+            $('#CustomForm').load(url);
+            var form = $.validator.unobtrusive.parse('#CustomForm');
+    })
+function Save() {
+            if (!$('#EditTicket').valid()) return false;
+            openCustomWin('/TicketThreads/Create?Id=@Model.Id&Event=4', 'mif-user-plus','Редактирование',true);     
+            return false;
+    }
+    
+   
+</script>

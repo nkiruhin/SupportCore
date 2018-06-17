@@ -1,0 +1,54 @@
+﻿@model IEnumerable<SupportCore.Models.Phone>
+    @if (@ViewContext.ActionDescriptor.RouteValues["action"] == "Details") { 
+
+    @foreach (var item in Model)
+    {
+        <li style="list-style-type: none">@item.PhoneNumber</li>
+    }
+   
+    }else{
+
+    @foreach (var item in Model)
+    {
+ 
+
+            <form asp-action="PhoneSave" asp-route-id="@item.Id" asp-route-PersonID="@item.PersonId" class="inline-form"
+                  data-ajax="true"
+                  data-ajax-complete="disabledInput"
+                  data-ajax-method="POST">
+                    <input asp-for="@item.PhoneNumber" disabled />
+                    <div class="button-group">
+                        <a asp-action="PhoneDelete" asp-route-id="@item.Id" asp-route-PersonID="@item.PersonId"
+                           data-ajax="true"
+                           data-ajax-method="POST"
+                           data-ajax-update="#Phones"
+                           data-ajax-mode="update"
+                           class="button small-button"><span class="mif-bin"></span></a>
+                        <button class="button small-button edit"><span class="mif-pencil"></span></button>
+                        <button class="button small-button save" style="display:none"><span class="mif-floppy-disk"></span></button>
+                    </div>
+            </form>
+    }
+
+            <script>
+                $('.edit').on('click', function () {
+                    var input = $(this).parent().parent().children();
+                    input.prop('disabled', false);
+                    submitButton = $(this).next();
+                    submitButton.show();
+                    $(this).hide();
+                    return false;
+                })
+                $('.save').on('click', function () {
+                    var input = $(this).parent().parent().children();
+                    editButton = $(this).prev();
+                    editButton.show();
+                    $(this).hide();
+                })
+                function disabledInput() {
+                    //var input = $(this).children('#item_PhoneNumber');
+                    var input = $(this).children(':first');
+                    input.prop('disabled', true)
+                }
+            </script>
+        }

@@ -1,0 +1,75 @@
+﻿@model IEnumerable<SupportCore.Models.Template>
+
+@{
+    Layout = null;
+}
+
+
+<h2 class="text-light">Шаблоны <span class="mif-bubbles place-right"></span></h2>
+
+<hr class="thin bg-grayLighter">
+<a asp-action="Create"
+   data-ajax="true"
+   data-ajax-method="GET"
+   data-ajax-update="#cell-content"
+   data-ajax-mode="update"
+   class="button primary">
+    <span class="mif-plus"></span> Добавить...
+</a>
+<hr class="thin bg-grayLighter">
+<table class="dataTable table-border compact cell-border striped">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EventType)
+            </th>
+            <th width="7%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>   
+            <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @ViewData[item.EventType.ToString()]
+                </td>
+                <td>
+                    <div class="dropdown-button">
+                        <button class="button small dropdown-toggle secondary outline">Действия   </button>
+                        <ul class="d-menu" data-role="dropdown">
+                            <li>
+                                <a asp-action="Edit"
+                                   data-ajax="true"
+                                   data-ajax-method="GET"
+                                   data-ajax-update="#cell-content"
+                                   data-ajax-mode="update"
+                                   asp-route-id="@item.Id" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a>
+                            </li>
+                            <li>
+                                <a href="#" title="Удалить" onclick="openCustomDialog('/Templates/Delete/@item.Id','Удалить',end)"><span class="mif-bin icon"></span>Удалить</a>
+                            </li>
+                        </ul>
+                    </div>
+                    @*<a asp-action="Edit"
+        data-ajax="true"
+        data-ajax-method="GET"
+        data-ajax-update="#cell-content"
+        data-ajax-mode="update"
+        asp-route-id="@item.Id" title="Редактировать"><span class="mif-pencil"></span></a>
+        | <a href="#" title="Удалить" onclick="openCustom('/Templates/Delete/@item.Id','mif-bin')"><span class="mif-bin"></span></a>*@
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+ $(function () {
+     TemplateTable = SimpleTableReady();
+    })
+</script>

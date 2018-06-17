@@ -1,0 +1,19 @@
+﻿@model SupportCore.Models.Template
+<h3>Вы уверены что хотите удалить шаблон?</h3>
+<hr />
+<dl>
+    <dt>
+        <label asp-for="Name"></label>
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+</dl>
+<form asp-action="Delete" id="end"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update">
+    <input type="hidden" asp-for="Id" />
+</form>
+

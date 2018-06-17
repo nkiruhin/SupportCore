@@ -1,0 +1,71 @@
+﻿@model SupportCore.Models.Person
+
+
+<div class="m-7">
+    <form asp-action="FastCreate"
+          id="PersonCreateFast"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-success="LoadPerson">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row">
+            <div class="cell-10">
+                @Html.EditorForModel()
+                <label asp-for="OrganizationId"></label>
+                <select class="jselect2"
+                        name="OrganizationId"
+                        id="OrganizationId"
+                        data-ajax-url="@Url.Action("List","Organizations",null,"http")"></select>
+                <label class="input-control checkbox small-check">
+                    <input type="checkbox" id="EmailOrg" onclick="orgEmail()">
+                    <span class="check"></span>
+                    <span class="caption">Использовать Email организации</span>
+                </label>
+
+            </div>
+            <div class="cell-2">
+                <label>Телефоны</label>
+                <textarea name="PhoneList" rows="6" cols="10" wrap="hard" class="p-0"></textarea>
+            </div>
+        </div>
+
+        <input type="submit" value="Добавить" class="button success" />
+        <button class="button" onclick="closeWin()">Отменить</button>
+    </form>
+</div>
+    <script>
+        $(document).ready(function () {
+            var form = $.validator.unobtrusive.parse('#PersonCreateFast');
+        })
+        $('#OrganizationId').select2({
+            placeholder: 'Выберите организацию из списка',
+            language: 'ru',
+        });
+        $('.check-box').on('click', function () {
+            if (this.checked) {
+                $('.jselect2').prop("disabled", true)
+                    .val(null).trigger('change');
+            } else { $('.jselect2').prop("disabled", false) }
+
+        })
+ 
+        function LoadPerson(c) {
+            closeWin();
+            personId = $('#PersonId');
+            var data = {
+                id: c.id,
+                text: c.text
+            };
+            var newOption = new Option(data.text, data.id, true, true);
+            personId.append(newOption).trigger('change');
+            personId.trigger({
+                type: 'select2:select',
+                params: {
+                    data: data
+                }
+            });
+        }
+        $('.jselect2').on('select2:select', function (e) {
+            orgEmail();
+        });
+    </script>

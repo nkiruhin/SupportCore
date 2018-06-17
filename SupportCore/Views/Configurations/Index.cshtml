@@ -1,0 +1,65 @@
+﻿@model IEnumerable<SupportCore.Models.Configuration>
+<h3 class="text-light">Настройки <span class="mif-cogs place-right"></span></h3>
+<div id="configPreloader" style="display:none">
+    <div data-role="activity" data-type="metro" data-style="dark"></div>
+</div>
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<form asp-for="Edit">
+    <div class="p-3-md">
+        <button type="submit" class="button primary">Сохранить</button>
+    </div>
+    <ul class="tabs-expand-md" data-role="tabs">
+        <li class="active"><a href="#system">СИСТЕМНЫЕ</a></li>
+        <li><a href="#email">ПОЧТА</a></li>
+        <li><a href="#telephone">ТЕЛЕФОНИЯ</a></li>
+        <li><a href="#integration">ИНТЕГРАЦИЯ</a></li>
+    </ul>
+    <div class="border bd-default no-border-top p-2">
+        <div id="system"></div>
+        <div id="email">
+            <div class="row">
+                @foreach (Configuration item in Model.Where(n => n.Section == "email"))
+                {
+                    switch (item.Type)
+                    {
+                        case "html":
+                            <div class="cell-md-12">
+                                <label>@item.Title</label>
+                                <textarea name="@item.Name" class="@item.Type">@item.Value</textarea>
+                            </div>
+                            break;
+                        default:
+                            <div class="cell-md-6">
+                                <label>@item.Title</label>
+                                <input type="@item.Type" data-role="input" name="@item.Name" value="@item.Value" />
+                            </div>
+                            break;
+                    }
+                }
+            </div>
+        </div>
+        <div id="telephone"></div>
+        <div id="integration"></div>
+    </div>
+</form>
+<script>
+    $(function () {
+        var editor = $('.html').trumbowyg(
+            {
+                lang: 'ru',
+                btns: [
+                    ['undo', 'redo'], // Only supported in Blink browsers
+                    ['formatting'],
+                    ['strong', 'em', 'del'],
+                    ['superscript', 'subscript'],
+                    ['link'],
+                    ['insertImage'],
+                    ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                    ['unorderedList', 'orderedList'],
+                    ['horizontalRule'],
+                    ['removeformat'],
+                ]
+            });
+
+    })
+</script>

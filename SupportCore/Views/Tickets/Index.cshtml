@@ -1,0 +1,19 @@
+﻿@model SupportCore.Models.Filter
+
+<h2 class="text-light">Заявки <span class="mif-stack place-right"></span></h2>
+<hr class="thin bg-grayLighter">
+<a asp-action="Create" asp-controller="Tickets"
+   data-ajax="true"
+   data-ajax-method="GET"
+   data-ajax-update="#cell-content"
+   data-ajax-mode="update"
+   class="button primary" data-role="button">
+    <span class="mif-plus"></span> Добавить...
+</a>
+<button class="button warning" onclick="ReloadTable()">Обновить</button>
+<button class="button place-right" title="Фильтры" onclick="openCustomWin('/Tickets/Filter','mif-filter','Фильтр..',true)"><span class="mif-filter"></span></button>
+<hr class="thin bg-grayLighter">
+
+@await Html.PartialAsync("../Tickets/TicketTable", Model)
+
+

@@ -1,0 +1,69 @@
+﻿@model SupportCore.Models.Field
+@{ViewBag.TypeList = new List<SelectListItem> {
+new SelectListItem{ Value="text",Text="Краткий ответ" },
+new SelectListItem{ Value="memo",Text="Развёрнутый ответ" },
+new SelectListItem{ Value="date",Text="Дата и Время" },
+new SelectListItem{ Value="phone",Text="Номер телефона" },
+new SelectListItem{ Value="checkbox",Text="Флажок" },
+new SelectListItem{ Value="select",Text="Варианты" },
+new SelectListItem{ Value="file",Text="Загрузка файла" },
+//new SelectListItem{ Value="break",Text="Разрыв Секции" },
+//new SelectListItem{ Value="info",Text="Информация" }
+};}
+
+@*<input asp-for="FormId" value="@ViewBag.FormId" />*@
+
+<div id="Fields">
+    <div class="panel" data-role="panel">
+        <div class="heading">
+            <span class="title">Поля формы</span>
+        </div>
+        <div class="content">
+            <div class="table">
+                <div class="thead">
+                    <div class="tr">
+                        <div class="td"><label asp-for="Name"></label></div>
+                        <div class="td"><label asp-for="Type"></label></div>
+                        <div class="td"><label asp-for="Required"></label></div>
+                        <div class="td"></div>
+                    </div>
+                </div>
+                <div class="tbody">
+                    <form class="tr" asp-action="Fields" id="Fields"
+                          data-ajax="true"
+                          data-ajax-method="POST"
+                          data-ajax-update="#Fields"
+                          data-ajax-mode="update">
+                        <input asp-for="FormId" value="@Model.FormId" />
+                        <div class="td">
+                            <input asp-for="Name" />
+                            <span asp-validation-for="Name"></span>
+                        </div>
+                        <div class="td">
+                            <select asp-for="Type" asp-items="@ViewBag.TypeList">
+                                <option>Выбирите из списка</option>
+                            </select>
+                            <span asp-validation-for="Type"></span>
+                        </div>
+                        <div class="td">
+                            @*<input type="checkbox" name="Required" value="true"/>*@
+                            <input asp-for="Required" data-role="checkbox" />
+                            <span asp-validation-for="Type"></span>
+                        </div>
+                        <div class="td">
+                            <button class="button primary" type="submit">Добавить</button>
+                        </div>
+                    </form>
+
+
+                    @await Component.InvokeAsync("Fields", new { FormId = Model.FormId })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var form = $.validator.unobtrusive.parse('#Fields');
+    })
+</script>

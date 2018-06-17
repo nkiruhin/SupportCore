@@ -1,0 +1,25 @@
+﻿@model SupportCore.Models.Category
+
+<h2 class="text-light">Новая <span class="mif-plus place-right"></span></h2>
+<h4>Категория</h4>
+<hr />
+<form asp-action="Create" id="CatCreate"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @Html.EditorForModel()
+    <button type="submit" class="button primary">Создать..</button>
+    <a asp-action="Index"
+       data-ajax="true"
+       data-ajax-method="POST"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       class="button secondary" data-role="button">К списку</a>
+</form>
+<script>
+    $(document).ready(function () {
+        var form = $.validator.unobtrusive.parse('#CatCreate');
+    })
+</script>

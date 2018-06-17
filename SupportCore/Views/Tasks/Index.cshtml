@@ -1,0 +1,132 @@
+﻿@model SupportCore.Models.Ticket
+<h6>Задачи</h6>
+@if (ViewBag.Edit != null){
+<div class="row p-3-md">
+    <a class="button primary" data-role="button" href="#" onclick="openCustomWin('/Tasks/Create/@Model.Id','mif-event-available','Задачи..',true)">
+        Добавить...
+    </a>
+</div>
+}
+<table class="w-100">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            <th class="text-left-md p-1-md">
+                <label asp-for="@Model.Tasks.FirstOrDefault().DateCreate"></label>
+            </th>
+            <th class="text-left-md">
+                <label asp-for="@Model.Tasks.FirstOrDefault().DateClose"></label>
+            </th>
+            <th class="text-left-md">
+                <label asp-for="@Model.Tasks.FirstOrDefault().Number"></label>
+            </th>
+            <th class="text-left-md">
+                <label asp-for="@Model.Tasks.FirstOrDefault().Title"></label>
+            </th>
+
+            <th class="text-left-md">
+                <label asp-for="@Model.Tasks.FirstOrDefault().Status"></label>
+            </th>
+            <th class="text-left-md">
+                <label asp-for="@Model.Tasks.FirstOrDefault().Organization"></label>
+            </th>
+            <th class="text-left-md">
+                <label asp-for="@Model.Tasks.FirstOrDefault().Staff"></label>
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Tasks) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateCreate)
+            </td>
+            <td>
+                @if (item.DateClose < new DateTime(1800, 1, 1))
+                {
+                    @:<em>В работе</em>
+                }
+                else
+                {
+                    @item.DateClose.ToShortDateString();
+                }
+            </td>
+            <td class="text-ellipsis" style="max-width:100px">
+                @if (item.Number == null)
+                {
+                    @:#@item.Id
+                }
+                else
+                {
+                    @:<a href="@item.Number">@item.Number</a>
+                }
+            </td>
+            <td class="text-ellipsis" style="max-width:220px">
+                <span data-role="hint"
+                      data-hint-text="@item.Body">@item.Title</span>
+                </td>
+                <td>
+                    @if (item.Status == 0)
+                    {
+                        <div style="position: relative">
+                            <a href="" class="dropdown-toggle"> <code class="alert">Открыта</code></a>
+                            <ul class="d-menu" data-role="dropdown" style="display: none;">
+                                <li><a href="#" onclick="openCustomWin('/Tasks/Close/@item.Id','mif-lock','Закрытие',true)">Закрыть</a></li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <span data-role="hint"
+                              data-hint-text="@item.Result">
+                            <code class="success">Закрыта</code>
+                        </span>
+                    }
+                </td>
+                <td>
+                    @if (item.Organization?.Name == null)
+                    {
+                        @:<em>не указана</em>
+                    }
+                    else
+                    {
+                        @item.Organization.Name;
+                    }
+                </td>
+                <td>
+                    @if (item.Staff?.Name == null)
+                    {
+                        @:<em>не указана</em>
+                    }
+                    else
+                    {
+                        @item.Staff.Name;
+                    }
+
+                </td>
+                <td width="7%">
+                    <div class="dropdown-button">
+                        <button class="button secondary outline small dropdown-toggle">Действия</button>
+                        <ul class="d-menu" data-role="dropdown">
+                            @if (item.Status == 0)
+                            {
+                            <li><a href="#" onclick="openCustomWin('/Tasks/Edit/@item.Id','mif-event-available','Задачи..',true)">Изменить</a></li>
+                            }
+                            @if (item.Status == 0 && item.Number != null)
+                            {
+                            <li><a href="#" onclick="openCustomWin('/Tasks/GetIssue/@item.Number.Split('/').Last()','mif-checkmark','Задачи..',true)">Проверить</a></li>
+                            }
+                            <li><a href="#" onclick="openCustomWin('/Tasks/Details/@item.Id','mif-event-available','Задачи..',true)">Просмотреть</a></li>
+                            @if (User.IsInRole("Администратор") || User.IsInRole("Менеджер"))
+                            {
+                            <li>
+                                <a href="#"
+                                   title="Удалить" onclick="openCustomDialog('/Task/Delete/@item.Id','mif-bin')"><span class="mif-bin"></span></a>
+                            </li>}
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+}
+    </tbody>
+</table>

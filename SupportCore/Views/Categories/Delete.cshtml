@@ -1,0 +1,20 @@
+﻿@model SupportCore.Models.Category
+
+<dl>
+    <dt>
+        <label asp-for="Name"></label>
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+</dl>
+<form asp-action="Delete" id="end"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update"
+      data-ajax-failure="onError('Невозможно удалить категорию')"
+      >
+    <input type="hidden" asp-for="Id" />
+    @*<input type="submit" id="end" value="Удалить" class="button success" />*@
+</form>

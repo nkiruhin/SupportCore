@@ -1,0 +1,87 @@
+﻿@model SupportCore.Models.Filter
+<div class="p-6">
+    <h4>Фильтр</h4>
+    <hr class="thin bg-grayLighter" />
+    <form asp-action="Filter" asp-route-id="@Model?.Id"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#cell-content"
+          data-ajax-success="closeWin()">
+        @*data-ajax-success="Filtred"*@
+        <div class="grid">
+            <div class="row">
+                <div class="cell-md-6">
+                    <label asp-for="PersonId"></label>
+                    <select class="jselect2"
+                            asp-for="PersonId"
+                            data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = false },"http")">
+                        @if (Model?.PersonId != null)
+                        {
+                            <option value="@Model.PersonId" selected="selected">@ViewBag.PersonName</option>}
+                    </select>
+                </div>
+                <div class="cell-md-6">
+                    <label asp-for="StaffId"></label>
+                    <select class="jselect2"
+                            asp-for="StaffId"
+                            data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = true },"http")">
+                        @if (Model?.StaffId != null)
+                        {
+                            <option value="@Model.StaffId" selected="selected">@ViewBag.StaffName</option>}
+                    </select>
+                </div>
+                <div class="cell-md-6">
+                    <label asp-for="DateCreate1"></label>
+                    <input asp-for="DateCreate1" />
+                </div>
+                <div class="cell-md-6">
+                    <label asp-for="DateCreate2"></label>
+                    <input asp-for="DateCreate2" />
+                </div>
+                <div class="cell-md-6">
+                    <label asp-for="SourceId"></label>
+                    <select asp-for="SourceId" asp-items="ViewBag.SourceId"><option value="">Все</option></select>
+                </div>
+                <div class="cell-md-6">
+                    <label asp-for="CategoryId"></label>
+                    <select asp-for="CategoryId" asp-items="ViewBag.CategoryId"><option value="">Все</option></select>
+                </div>
+                <div class="cell-md-6">
+                    <label asp-for="StatusId"></label>
+                    <select asp-for="StatusId" asp-items="ViewBag.StatusId"><option value="">Все</option></select>
+                </div>
+                <div class="cell-md-6">
+                    <label asp-for="Priority"></label>
+                    <select asp-for="Priority">
+                        <option value="" selected>Все</option>
+                        @foreach (var opt in ViewBag.priority.Split("\r\n"))
+                        {
+                            <option>@opt</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="button primary">Применить</button>
+    </form>
+</div>
+<script>
+    $('#PersonId').select2({
+        placeholder: 'Все',
+        allowClear: true,
+        language: 'ru'
+    });
+    $('#StaffId').select2({
+        placeholder: 'Все',
+        allowClear: true,
+        language: 'ru'
+    });
+    var Filtred = function (context) {
+
+        if (context == 'ОK') {
+            console.log(context)
+            ReloadTable(4);
+            closeWin();
+        }
+    }
+</script>

@@ -1,0 +1,31 @@
+﻿@model SupportCore.Models.Form
+@{
+    ViewData["Title"] = "Create";
+}
+
+    <h2 class="text-light">Новая <span class="mif-insert-template place-right"></span></h2>
+    <h4>Форма</h4>
+    <hr />
+    <div data-role="stepper" data-steps="2" id="step"></div>
+    <div id="FormSteps">
+        <form asp-action="Create"
+              id="FormCreate"
+              data-ajax="true"
+              data-ajax-method="POST"
+              data-ajax-update="#FormSteps"
+              data-ajax-mode="update">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @Html.EditorForModel()
+            <input type="hidden" name="step" value="1">
+            <div class="pt-4-md">
+                <button type="submit" class="button primary" onclick="$('#step').next()" id="create">Сохранить и продолжить </button>
+                <a asp-action="Index"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update"
+                   class="button secondary" data-role="button">К списку</a>
+            </div>
+        </form>
+            
+    </div>

@@ -1,0 +1,77 @@
+﻿@model List<SupportCore.Models.Field>
+<div class="row">
+    @for (int item = 0; item < @Model.Count; item++)
+    {
+        string Value = "";
+        string inputReq = "";
+        string spanReq = "";
+        string labReq = "";
+        if (Model[item].Required)
+        {
+            inputReq = "data-val=true data-val-required=\"Поле обязательно\" id=" + Model[item].Id;
+            spanReq = "<span class=field-validation-valid data-valmsg-for=" + Model[item].Id + " data-valmsg-replace=true></span>";
+            labReq = "<span class=required>*</span>";
+        }
+        if (Model[item].FormEntryValue?.FirstOrDefault() != null) { Value = @Model[item].FormEntryValue.FirstOrDefault().Value; };
+        switch (Model[item].Type)
+        {
+            case "html":
+
+                <div class="cell-12">
+                    <label>@Model[item].Name @Html.Raw(labReq)</label>
+                    <textarea name="@Model[item].Id" class="html m-0" rows="4" style="height:100px;" @Html.Raw(inputReq)>@Value</textarea>
+                    @Html.Raw(spanReq)
+                    @Html.Raw(ViewBag.Files)<input type="file" name="Files" style="all:unset" multiple>
+                </div>
+
+
+                break;
+                    case "memo":
+                    <div class="cell-6">
+                        <div class="form-group m-0">
+                        <label>@Model[item].Name  @Html.Raw(labReq)</label>
+                        <textarea name="@Model[item].Id">@Value</textarea>
+                     </div>
+                    </div>
+                break;
+                    case "select":
+                    <div class="cell-6">
+                        <div class="form-group m-0">
+                            <label>@Model[item].Name  @Html.Raw(labReq)</label>
+                            <select name="@Model[item].Id" @Html.Raw(inputReq)>
+                                <option selected>@Value</option>
+                                @foreach (var opt in Model[item].Configuration.Split("\r\n"))
+                                {
+                                    <option>@opt</option>
+                                }
+                            </select>
+                            @Html.Raw(spanReq)
+                        </div>
+                     </div>
+                 break;
+                     case "file":
+                     <div class="cell-6">
+                        <label>@Model[item].Name  @Html.Raw(labReq)</label>
+                        <input name="@Model[item].Id" value="@Value" type="file" @Html.Raw(inputReq) />
+                     </div>
+                 break;
+                     default:
+                     <div class="cell-6">
+                         <div class="form-group m-0">
+                             <label>@Model[item].Name  @Html.Raw(labReq)</label>
+                             <input name="@Model[item].Id" value="@Value" type="@Model[item].Type" @Html.Raw(inputReq) />
+                             @Html.Raw(spanReq)
+                         </div>
+                      </div>
+                 break;
+            }
+        }
+    </div>
+<script>
+    $(function () {
+        $('.html').trumbowyg(
+            {
+                lang:'ru'
+            });
+    })
+</script>

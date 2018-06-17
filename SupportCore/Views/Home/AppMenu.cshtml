@@ -1,0 +1,172 @@
+﻿
+<div class="pos-fixed fixed-top app-bar-wrapper z-top">
+    <header class="app-bar-expand-md bg-darkCyan fg-white" data-role="appbar">
+        <a href="#" class="brand no-hover fg-white-hover order-1">SupportCore</a>
+        @*<div class="app-bar-item d-none d-flex-md order-2">
+            <input type="text" placeholder="Search" class="app-bar-input app-bar-search">
+        </div>*@
+
+        <ul class="app-bar-menu order-4 order-md-3">
+            <li><a asp-controller="Home" class="fg-white-hover">Панель заявок</a></li>
+            <li>
+
+                <a class="app-bar-item dropdown-toggle marker-light fg-white-hover" href="#">Справочники</a>
+                @*Menu drop-down*@
+                <ul class="d-menu" data-role="dropdown">
+
+                    <li>
+                        <a asp-controller="Organizations"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="mif-organization icon"></span>Организации
+                        </a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li>
+                        <a asp-controller="Person"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="mif-users icon"></span>Пользователи
+                        </a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li>
+                        <a asp-controller="Categories"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="mif-books icon"></span>Категории заявок
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+            @if (User.IsInRole("Администратор")) { 
+            <li>
+
+                <a class="app-bar-item dropdown-toggle marker-light fg-white-hover" href="#">Администрирование</a>
+                @*Menu drop-down*@
+                <ul class="d-menu" data-role="dropdown">
+
+                    <li>
+                        <a asp-controller="Configurations"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="mif-cogs icon"></span>Настройки системы
+                        </a>
+                    </li>
+
+                </ul>
+
+            </li>
+            }
+        </ul>
+        @*Rigth menu*@
+        <div class="app-bar-container ml-auto order-3 order-md-4">
+            <div class="app-bar-item"><span class="registred"></span></div>
+
+            <div class="app-bar-container">
+                <a class="app-bar-item dropdown-toggle marker-light" href="#"><span class="mif-cog">  @ViewBag.UserName</span></a>
+                <ul class="d-menu place-right" data-role="dropdown">
+                        <li>
+                            <a asp-controller="Person" asp-action="Details" asp-route-id="@ViewBag.UserId"
+                               data-ajax="true"
+                               data-ajax-method="GET"
+                               data-ajax-update="#cell-content"
+                               data-ajax-mode="update">
+                                <span class="mif-profile icon"></span>Профиль
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a asp-controller="Account" asp-action="Logout">
+                                <span class="mif-exit icon"></span>    Выход
+                            </a>
+                        </li>
+                </ul>
+            </div>
+
+            @*<div class="app-bar-container">
+                <a class="app-bar-item dropdown-toggle marker-light pl-1 pr-5" href="#">
+                    <img class="rounded" data-role="gravatar" data-email="sergey@pimenov.com.ua" data-size="25">
+                </a>
+                <ul class="v-menu place-right" data-role="dropdown">
+                    <li><a href="">Signed as <strong>olton</strong></a></li>
+                    <li class="divider"></li>
+                    <li><a href="">Your profile</a></li>
+                    <li><a href="">Your stars</a></li>
+                    <li><a href="">Your gists</a></li>
+                    <li class="divider"></li>
+                    <li><a href="">Help</a></li>
+                    <li><a href="">Settings</a></li>
+                    <li><a href="">Sign out</a></li>
+                </ul>
+            </div>*@
+        </div>
+    </header>
+</div>
+<script>
+    $(function () {
+        var configuration = {
+            uri: '400@ks.local',
+            wsServers: ['wss://192.168.123.10:7443'],
+            authorizationUser: '400',
+            password: '400',
+            register: true,
+            //log: {
+            //    level: 3
+            //},
+            //traceSip: true,
+        }
+        phone = new SIP.UA(configuration);
+        phone.start();
+        phone.on('disconnected', function (e) {
+            console.log("Ошибка подключения")
+            $('.registred').toggleClass('mif-phonelink-off')
+            phone.stop();
+        });
+        phone.on('registrationFailed', function (e) {
+            console.log("Ошибка регистрации")
+            configuration.uri = null;
+            configuration.password = null;
+            $('.registred').toggleClass('mif-phonelink-off')
+            phone.stop();
+        });
+        phone.on('registered', function (e) {
+            $('.registred').toggleClass('mif-phonelink')
+        })
+        phone.on('invite', function (session) {
+            console.log('incoming');
+            console.log(session.remoteIdentity.displayName);
+            console.log(session.remoteIdentity.uri.user);
+            var display_name = session.remoteIdentity.displayName || session.remoteIdentity.uri.user;
+            var url = '@Url.Action("GetPersonForPhone", "Person")/' + display_name;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log(this.responseText);            
+                    var notify = Metro.notify;
+                    notify.create(this.responseText,'Звонок', {
+                        keepOpen: true,
+                        width: 'auto',
+                    });
+                }
+            };
+            // 2. Конфигурируем его: GET-запрос на URL 'phones.json'
+            xhr.open('GET', url, true);
+            xhr.send();
+        });
+    })
+</script>

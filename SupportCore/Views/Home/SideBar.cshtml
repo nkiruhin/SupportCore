@@ -1,0 +1,109 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+        <button class="pull-button">
+            <span class="default-icon-menu"></span>
+        </button>
+        <ul class="navview-menu">
+            <li class="item-header">Заявки</li>
+
+            <li class="active">
+                <a href="#" onclick="ReloadTable(0)">
+
+                    <span class="icon"><span class="mif-broadcast"></span></span>
+
+                    <span class="caption">Мои заявки</span>
+
+                    &nbsp;<span class="badge inline bg-blue fg-white" id="myTicketCount">0</span>
+
+
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="ReloadTable('1')">
+
+                    <span class="icon"><span class="mif-unlock"></span></span>
+
+                    <span class="caption">Открытые</span>
+
+                    &nbsp;<span class="badge inline bg-blue fg-white" id="openTicketCount">0</span>
+
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="ReloadTable(100)">
+
+                    <!-- <span class="mif-drive-eta icon"></span> -->
+                    <span class="icon"><span class="mif-bell"></span></span>
+                    <span class="caption">Просроченные</span>
+                    &nbsp;<span class="badge inline bg-red fg-white" id="overlayTicketCount">0</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="#" onclick="ReloadTable(2)">
+
+                    <span class="icon"><span class="mif-lock "></span></span>
+
+                    <span class="caption">Закрытые</span>
+
+                    &nbsp;<span class="badge inline bg-green fg-white" id="closeTicketCount">0</span>
+
+                </a>
+            </li>
+            <li>
+                <a asp-action="Filter"
+                   asp-controller="Tickets"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update">
+                    <span class="icon"><span class="mif-filter"></span></span>
+                    <span class="caption">Фильтр</span>
+
+                </a>
+            </li>
+            <li class="item-header">Обращения</li>
+            <li>
+                <a asp-controller="Requests"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-begin="$('#cell-content').html('')"
+                   data-ajax-loading="#reqPreloader"
+                   data-ajax-mode="update">
+                    <span class="icon"><span class="mif-mail"></span></span>
+                    <span class="caption">Входящие</span>
+                    @*<span class="counter">0</span>*@
+            </a>
+        </li>
+        <li class="item-header">Шаблоны</li>
+        <li>
+            <a asp-controller="Forms"
+               data-ajax="true"
+               data-ajax-method="GET"
+               data-ajax-update="#cell-content"
+               data-ajax-mode="update">
+                <span class="icon"><span class="mif-insert-template"></span></span>
+                <span class="caption">Форм</span>
+                @*<span class="counter">0</span>*@
+                </a>
+            </li>
+            <li>
+                <a asp-controller="Templates"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update">
+                    <span class="icon"><span class="mif-bubbles"></span></span>
+                    <span class="caption">Ответов</span>
+                    @*<span class="counter">0</span>*@
+                </a>
+            </li>
+        </ul>
+<script>
+$(function () {
+    getCounters()    
+    })
+</script>

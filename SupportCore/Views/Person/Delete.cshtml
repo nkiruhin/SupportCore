@@ -1,0 +1,30 @@
+﻿@model SupportCore.Models.Person
+
+<h3>Вы уверены что хотите удалить пользователя?</h3>
+<hr />
+<dl>
+    <dt>
+        <label asp-for="Name"></label>
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Name)
+    </dd>
+</dl>
+<dl>
+    <dt>
+        <label asp-for="Email"></label>
+    </dt>
+    <dd>
+        @Html.DisplayFor(model => model.Email)
+    </dd>
+</dl>
+
+<form asp-action="Delete" id="end"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update"
+      data-ajax-failure="onError('Невозможно удалить пользователя')"
+      >
+    <input type="hidden" asp-for="Id" />
+</form>

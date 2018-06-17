@@ -1,0 +1,26 @@
+﻿@model SupportCore.Models.Category
+@{
+    Layout = null;
+}
+
+@{
+    ViewData["Title"] = "Edit";
+}
+<h2 class="text-light">Редактирование <span class="mif-pencil place-right"></span></h2>
+<h4>Категория</h4>
+<hr />
+<form asp-action="Edit"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @Html.EditorForModel()
+    <button type="submit" class="button primary">Сохранить</button>
+        <a asp-action="Index"
+           data-ajax="true"
+           data-ajax-method="POST"
+           data-ajax-update="#cell-content"
+           data-ajax-mode="update"
+           class="button secondary" data-role="button">К списку</a>
+</form>

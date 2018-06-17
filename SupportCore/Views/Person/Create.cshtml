@@ -1,0 +1,61 @@
+﻿@model SupportCore.Models.Person
+@{
+    ViewData["Title"] = "Create";
+}
+<div id="PersonSteps">
+    <h2 class="text-light">Новый <span class="mif-user-plus place-right"></span></h2>
+    <h4>Пользователь</h4>
+    <hr />
+    <div class="stepper" data-role="stepper" id="step"></div>
+
+    <form asp-action="Create"
+          id="PersonCreate"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#PersonSteps"
+          data-ajax-mode="update">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        @Html.EditorForModel()
+        <input type="hidden" name="step" value="1">
+        <label class="input-control checkbox small-check">
+            <input type="checkbox" id="EmailOrg" onclick="orgEmail()">
+            <span class="check"></span>
+            <span class="caption">Использовать Email организации</span>
+        </label>
+        <div class="form-group">
+            <label asp-for="OrganizationId"></label>
+            <select class="jselect2"
+                    name="OrganizationId"
+                    data-ajax-url="@Url.Action("List","Organizations",null,"http")"></select>
+        </div>
+        <div class="pt-6-md">
+            <button type="submit" class="button primary">Сохранить и продолжить</button>
+            <a asp-action="Index"
+               data-ajax="true"
+               data-ajax-method="GET"
+               data-ajax-update="#cell-content"
+               data-ajax-mode="update"
+               class="button secondary" data-role="button">К списку</a>
+        </div>
+    </form>  
+
+    <script>
+        $(document).ready(function () {
+            var form = $.validator.unobtrusive.parse('#PersonCreate');
+        })
+        $('.jselect2').select2({
+            placeholder: 'Выберите организацию из списка',
+            language: 'ru',
+        });
+        $('.check-box').on('click', function () {
+            if (this.checked) {
+                $('.jselect2').prop("disabled", true)
+                    .val(null).trigger('change');
+            } else { $('.jselect2').prop("disabled", false) }
+
+        })
+        $('.jselect2').on('select2:select', function (e) {
+                orgEmail();
+            });
+    </script>
+</div>

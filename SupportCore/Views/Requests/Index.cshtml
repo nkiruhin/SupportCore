@@ -1,0 +1,66 @@
+﻿@model IEnumerable<SupportCore.Models.Requests>
+   
+ <h2 class="text-light">Обращения<span class="mif-mail place-right"></span></h2>
+ <a asp-controller="Requests" class="button warning" data-role="button"
+    data-ajax="true"
+    data-ajax-method="GET"
+    data-ajax-update="#cell-content"
+    data-ajax-loading="#reqPreloader"
+    data-ajax-mode="update">Обновить </a>
+    <hr class="thin bg-grayLighter">
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                @*<th>
+                        @Html.DisplayNameFor(model => model.From)
+                    </th>*@
+                <th>
+                    @Html.DisplayNameFor(model => model.Email)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Subject)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.DateCreate)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        @if (Model?.Count() > 0) { 
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    @*<td>
+                            @Html.DisplayFor(modelItem => item.From)
+                        </td>*@
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Email)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Subject)
+                    </td>
+                    <td width="15%">
+                        @Html.DisplayFor(modelItem => item.DateCreate)
+                    </td>
+                    <td>
+                        @*<a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |*@
+                        <a asp-action="Details" asp-route-id="@item.Id"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update" class="button secondary outline small" data-role="button">Просмотреть</a> @*|
+                            <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>*@
+                    </td>
+                </tr>
+            }
+        </tbody>
+        }
+        else
+        {
+            @:Нет новых сообщений..
+        }
+    </table>
+

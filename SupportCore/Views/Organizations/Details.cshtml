@@ -1,0 +1,35 @@
+﻿@model SupportCore.Models.Organization
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2 class="text-light">Информация <span class="mif-profile place-right"></span></h2>
+<h4>Организация</h4>
+
+<div>
+    @Html.DisplayForModel()
+</div>
+<hr />
+<div class="accordion" data-role="accordion">
+    <div class="frame">
+        <div class="heading">Дополнительно<span class="mif-expand-more icon"></span></div>
+        <div class="content">Frame content</div>
+    </div>
+</div>
+<div>
+    <a asp-action="Edit"
+       data-ajax="true"
+       data-ajax-method="GET"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       asp-route-id="@Model.Id" 
+       class="button primary" data-role="button">Изменить</a>
+      <a asp-action="Index"
+             data-ajax="true"
+             data-ajax-method="POST"
+             data-ajax-update="#cell-content"
+             data-ajax-mode="update"
+             class="button secondary" data-role="button">К списку</a>
+</div>
+

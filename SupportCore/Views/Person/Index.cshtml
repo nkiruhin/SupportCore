@@ -1,0 +1,71 @@
+﻿@{
+    ViewData["Title"] = "Index";
+}
+
+<h2 class="text-light">Пользователи <span class="mif-users place-right"></span></h2>
+
+<hr class="thin bg-grayLighter">
+<a asp-action="Create"
+   data-ajax="true"
+   data-ajax-method="GET"
+   data-ajax-update="#cell-content"
+   data-ajax-mode="update"
+   class="button primary">
+    <span class="mif-plus"></span> Добавить...
+</a>
+@if (User.IsInRole("Администратор"))
+{
+    <label class="switch">
+        <input type="checkbox" onchange="Staff()" id="isStaff">
+        <span class="check"></span>
+    </label>
+    <label>Сотрудники</label>
+}
+<hr class="thin bg-grayLighter">
+
+<table class="dataTable table-border compact cell-border striped w-100">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            <th>ФИО</th>
+            <th>Организация</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+    </thead>
+</table>
+
+<script>
+    $(function () {
+        url = '@Url.Action("List", "Person", new { isStaff = false }, "http")'
+        
+        menu_button = "<div class='dropdown-button'><button class='button small dropdown-toggle secondary outline'>Действия</button><ul class='d-menu' data-role='dropdown'>";
+
+        columns = [
+            { "data": "name", "autoWidth": true },
+            { "data": "organization", "autoWidth": true, "defaultContent": "<i>Не указана</i>"},
+            { "data": "email", "width": "15%" },
+            {
+                "render": function (data, type, full, meta)
+                {
+                    edit = '<li><a href=@Url.Action("Edit")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a></li>';
+                    detail = '<li><a href=@Url.Action("Details")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Просмотреть"><span class="mif-zoom-in icon"></span>Просмотреть</a></li>';
+                    del = '<li><a href="#" title="Удалить" onclick="openCustomDialog(\'@Url.Action("Delete")/' + full.id + '\',\'Удалить\',end)"><span class="mif-bin icon"></span>Удалить</a></li>';
+                    return menu_button + edit + detail + del +"</ul></div>"
+                }, "width":"7%"
+            }
+        ]
+        PersonTable = TableReady(url, columns);
+    })
+    var end = function () {
+        $('#end').submit();
+    }
+</script>
+@if (User.IsInRole("Администратор"))
+{
+<script>
+        function Staff() {
+            url = '@Url.Action("List", "Person", null, "http")' + '?isStaff=' + $('#isStaff').prop('checked')
+            PersonTable.ajax.url(url).load();
+    }
+</script>
+}

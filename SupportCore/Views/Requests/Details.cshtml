@@ -1,0 +1,25 @@
+﻿@model SupportCore.Models.Requests
+
+<h2 class="text-light">Сообщение<span class="mif-mail-read place-right"></span></h2>
+
+<hr class="thin bg-grayLighter">
+
+
+<form asp-action="Delete"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update">
+    <a asp-action="Create" asp-controller="Tickets" asp-route-requestId="@Model.Id"
+       data-ajax="true"
+       data-ajax-method="GET"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       class="button primary" data-role="button">
+        Создать заявку
+    </a>
+    <input asp-for="Id" hidden />
+    <button type="submit" class="button warning">Отметить как прочитанное</button>
+</form>
+
+@Html.DisplayForModel()

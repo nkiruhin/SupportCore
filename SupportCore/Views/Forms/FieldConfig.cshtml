@@ -1,0 +1,19 @@
+﻿@model SupportCore.Models.Field
+
+<div class="p-7">
+<form asp-action="FieldConfig"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-success="closeWin()">
+    <div class="form-group">
+        <label>Варианты</label>
+        <textarea rows="10" cols="40" asp-for="Configuration" data-role="textaria"></textarea>
+        <span asp-validation-for="Configuration"></span>
+    </div>
+        <input asp-for="Id" hidden />
+        <div class="pt-7">
+            <input type="submit" class="button primary" value="Сохранить" />
+        </div>
+</form>
+    </div>
+   

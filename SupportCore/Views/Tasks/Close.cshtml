@@ -1,0 +1,27 @@
+﻿@model SupportCore.Models.Tasks
+
+<div class="p-4-md">
+<form asp-action="Close"
+    asp-route-id="@Model.Id"
+    id="TaskClose"
+    data-ajax="true"
+    data-ajax-method="POST"
+    data-ajax-update="#Tasks"
+    data-ajax-mode="update"
+    data-ajax-success="closeWin()">
+    <button type="submit" class="button primary" id="tThreadClose">Сохранить</button>
+
+    <div class="form-group">
+        <label asp-for="DateClose"></label>
+        <input asp-for="DateClose">
+        <span asp-validation-for="Result"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Result"></label>
+        <textarea asp-for="Result" id="Body" cols="100" rows="3" class="html" />
+        <span asp-validation-for="Result"></span>
+    </div>
+
+</form>
+    </div>
+

@@ -1,0 +1,5 @@
+﻿@model Boolean
+@if (User.IsInRole("Администратор")) { 
+    <input asp-for="@Model" data-role="checkbox">
+    <span asp-validation-for="@Model"></span>
+}

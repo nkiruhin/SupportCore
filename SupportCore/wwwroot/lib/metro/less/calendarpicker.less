@@ -1,0 +1,28 @@
+@import (once) "include/vars";
+@import (once) "include/mixins";
+
+.calendar-picker {
+    position: relative;
+}
+
+.calendar-picker {
+    input {
+        width: 100%;
+    }
+
+    .calendar {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        display: block;
+        z-index: @zindex-absolute;
+
+        &.open {
+        }
+
+        &.open-up {
+            top: auto;
+            bottom: 100%;
+        }
+    }
+}

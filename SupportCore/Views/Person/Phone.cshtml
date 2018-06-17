@@ -1,0 +1,46 @@
+﻿@model SupportCore.Models.Phone
+
+    <h2 class="text-light"> <span class="mif-user-plus place-right"></span></h2>
+    <h4>@ViewData["name"]</h4>
+    <hr />
+    <div data-step="2" data-role="stepper" id="step"></div>
+    <hr />
+    <h2 class="text-light">Телефоны<span class="mif-phone place-right"></span></h2>
+    <form asp-action="AddPhone" class="inline-form pt-2-md pb-2-md"
+          id="AddPhone"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#Phones"
+          data-ajax-success="clean"
+          data-ajax-mode="update">
+        <input type="hidden" name="step" value="1">
+        <input type="hidden" name="PersonId" value="@ViewData["id"]">
+            <input type="tel" asp-for="PhoneNumber"/>
+            <button class="button primary small-button"><span class="mif-plus"></span></button> 
+    </form>
+    <span asp-validation-for="PhoneNumber"></span>
+    <div id="Phones"></div>
+
+    <a asp-controller="Account" asp-action="Register" asp-route-id="@ViewData["id"]"
+        data-ajax="true"
+        data-ajax-method="GET"
+        data-ajax-update="#cell-content"
+        data-ajax-mode="update"
+        class="button primary">Продолжить</a>
+    <a asp-action="Index"
+       data-ajax="true"
+       data-ajax-method="GET"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       class="button">К списку</a>
+
+
+
+    <script>
+        $(document).ready(function () {
+            var form = $.validator.unobtrusive.parse('#AddPhone');
+        })
+        function clean() {
+            document.getElementById('PhoneNumber').value = "";
+        }
+    </script>

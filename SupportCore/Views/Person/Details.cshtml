@@ -1,0 +1,113 @@
+﻿@model SupportCore.Models.Person
+
+<h2 class="text-light">Просмотр <span class="mif-pencil place-right"></span></h2>
+<h4>Пользователь @Model.Name</h4>
+<hr />
+<div class="pb-2">
+    <a asp-action="Edit"
+       data-ajax="true"
+       data-ajax-method="GET"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       asp-route-id="@Model.Id"
+       class="button primary">Изменить</a>
+
+    <a asp-action="Index"
+       data-ajax="true"
+       data-ajax-method="GET"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       class="button">К списку</a>
+</div>
+
+<ul class="tabs-expand-md" data-role="tabs">
+    <li class="active"><a href="#main">ГЛАВНАЯ</a></li>
+    @if (!Model.IsStaff)
+    {
+        <li><a href="#tickets">АКТИВНЫЕ ЗАЯВКИ</a></li>
+    }
+    <li>
+        <a href="#statistic" onclick="stat()">СТАТИСТИКА</a>
+    </li>
+</ul>
+<div class="border bd-default no-border-top p-2">
+    <div id="main">
+        @Html.DisplayForModel()
+        <dl class="horizontal">
+            <dt><label asp-for="OrganizationId"></label></dt>
+            @if (Model.OrganizationId != null)
+            {
+                <dd>@Model.Organization.Name</dd>
+            }
+        </dl>
+        <div data-role="accordion" data-one-frame="false" data-show-active="true">
+            <div class="frame">
+                <div class="heading  bg-darkCyan fg-white">Телефоны</div>
+                <div class="content">
+                    <div id="Phones" class="p-2"> @await Html.PartialAsync("ListPhones", Model.Phones)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @if (!Model.IsStaff)
+    {
+        <div id="tickets">
+            <div class="pb-2-md">
+                <a asp-action="Create" asp-controller="Tickets" asp-route-PersonId="@Model.Id"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update"
+                   class="button primary" data-role="button">Создать заявку</a>
+            </div>
+            @await Html.PartialAsync("../Tickets/TicketTable", new Filter { PersonId = Model.Id, StatusId = 1, UserId = "all" })
+        </div>
+    }
+        <div id="statistic">
+            @if (Model.IsStaff)
+            {
+                <div class="row pl-10-md">
+                    <div data-role="buttongroup">
+                        <button class="button active" onclick="stat()">Неделя</button>
+                        <button class="button" onclick="stat(30)">Месяц</button>
+                        <button class="button" onclick="stat(365)">Год</button>
+                    </div>
+                </div>
+                <h6 class="text-center-md">Заявки за период</h6>
+                <div class="cell-md-12">
+                    <div id="catChart"></div>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    <div class="cell-md-6">
+                        <h6 class="text-center-md">Заявки по категориям</h6>
+                        <div class="ct-chart" id="catChart"></div>
+                    </div>
+                    <div class="cell-md-6">
+                        <h6 class="text-center-md">Заявки по статусу</h6>
+                        <div class="ct-chart" id="statusChart"></div>
+                    </div>
+                </div>
+            }
+        </div>
+</div>
+<script>
+    function stat(period) {
+        @if (!Model.IsStaff) {
+            @:url = '@Url.Action("TicketByCategory",new { id = Model.Id })';
+            @:loadTicketStat(url)
+            @:url = '@Url.Action("TicketByStatus",new { id = Model.Id })';
+            @:loadTicketStat(url)
+        }
+        else
+        {
+            @:if (!period) { period = 7 }
+            @:url = '@Url.Action("TicketStaff", new { id = Model.Id })' + '?period=' + period
+            @:loadTicketStatforStaff(url)
+         }
+    }
+
+</script>
+

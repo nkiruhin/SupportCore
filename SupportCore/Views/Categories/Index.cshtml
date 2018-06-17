@@ -1,0 +1,82 @@
+﻿@model List<SupportCore.Models.Category>
+@*Panel with button*@
+<h2 class="text-light">Категории заявки <span class="mif-books place-right"></span></h2>
+
+<hr class="thin bg-grayLighter">
+<a asp-action="Create"
+   data-ajax="true"
+   data-ajax-method="GET"
+   data-ajax-update="#cell-content"
+   data-ajax-mode="update"
+   class="button primary">
+    <span class="mif-plus"></span> Добавить...
+</a>
+<hr class="thin bg-grayLighter">
+<table class="dataTable table-border compact cell-border striped">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Discription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Form)
+            </th>
+            <th width="7%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int item=0; item<Model.Count;item++)
+        {
+            <tr>
+                <td>
+                    @Model[item].Name
+                </td>
+                <td>
+                    @Model[item].Discription
+                </td>
+                <td>
+                    @if (Model[item].Form != null)
+                    { @Model[item].Form.Name; }
+                    else{
+                        @:<i>Не указана</i>
+                    }
+                </td>
+                <td>
+                    <div class="dropdown-button">
+                        <button class="button small dropdown-toggle secondary outline">Действия   </button>
+                        <ul class="d-menu" data-role="dropdown">
+                            <li>
+                                <a asp-action="Edit"
+                                   data-ajax="true"
+                                   data-ajax-method="GET"
+                                   data-ajax-update="#cell-content"
+                                   data-ajax-mode="update"
+                                   asp-route-id="@Model[item].Id" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a>
+                            </li>
+                            <li>
+                                <a asp-action="Details"
+                                   data-ajax="true"
+                                   data-ajax-method="GET"
+                                   data-ajax-update="#cell-content"
+                                   data-ajax-mode="update"
+                                   asp-route-id="@Model[item].Id" title="Просмотреть"><span class="mif-zoom-in icon"></span>Просмотреть</a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   title="Удалить" onclick="openCustomDialog('/Categories/Delete/@Model[item].Id','Удалить категорию',end)"><span class="mif-bin icon"></span>Удалить</a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    $(function () {
+        FormsTable = SimpleTableReady();
+    })
+</script>

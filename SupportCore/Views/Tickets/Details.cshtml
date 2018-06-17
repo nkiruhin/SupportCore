@@ -1,0 +1,180 @@
+﻿@model SupportCore.Models.Ticket
+@{
+    Layout = null;
+}
+
+@{
+    ViewData["Title"] = "Просмотр";
+}
+
+@{ 
+
+    string[] Status ={
+    "",
+    "открыта",
+    "закрыта",
+    "отложена",
+    "",
+    "выполнена"
+    }; }
+
+<h2 class="text-light">Просмотр <span class="mif-zoom-in place-right"></span></h2>
+<ul class="tabs-expand-md" data-role="tabs">
+    <li class="active"><a href="#main">ГЛАВНАЯ</a></li>
+    <li><a href="#history">ИСТОРИЯ ЗАЯВКИ (<b id="count">@Model.TicketThreads.Count</b>)</a></li>
+    <li><a href="#info">ДОПОЛНИТЕЛЬНО</a></li>
+</ul>
+<div class="border bd-default no-border-top p-2">
+    <div id="main">
+        <h5>Заявка № @Model.Id создана @Model.DateCreate</h5>
+        <div style="position: relative" class="active-container">
+            <b>Статус:</b>  @switch (Model.StatusId)
+            {
+                case 1:
+                    <code class="alert">Открыта</code>
+                    break;
+                case 2:
+                    <code class="success">Закрыта</code>@:&nbsp; @Model.Closed
+                    break;
+                case 3:
+                    <code class="default">Отложена</code>
+                    break;
+                case 5:
+                    <code class="info">Выполнена</code>
+                    break;
+                default:
+                    break;
+            }
+        </div>
+        <hr />
+        <div class="grid">
+            <div class="row">
+                <div class="cell-md-4">
+                    <dl class="horizontal">
+                        <dt><label asp-for="PersonId"></label></dt>
+                        <dd>@Model.Person.Name</dd>
+                        <dt><label asp-for="CategoryId"></label></dt>
+                        <dd>@Model.Category.Name</dd>
+                        <dt><label asp-for="StaffId"></label></dt>
+                        <dd>@Model.Stuff.Name</dd>
+                        <dt><label asp-for="SourceId"></label></dt>
+                        <dd>@ViewBag.Source</dd>
+                        <dt><label asp-for="DueDate"></label></dt>
+                        <dd>@Model.DueDate.ToShortDateString()</dd>
+                    </dl>
+                    <div class="p-4-md">
+                        @if (Model.StatusId != 2)
+                        {
+                            <a asp-action="Edit" class="button primary"
+                               asp-route-id="@Model.Id"
+                               data-ajax="true"
+                               data-ajax-method="GET"
+                               data-ajax-update="#cell-content"
+                               data-ajax-mode="update">Редактировать</a>}
+                        <a asp-action="Index" asp-controller="Tickets"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update"
+                           class="button secondary" data-role="button">К списку</a>
+                    </div>
+                </div>
+                <div class="cell-md-8">
+                    <dl>
+                        <dt><label asp-for="Name" class="control-label"></label></dt>
+                        <dd>@Model.Name</dd>
+                    </dl>
+                    @await Component.InvokeAsync("Form", new { FormId = 0, TicketId = Model.Id, Edit = false })
+                </div>
+            </div>
+        </div>
+        @if (Model.Category.FormId != null)
+        {
+
+                @await Component.InvokeAsync("Form", new { FormId = Model.Category.FormId, TicketId = Model.Id, Edit = false })
+
+        }
+    </div>
+
+<div id="history">
+    @await Html.PartialAsync("../TicketThreads/Index", Model.TicketThreads.OrderByDescending(i => i.DateCreate))
+</div>
+<div id="info">
+
+    <label asp-for="CoAuthors"></label>
+    @if (Model.CoAuthors.Count == 0)
+    {
+        <p><em>Нет соавторов</em></p>
+    }
+    <ul>
+        @foreach (var coauthor in Model.CoAuthors)
+        {
+            <li>@coauthor.Person.Name</li>
+        }
+    </ul>
+
+
+    <div id="Tasks">
+        @await Html.PartialAsync("../Tasks/Index", Model)
+    </div>
+
+</div>
+</div>
+
+<script>
+    $(function () {
+        Metro.init()
+    })
+    $('#PersonId').select2({
+        placeholder: 'Выберите пользователя',
+        language: 'ru',
+        templateResult: formatData
+    });
+    $('#StaffId').select2({
+        placeholder: 'Выберите сотрудника',
+        language: 'ru'
+    });
+    $('#CoAuthors').select2({
+        placeholder: 'Добавьте соовторов',
+        language: 'ru',
+        templateResult: formatData
+    });
+    function formatData(data) {
+        if (data.loading) {
+            return data.text;
+        }
+        var markup = data.text + " <" + data.email + ">"
+        return markup;
+    }
+    function EntrySystemValues(context) {
+        ticketId = context.responseJSON;
+        console.log(ticketId);
+        console.log($('.TicketId'));
+        $('.TicketId').val(ticketId);
+        $('#sysValue').submit();
+        }
+        function EntryCustomValues(context) {
+            console.log(context.responseJSON);
+            $('#customValue').submit();
+        }
+        $('#CategoryId').on('change', function () {
+            if (!this.value) {
+                $('#CustomForm').empty();
+                return null;
+            }
+        url = '@Url.Action("GetCustomForm")' + '?CategoryId=' + this.value;
+        $('#CustomForm').load(url);
+    })
+        //document.querySelector('form').onsubmit = function (e) {
+        //    e.preventDefault();
+        //    // Do your Ajax request after.
+        //    alert('No reload!');
+        //    return false;
+        //}
+        function Save() {
+            console.log("Save");
+            openCustom('/TicketThreads/Create?Id=@Model.Id&Event=4', 'mif-user-plus');
+            return false;
+            e.preventDefault();
+        }
+</script>

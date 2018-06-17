@@ -1,0 +1,40 @@
+﻿@model SupportCore.Models.TicketThread
+<form asp-action="Edit" id="EditThread" class="p-6-md"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#history"
+      data-ajax-mode="update"
+      data-ajax-success="closeWin()">
+    <h5><label asp-for="Body"></label></h5>
+    <hr class="thin bg-grayLighter" />
+    <button type="submit" class="button success">Сохранить</button>
+    <div id="eventPreloader" style="display:none">
+        <div data-role="activity" data-type="metro" data-style="dark"></div>
+    </div>
+    <hr class="thin bg-grayLighter" />
+    <textarea asp-for="Body" id="Body">@Model.Body</textarea>
+    <span asp-validation-for="Body"></span>
+    <input asp-for="Id" hidden />
+    <input asp-for="TicketId" hidden />
+</form>
+<script>
+    $(function () {
+        var form = $.validator.unobtrusive.parse('#CreateThread');
+        var editor = $('#Body').trumbowyg(
+            {
+                lang: 'ru',
+                btns: [
+                    ['undo', 'redo'], // Only supported in Blink browsers
+                    ['formatting'],
+                    ['strong', 'em', 'del'],
+                    ['superscript', 'subscript'],
+                    ['link'],
+                    ['insertImage'],
+                    ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                    ['unorderedList', 'orderedList'],
+                    ['horizontalRule'],
+                    ['removeformat'],
+                ]
+            });
+    })
+</script>

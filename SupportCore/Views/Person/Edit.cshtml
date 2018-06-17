@@ -1,0 +1,99 @@
+﻿@model SupportCore.Models.Person
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2 class="text-light">Редактирование <span class="mif-pencil place-right"></span></h2>
+<h4>Пользователь @Model.Name</h4>
+<hr />
+
+<form asp-action="Edit" id="Edit"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="pb-4-md">
+        <button type="submit" class="button primary">Сохранить</button>
+        <a asp-action="Index"
+           data-ajax="true"
+           data-ajax-method="GET"
+           data-ajax-update="#cell-content"
+           data-ajax-mode="update"
+           class="button secondary" data-role="button">К списку</a>
+    </div>
+    @Html.EditorForModel()
+    <div class="form-group">
+        <label asp-for="OrganizationId"></label>
+        <select @if (Model.IsStaff) { @: disabled
+                }
+                class="jselect2 full-size"
+                name="OrganizationId"
+                data-ajax-url="@Url.Action("List","Organizations",null,"http")">
+
+            @if (Model.Organization != null)
+            {
+                <option value="@Model.OrganizationId" selected="selected">@Model.Organization.Name</option>
+            }
+        </select>
+        @if (!User.IsInRole("Пользователь") && (Model.IsStaff == true))
+        {
+            <div class="form-group">
+                <label asp-for="ApiKey"></label>
+                <input asp-for="ApiKey" />
+                <blockquote><em>Ключ доступа к API можно получить в настройках учетной записи redmine</em></blockquote>
+            </div>
+        }
+    </div>
+</form>
+<div data-role="accordion" data-show-active="false" class="pt-4-md">
+    <div class="frame">
+        <div class="heading  bg-darkCyan fg-white"><span class="mif-phone"></span>&nbsp;Телефоны</div>
+        <div class="content">
+            <form asp-action="AddPhone" class="inline-form pt-2-md pb-2-md" asp-route-PersonId="@Model.Id"
+                  id="AddPhone"
+                  data-ajax="true"
+                  data-ajax-method="POST"
+                  data-ajax-update="#Phones"
+                  data-ajax-begin="$('#PhoneNumber').val('')"
+                  data-ajax-mode="update">
+                <input id="PhoneNumber"type="tel" name="PhoneNumber" data-val="true" data-val-maxlength="Телефонный номер не должен превышать 10 цифр" data-val-maxlength-max="11" data-val-required="Поле обязательно" />
+                <button class="button"><span class="mif-plus"></span></button>
+            </form>
+            <span class="field-validation-valid" data-valmsg-for="PhoneNumber" data-valmsg-replace="true"></span>
+            <div id="Phones">
+                @await Html.PartialAsync("ListPhones", Model.Phones)
+            </div>
+        </div>
+    </div>
+    <div class="frame">
+        <div class="heading bg-darkCyan fg-white"><span class="mif-user-secret"></span>&nbsp;Учетная запись</div>
+        <div class="content">
+            <div id="Account" class="p-5-md">
+                @await Component.InvokeAsync("Account", new { id = Model.Id, AccountId = Model.AccountID })
+            </div>
+        </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            var form = $.validator.unobtrusive.parse('#Edit');
+            var form = $.validator.unobtrusive.parse('#AddPhone');
+        })
+        $('.jselect2').select2({
+            placeholder: 'Выберите организацию из списка',
+            language: 'ru',
+        });
+        $('.check-box').on('click', function () {
+            if (this.checked) {
+                $('.jselect2').prop("disabled", true)
+                    .val(null).trigger('change');
+            } else { $('.jselect2').prop("disabled", false) }
+
+        })
+        function EditAccount(AccountId) {
+            console.log(AccountId)
+        }
+    </script>
+

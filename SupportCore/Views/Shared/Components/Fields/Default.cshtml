@@ -1,0 +1,67 @@
+﻿@model IEnumerable<SupportCore.Models.Field>
+
+@foreach (var item in Model)
+{
+    string wbutton = "";
+    if (item.Type == "select")
+    {
+        wbutton = "wbutton";
+    }
+
+    <form class="tr" asp-action="SaveField" asp-route-id="@item.Id" id="@item.Id"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-success="disabledInput(@item.Id)">
+        <div class="td"><input asp-for="@item.Name" disabled /></div>
+        <div class="td" style="width:40%">
+            <select asp-for="@item.Type" asp-items="@ViewBag.TypeList" disabled" class="@wbutton">
+                <option>Выберите из списка</option>
+            </select>
+            @if (item.Type == "select")
+            {<div style="vertical-align:top;height:30px" class="button" data-role="button" onclick="openCustomWin('/Forms/FieldConfig/@item.Id','mif-cog','Настройка...',true)"><span class="mif-cog"></span></div>}
+        </div>
+        <div class="td" style="width:10%">
+            <label class="checkbox">
+                <input name="Required" asp-for="@item.Required"  disabled>
+                <span class="check"></span>
+            </label>
+        </div>
+        <div class="td" style="width:10%">
+            <div data-role="buttongroup">
+                <a asp-action="FieldDelete" asp-route-id="@item.Id" asp-route-FormId="@item.FormId"
+                   data-ajax="true"
+                   data-ajax-method="POST"
+                   data-ajax-update="#Fields"
+                   data-ajax-mode="update"
+                   class="tool-button" data-role="button" ><span class="mif-bin"></span></a>
+                <button class="tool-button edit"><span class="mif-pencil"></span></button>
+                <button class="tool-button save" style="display:none"><span class="mif-floppy-disk"></span></button>
+            </div>
+        </div>
+    </form>}
+
+<script>
+   $(document).ready(function () {
+        Metro.init();
+    })
+    $('.edit').on('click', function () {
+        var input = $(this).parent().parent().parent().find(':input');
+        input.prop('disabled', false);
+        submitButton = $(this).next();
+        submitButton.show();
+        $(this).hide();
+        return false;
+    })
+    $('.save').on('click', function () {
+        var input = $(this).parent().parent().parent().find(':input');
+        editButton = $(this).prev();
+        //console.log(editButton);
+        editButton.show();
+        $(this).hide();
+    })
+    function disabledInput(id) {
+        var input = $('#' + id).find(':input:not(:button)');
+        input.prop('disabled', true);
+        onSuccess('Сохранено');
+    }
+</script>

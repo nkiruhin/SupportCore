@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    @*<meta http-equiv="X-UA-Compatible" content="IE=edge">*@
+    <meta name="metro4:init" content="true">
+    <meta name="metro4:locale" content="ru-RU">
+    <title>@ViewData["Title"] - SupportCore v 2.0.0</title>
+
+    <environment include="Development">
+        <link href="~/lib/metro/build/css/metro-all.css" rel="stylesheet" />
+        <link href="~/lib/trumbowyg/dist/ui/trumbowyg.css" rel="stylesheet" />
+        <link href="~/css/dataTables.css" rel="stylesheet" />
+        @*<link href="~/lib/metro/build/css/third-party/datatables.css" rel="stylesheet" />*@
+        @*<link href="~/lib/metro/build/css/third-party/select2.css" rel="stylesheet" />*@
+        <link href="~/css/select2.css" rel="stylesheet" />
+        <link href="~/lib/select2/dist/css/select2.css" rel="stylesheet" />
+        <link href="~/lib/chartist/dist/chartist.css" rel="stylesheet" />
+        <link rel="stylesheet" href="~/css/site.css" />
+    </environment>
+    <environment exclude="Development">
+        <link href="~/lib/metro/build/css/metro-all.min.css" rel="stylesheet" />
+        <link href="~/lib/trumbowyg/dist/ui/trumbowyg.min.css" rel="stylesheet" />
+        <link href="~/css/dataTables.min.css" rel="stylesheet" />
+        <link href="~/css/select2.min.css" rel="stylesheet" />
+        <link href="~/lib/chartist/dist/chartist.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="~/css/site.min.css" />
+    </environment>
+</head>
+<body class="h-vh-100 bg-brandColor2">
+    <environment include="Development">
+        <script src="~/lib/jquery/dist/jquery.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="~/lib/datatables/media/js/jquery.dataTables.js"></script>
+        <script src="~/lib/metro/build/js/metro.js"></script>
+        <script src="~/lib/jquery-ajax-unobtrusive/dist/jquery.unobtrusive-ajax.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.js"></script>
+        <script src="~/lib/select2/dist/js/select2.min.js"></script>
+        <script src="~/lib/trumbowyg/dist/trumbowyg.min.js"></script>
+        <script src="~/lib/trumbowyg/dist/langs/ru.min.js"></script>
+        <script src="~/lib/sip.js/dist/sip.min.js"></script>
+        <script src="~/lib/chartist/dist/chartist.js"></script>
+        <script src="~/js/site.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="~/lib/datatables/media/js/jquery.dataTables.min.js"></script>
+        <script src="~/lib/metro/build/js/metro.min.js"></script>
+        <script src="~/lib/jquery-ajax-unobtrusive/dist/jquery.unobtrusive-ajax.min.js"></script>
+        <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+        <script src="~/lib/select2/dist/js/select2.min.js"></script>
+        <script src="~/lib/trumbowyg/dist/trumbowyg.min.js"></script>
+        <script src="~/lib/trumbowyg/dist/langs/ru.min.js"></script>
+        <script src="~/lib/sip.js/dist/sip.min.js"></script>
+        <script src="~/lib/chartist/dist/chartist.min.js"></script>
+        <script src="~/js/site.js"></script>
+    </environment>
+    @RenderBody()
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>
+@*@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}*@

@@ -1,0 +1,33 @@
+﻿@model SupportCore.ViewModels.AccountView
+
+
+
+    <style>
+        .login-form {
+            width: 400px;
+            height: auto;
+            top: 50%;
+            margin-top: -160px;
+        }
+    </style>
+
+    <form class="login-form bg-white p-6 mx-auto border bd-default win-shadow"
+          asp-controller="Account" asp-action="Login"
+          asp-route-returnUrl="@Model.ReturnUrl">
+        <span class="mif-vpn-lock mif-4x place-right" style="margin-top: -10px;"></span>
+        <h2 class="text-light">Вход в систему</h2>
+        <hr class="thin mt-4 mb-4 bg-white">
+        <div class="form-group">
+            <input asp-for="UserName" data-role="input" data-prepend="<span class='mif-user'>" placeholder="Введите имя пользователя...">
+            <span asp-validation-for="UserName"></span>
+        </div>
+        <div class="form-group">
+            <input asp-for="Password" data-role="input" data-prepend="<span class='mif-key'>" placeholder="Введите пароль..." data-validate="required minlength=6">
+            <span asp-validation-for="Password"></span>
+        </div>
+        <div class="form-group mt-10">
+            @*<input type="checkbox" data-role="checkbox" data-caption="Remember me" class="place-right">*@
+            <div asp-validation-summary="ModelOnly"></div>
+            <button class="button">Войти..</button>
+        </div>
+    </form>

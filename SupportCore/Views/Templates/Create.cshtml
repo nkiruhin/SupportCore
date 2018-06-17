@@ -1,0 +1,88 @@
+﻿@model SupportCore.Models.Template
+
+@{
+    Layout = null;
+}
+
+<h2 class="text-light">Новый <span class="mif-bubbles place-right"></span></h2>
+<h4>Шаблон ответа</h4>
+<hr />
+<div id="FormSteps">
+    <form asp-action="Create"
+          id="TemplateCreate"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#cell-content"
+          data-ajax-mode="update">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="row">
+            <div class="cell-md-6">
+                <div class="form-group">
+                    <label asp-for="Name"></label>
+                    <input asp-for="Name">
+                    <span asp-validation-for="Name"></span>
+                </div>
+            </div>
+            <div class="cell-md-6">
+                <div class="form-group">
+                    <label asp-for="EventType"></label>
+                    <select asp-for="EventType" asp-items="ViewBag.Events"></select>
+                </div>
+
+            </div>
+        </div>
+        <div class="cell-md-12 p-0">
+            <label asp-for="Body"></label>
+            <textarea asp-for="Body" class="html"></textarea>
+        </div>
+        <div class="cell-md-6">
+            <label class="input-control checkbox small-check">
+                <input asp-for="IsDefault" />
+                <span class="check"></span>
+                <span class="caption"><label asp-for="IsDefault"></label></span>
+            </label>
+        </div>
+        <div class="row">
+            <div class="p-5-md">
+                <button type="submit" class="button success">Сохранить</button>
+                <a asp-action="Index"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update"
+                   class="button secondary" data-role="button">К списку</a>
+                </div>
+            </div>
+</form>
+</div>
+<blockquote>
+    <h6>Переменные используемые в шаблоне</h6>
+    <small>переменная должна начинаться со знака @@</small>
+    <div class="row">
+        <div class="cell-md-6">
+            <ul>
+                <li>Пользователь - ФИО пользователя</li>
+                <li>Номер - номер заявки</li>
+                <li>ДатаСоздания - дата и время создания заявки </li>
+                <li>Тема - тема заявки</li>
+            </ul>
+        </div>
+        <div class="cell-md-6">
+            <ul>
+                <li>ПлановаяДата - плановая дата решения заявки</li>
+                <li>Статус - статус заявки</li>
+                <li>Сотрудник - ответственный сотрудник</li>
+                <li>ДатаЗакрытия - дата закрытия заявки</li>
+            </ul>
+        </div>
+    </div>
+</blockquote>
+<script>
+    $(function () {
+        $('.html').trumbowyg(
+            {
+                lang: 'ru'
+            });
+    })
+</script>

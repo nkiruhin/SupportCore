@@ -1,0 +1,26 @@
+﻿@model SupportCore.Models.Category
+
+@{
+    Layout = null;
+}
+
+@{
+    ViewData["Title"] = "Detail";
+}
+<h2 class="text-light">Просмотр <span class="mif-zoom-in place-right"></span></h2>
+<h4>Категория</h4>
+<hr />
+
+    @Html.DisplayForModel()
+    <a asp-action="Edit" asp-route-id="@Model.Id"
+     data-ajax="true"
+     data-ajax-method="GET"
+     data-ajax-update="#cell-content"
+     data-ajax-mode="update"
+     class="button primary" data-role="button">Изменить..</a>
+    <a asp-action="Index"
+       data-ajax="true"
+       data-ajax-method="POST"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       class="button secondary" data-role="button">К списку</a>
