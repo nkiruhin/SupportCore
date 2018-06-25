@@ -28,12 +28,12 @@ namespace SupportCore.Controllers
             return PartialView();
         }
         // GET: Person
-        public async Task<JsonResult> List(bool isStaff)
-        {
+        public async Task<JsonResult> List(bool isStaff,int? OrganizationId)  {
             var data = await _context.Person
                 .Include(p => p.Organization)
                 .AsNoTracking()
-                .Where(p => p.IsStaff == isStaff)
+                .Where(p => p.IsStaff == isStaff
+                &&(p.OrganizationId==OrganizationId||OrganizationId==null))
                 .Select(d=>new {
                     id=d.Id,
                     name =d.Name,
@@ -326,12 +326,13 @@ namespace SupportCore.Controllers
             var dataPeriod = DateTime.Now.AddDays(-7);
             var Tickets = await _context.Tickets.AsNoTracking()
                  .Include(th=>th.TicketThreads)
+                 .Include(ts=>ts.Tasks)
                  .Where(t => t.StaffId == id & t.DateCreate > DateTime.Now.AddDays(period))
                  .ToListAsync();
             int TicketClose = Tickets.Where(c=>c.Closed> DateTime.Now.AddDays(period)).Count();
             int TicketOpen = Tickets.Count();
             //int timeAnswer = Tickets.Sum(o => ((int)o.TicketThreads.Skip(1).First()?.DateCreate.Minute)-o.DateCreate.Minute) / Tickets.Count;
-            int OpenTask = await _context.Tasks.Where(t => t.StaffId == id & t.DateCreate > DateTime.Now.AddDays(period)).CountAsync();
+            int OpenTask = Tickets.Sum(t => t.Tasks.Count());
             int TicketDue = Tickets.Where(c => c.Closed > c.DueDate).Count();
             var data = new  {
                 labels = new string[] { "Открыто", "Закрыто", "Просрочено","Открыто задач" },

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SupportCore.App.Classes;
 using SupportCore.App.Interfaces;
@@ -16,10 +17,12 @@ namespace SupportCore.Controllers
     {
         private readonly Context _context;
         private readonly UserManager<User> _userManager;
-        public TasksController(Context context, UserManager<User> userManager)
+        private readonly IHubContext<SignalrHub> _contextHub;
+        public TasksController(Context context, UserManager<User> userManager, IHubContext<SignalrHub> contextHub)
         {
             _context = context;
             _userManager = userManager;
+            _contextHub = contextHub;
         }
 
         // GET: Tasks
@@ -95,16 +98,18 @@ namespace SupportCore.Controllers
                     Type=0                    
                 };
                 var person = await CurrentPersonAsync();
-                if (!String.IsNullOrEmpty(person.ApiKey))
-                {
-                    RedmineService redmine = new RedmineService(_context, person.ApiKey);
-                    ReadmineIssue issueInfo = new ReadmineIssue();
-                    await redmine.CreateIssueAsync(task);
-                    return PartialView(issueInfo);
-                }
+                //if (!String.IsNullOrEmpty(person.ApiKey))
+                //{
+                //    RedmineService redmine = new RedmineService(_context, person.ApiKey);
+                //    ReadmineIssue issueInfo = new ReadmineIssue();
+                //    await redmine.CreateIssueAsync(task);
+                //    return PartialView(issueInfo);
+                //}
                 _context.Add(task);
                 _context.Add(thread);
                 await _context.SaveChangesAsync();
+                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
+                await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", thread.Poster, thread.DateCreate.ToString("g"), $"Заявка #{thread.TicketId}: {thread.Title}");
                 return RedirectToAction(nameof(Index),new { task.TicketId});
             }
             return PartialView(task);
@@ -174,7 +179,9 @@ namespace SupportCore.Controllers
                     Type = 0
                 };
                 _context.Add(thread);
-                await _context.SaveChangesAsync();     
+                await _context.SaveChangesAsync();
+                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
+                await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", thread.Poster, thread.DateCreate.ToString("g"), $"Заявка #{thread.TicketId}: {thread.Title}");
                 return RedirectToAction(nameof(Index),new { Ticketid= taskToUpdate.TicketId });
             }
             return PartialView();

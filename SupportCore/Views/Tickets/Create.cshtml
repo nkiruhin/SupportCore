@@ -28,55 +28,54 @@
                 <select asp-for="PersonId"
                         data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = false },"http")">
                     <option value="@Model.PersonId" selected="selected">@ViewBag.PersonName</option>
-                    </select><div class="inbutton"><a href="#" class="button" onclick="openCustomWin('/Person/CreateDialog', 'mif-user-plus', 'Пользователь..', true)"><span class="mif-user-plus"></span></a></div>
-    <span asp-validation-for="PersonId"></span>
-
-</div>
-                <div class="form-group m-0">
-                    <label asp-for="CategoryId"></label>
-                    <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" style="color:gray" onchange="this.style.color='black'">
-                        <option value="" disabled selected style='display:none;'>Укажите категорию</option>
-                        <option value=""></option>
-                    </select>
-
-                    <span asp-validation-for="CategoryId"></span>
-                </div>
-                <div class="form-group m-0">
-                    <label asp-for="StaffId"></label>
-                    <select asp-for="StaffId"
-                            data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = true },"http")">
-                        <option value="@Model.StaffId" selected="selected">@ViewBag.StaffName</option>
-                    </select>
-                    <span asp-validation-for="StaffId"></span>
-                </div>
-                <div class="form-group m-0">
-                    <label asp-for="SourceId" class="control-label"></label>
-                    <select asp-for="SourceId" asp-items="ViewBag.SourceId" style="color:gray" onchange="this.style.color='black'">
-                        <option value="" disabled selected style='display:none;'>Укажите источник</option>
-                        <option value=""></option>
-                    </select>
-                    <span asp-validation-for="SourceId"></span>
-                </div>
-                <div class="form-group m-0">
-                    <label asp-for="DueDate" class="control-label"></label>
-                    <input asp-for="DueDate" min="@DateTime.Now.ToString("yyyy-MM-dd")"/>
-                    <span asp-validation-for="DueDate"></span>
-                </div>
-                <label class="input-control checkbox small-check">
-                    <input name="isInform" type="checkbox" checked value="true">
-                    <span class="check"></span>
-                    <span class="caption">Информировать пользователя</span>
-                </label>
-                <div>
-                    <button type="submit" class="button primary" id="tCreateSubmit">Создать...</button>
-                    <a asp-action="Index" asp-controller="Tickets"
-                       data-ajax="true"
-                       data-ajax-method="GET"
-                       data-ajax-update="#cell-content"
-                       data-ajax-mode="update"
-                       class="button secondary" data-role="button">К списку</a>
-                </div>
+                </select><div class="inbutton"><a href="#" class="button" onclick="openCustomWin('/Person/CreateDialog', 'mif-user-plus', 'Пользователь..', true)"><span class="mif-user-plus"></span></a></div>
+                <span asp-validation-for="PersonId"></span>
             </div>
+            <div class="form-group m-0">
+                <label asp-for="CategoryId"></label>
+                <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" style="color:gray" onchange="this.style.color='black'">
+                    <option value="" disabled selected style='display:none;'>Укажите категорию</option>
+                    <option value=""></option>
+                </select>
+
+                <span asp-validation-for="CategoryId"></span>
+            </div>
+            <div class="form-group m-0">
+                <label asp-for="StaffId"></label>
+                <select asp-for="StaffId"
+                        data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = true },"http")">
+                    <option value="@Model.StaffId" selected="selected">@ViewBag.StaffName</option>
+                </select>
+                <span asp-validation-for="StaffId"></span>
+            </div>
+            <div class="form-group m-0">
+                <label asp-for="SourceId" class="control-label"></label>
+                <select asp-for="SourceId" asp-items="ViewBag.SourceId" style="color:gray" onchange="this.style.color='black'">
+                    <option value="" disabled selected style='display:none;'>Укажите источник</option>
+                    <option value=""></option>
+                </select>
+                <span asp-validation-for="SourceId"></span>
+            </div>
+            <div class="form-group m-0">
+                <label asp-for="DueDate" class="control-label"></label>
+                <input asp-for="DueDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                <span asp-validation-for="DueDate"></span>
+            </div>
+            <label class="input-control checkbox small-check">
+                <input name="isInform" type="checkbox" checked value="true">
+                <span class="check"></span>
+                <span class="caption">Информировать пользователя</span>
+            </label>
+            <div>
+                <button type="submit" class="button primary" id="tCreateSubmit">Создать...</button>
+                <a asp-action="Index" asp-controller="Tickets"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update"
+                   class="button secondary" data-role="button">К списку</a>
+            </div>
+        </div>
         <div class="cell-8">
 
             <div class="form-group m-0">
@@ -107,11 +106,7 @@
         placeholder: 'Выберите сотрудника',
         language: 'ru'
     });
-    $('#test').select2({
-        placeholder: 'Выберите сотрудника',
-        language: 'ru'
-    });
-        $('#CategoryId').on('change', function () {
+    $('#CategoryId').on('change', function () {
             if (!this.value) {
                 $('#CustomForm').empty();
                 $.validator.unobtrusive.parse('#TicketCreate');

@@ -43,7 +43,7 @@ namespace SupportCore.App.Interfaces
                 var emailMessage = new MimeMessage();
 
                 emailMessage.From.Add(new MailboxAddress(ec.FromName, ec.FromAddress));
-                if (coAuthors.Count>0)
+                if (coAuthors?.Count>0)
                 {
                    foreach(CoAuthor  coauthor in coAuthors)
                     {

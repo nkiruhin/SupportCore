@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using SupportCore.App.Classes;
 using SupportCore.App.Interfaces;
 using SupportCore.Models;
 
@@ -21,12 +23,14 @@ namespace SupportCore.Controllers
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
         private readonly IOptions<AppSetting> _appSetting;
-        public TicketsController(Context context, UserManager<User> userManager, IOptions<AppSetting> appSetting, IEmailService emailService)
+        private readonly IHubContext<SignalrHub> _contextHub;
+        public TicketsController(Context context, UserManager<User> userManager, IOptions<AppSetting> appSetting, IEmailService emailService, IHubContext<SignalrHub> contextHub)
         {
             _userManager = userManager;
             _context = context;
             _emailService = emailService;
             _appSetting = appSetting;
+            _contextHub = contextHub;
         }
 
         // GET: Tickets
@@ -143,6 +147,7 @@ namespace SupportCore.Controllers
                     Staff = d.Stuff?.Name,
                     Status = d.StatusId,
                     d.SourceId,
+                    Closed = d.Closed.ToString("g"),
                     Category = d.Category.Name,
                     IsOverdue = d.DueDate.Date < DateTime.Now.Date && d.StatusId == 1 ? true : false,
                     IsCoAthors = d.CoAuthors.Count() == 0 ? false : true,
@@ -296,21 +301,22 @@ namespace SupportCore.Controllers
                         } 
                         await _emailService.SendEmailAsync(Person.Email, $"Создана заявка #{ticket.Id}",message);
                     }
-                    
-                    return RedirectToAction(nameof(Edit),new { id=ticket.Id });
+                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
+                TicketThread ticketThread = ticket.TicketThreads.FirstOrDefault();
+                await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString(), $"Заявка #{ticketThread.TicketId}: {ticketThread.Title}");
+                return RedirectToAction(nameof(Edit),new { id=ticket.Id });
             }
             catch (DbUpdateException ex)
             {
                 //Log the error (uncomment ex variable name and write a log.
                 ModelState.AddModelError(string.Empty, "Ошибка при сохранении:"+ ex.Message);
             }
-
             ViewBag.StaffName = Staff.Name;
             ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name");
             ViewData["SourceId"] = new SourceList().List;
             return PartialView(ticket);
         }
-        // POST: Tickets/Crete
+        // POST: Tickets/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int? id, List<IFormFile> Files)
@@ -422,7 +428,13 @@ namespace SupportCore.Controllers
             };
             return Json(count);
         }
-
+        // Get: Tickets/Delete/5
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var ticket = await _context.Tickets.AsNoTracking().SingleOrDefaultAsync(i => i.Id == id);
+            return PartialView(ticket);
+        }
         // POST: Tickets/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
@@ -507,6 +519,8 @@ namespace SupportCore.Controllers
                 Type=0
             });
             await _context.SaveChangesAsync();
+            string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
+            await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", Person.Name,DateTime.Now.ToString("g"), $"Заявка #{Id}: Добавлены сооавторы");
             return RedirectToAction("Index", "TicketThreads", new { Id });
         }
         public async Task<List<Models.File>> UploadFilesAsync(List<IFormFile> Files)
@@ -552,6 +566,13 @@ namespace SupportCore.Controllers
             var stream = new FileStream(path, FileMode.Open);
             return File(stream, fileforDownload.ContentType);
         }
+        //POST Tickets/Send
+        //public async Task<IActionResult> Send()
+        //{
+        //    var client = new SignalRclient();
+        //    client.SendEventAsync(1);
+        //    return Ok("Послали");
+        //}
         // POST: Tickets/EntrySystemValues/
         //[HttpPost]
         //[ValidateAntiForgeryToken]

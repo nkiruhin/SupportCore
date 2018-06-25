@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using SupportCore.App.Classes;
 using SupportCore.App.Interfaces;
 using SupportCore.Models;
 
@@ -17,11 +19,13 @@ namespace SupportCore.Controllers
         private readonly Context _context;
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailService;
-        public TicketThreadsController(Context context, UserManager<User> userManager,IEmailService emailService)
+        private readonly IHubContext<SignalrHub> _contextHub;
+        public TicketThreadsController(Context context, UserManager<User> userManager,IEmailService emailService, IHubContext<SignalrHub> contextHub)
         {
             _context = context;
             _userManager = userManager;
             _emailService = emailService;
+            _contextHub = contextHub;
         }
 
         // GET: TicketThreads
@@ -57,6 +61,7 @@ namespace SupportCore.Controllers
             if (Event == 2&&_context.Tasks.AsNoTracking().Where(t => t.TicketId == Id && t.Status == 0).Count()>0)
             {
                 //return new HtmlString("Действие невозможно!В заявке имеются не закрытые задачи!");
+               // return Content("<script language='javascript' type='text/javascript'>Metro.infobox.create('Действие невозможно!В заявке имеются не закрытые задачи!', 'alert');</script>");
                 return new ContentResult
                 {
                     ContentType = "text/html",
@@ -101,6 +106,9 @@ namespace SupportCore.Controllers
                     ticketThread.Title = $"Изменения в заявке #{ticket.Id} {ticketThread.Title}";
                     await _emailService.SendEmailAsync(ticket.Person.Email, ticketThread.Title, ticketThread.Body,ticket.CoAuthors);
                 }
+                //new SignalRclient("http://"+HttpContext.Request.Host.ToUriComponent()).SendEventAsync(_userManager.GetUserId(HttpContext.User),ticketThread);
+                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
+                await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString("g"), $"Заявка #{ticketThread.TicketId}: {ticketThread.Title}");
                 if (table||Event == 4) return Ok("OK");
                 if(Event==2) return RedirectToAction("Index","Tickets"); //If Event = close load ticket list
                 return RedirectToAction("Edit","Tickets",new { Id = ticketThread.TicketId });

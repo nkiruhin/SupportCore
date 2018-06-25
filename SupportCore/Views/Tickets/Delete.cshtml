@@ -1,5 +1,4 @@
 ﻿@model SupportCore.Models.Ticket
-
 <h3>Вы уверены что хотите удалить заявку?</h3>
 <hr />
 <dl>
@@ -7,7 +6,7 @@
         <label asp-for="Id"></label>
     </dt>
     <dd>
-       # @Html.DisplayFor(model => model.Id)
+        # @Html.DisplayFor(model => model.Id)
     </dd>
     <dt>
         <label asp-for="Name"></label>
@@ -17,17 +16,16 @@
     </dd>
 </dl>
 
-<form asp-action="Delete"
+<form asp-action="Delete" id="end"
       data-ajax="true"
       data-ajax-method="POST"
       data-ajax-update="#cell-content"
       data-ajax-mode="update">
     <input type="hidden" asp-for="Id" />
-    <input type="submit" id="end" value="Удалить" class="button success" />
 </form>
-<script>
+@*<script>
     $(document).on('click', '#end', function () {
         $('#end').submit();
         metroDialog.close($('.dialog'));
     })
-</script>
+</script>*@

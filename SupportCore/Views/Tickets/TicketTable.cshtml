@@ -94,7 +94,7 @@
                             </ul>`
                         break;
                     case 2:
-                        tag = '<code class="success">Закрыта</code>'
+                        tag = '<code class="success" title="Дата закрытия ' + full.closed+'">Закрыта</code>'
                         menu = `<ul class="d-menu" data-role="dropdown" style="display: none;">
                             <li><a href="#" onclick="`+ urlm + `&Event=1\',\'mif-pencil\','Открытие',true)">Открыта</a></li>
                             </ul>`
@@ -102,7 +102,7 @@
                     case 3:
                         tag = '<code class="default">Отложена</code>'
                         menu = `<ul class="d-menu" data-role="dropdown" style="display: none;">
-                            <li><a href="#" onclick="`+ urlm + `&Event=1\',\'mif-pencil'\,'Открытие',true')">Открыта</a></li>
+                            <li><a href="#" onclick="`+ urlm + `&Event=1\',\'mif-pencil'\,'Открытие',true')">О1ткрыта</a></li>
                             <li><a href="#" onclick="`+ urlm + `&Event=2\',\'mif-pencil\','Закрытие',true)">Закрыта</a></li>
                             <li><a href="#" onclick="`+ urlm + `&Event=5\',\'mif-pencil\','Выполнение',true)">Выполнена</a></li>
                             </ul>`
@@ -132,7 +132,7 @@
                 }
                 detail = ' <li><a href=@Url.Action("Details", "Tickets")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Просмотреть"><span class="mif-zoom-in icon"></span>&nbsp;Просмотреть</a></li>';
                 @if (User.IsInRole("Администратор") || User.IsInRole("Менеджер")) {
-                    @: del = '<li><a href="#" title="Удалить" onclick="openCustomDialog(\'@Url.Action("Delete", "Tickets")/' + full.id + '\',\'mif-bin\')"><span class="mif-bin icon"></span>Удалить</a></li>';
+                    @: del = '<li><a href="#" title="Удалить" onclick="openCustomDialog(\'@Url.Action("Delete", "Tickets")/' + full.id + '\',\'Удалить\',end)"><span class="mif-bin icon"></span>Удалить</a></li>';
                 }
                 else {
                     @: del = "";

@@ -94,6 +94,7 @@ namespace SupportCore
             services.Configure<AppSetting>(Configuration.GetSection("AppSetting"));
             services.Configure<EmailConfig>(Configuration);
             services.AddTransient<IEmailService, EmailService>();
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -111,6 +112,10 @@ namespace SupportCore
 
             app.UseStaticFiles();
             app.UseAuthentication();
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<SignalrHub>("/hub");
+            });
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

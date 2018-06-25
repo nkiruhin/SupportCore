@@ -11,7 +11,17 @@
 //    // }
 
 //});
-
+var signalRStart = function () {
+    console.log("signalr client start")
+    const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/hub")
+    .build();
+    connection.on("ReceiveMessage", (user,date, message) => {
+    //console.log("Принято сообщение:" + message + "от "+user+"в "+date)
+        Metro.notify.create(message, 'Оповещение от ' + user + ' ' + date, { cls: "info", width: 300 });
+    });
+    connection.start().catch(err => console.error(err.toString()));
+}
 function TableReady(url, columns) {
     var Table = $('.dataTable').DataTable({
         "searching": true,
@@ -211,23 +221,29 @@ function ticketCreate(url) {
         if (!$('#TicketCreate').valid()) return false;
         var formData = new FormData(form);
         document.getElementById("tCreateSubmit").disabled = 'disabled';
-        var preloader = document.getElementById("createPreloader")
-        preloader.style.display = "block";
+        var preloader = document.getElementById('createPreloader');
+        preloader.style.display = 'block';
         var xhr = new XMLHttpRequest();  
         xhr.open("POST", url, true);
         xhr.onreadystatechange = function () {
             if (this.readyState === 4 && this.status === 200) {
-                if (this.status === 200) { $('#cell-content').html(this.responseText) }
-                else { onError('Ошибка сохранения') };
+                if (this.status === 200) {
+                    $('#cell-content').html(this.responseText);
+                    getCounters();
+                }
+                else {
+                    onError('Ошибка сохранения')
+                    document.getElementById("tCreateSubmit").disabled = 'enabled';
+                    preloader.style.display = 'none';
+                };
             } else if (this.readyState === 4) {
-                 onError('Ошибка сохранения:' + this.status) ;
+                onError('Ошибка сохранения:' + this.status);
+                document.getElementById("tCreateSubmit").disabled = 'enabled';
+                preloader.style.display = 'none';
             }
         };
         xhr.send(formData);
         ev.preventDefault();
-        preloader.style.display = "none";
-        document.getElementById("tCreateSubmit").disabled = 'enabled';
-        getCounters();
         return false;
     });
 }
@@ -240,8 +256,8 @@ function ticketSave(url) {
     preloader.style.display = "block";
     xhr.open("POST", url, true);
     xhr.onreadystatechange = function () {
-        if (this.readyState == 4) {
-            if (this.status == 200) { $('#cell-content').html(this.responseText) }
+        if (this.readyState === 4) {
+            if (this.status === 200) { $('#cell-content').html(this.responseText) }
             else { onError('Ошибка сохранения') };
         }
     };
@@ -334,11 +350,10 @@ var OnSuccessChartforStaff = function (response) {
     new Chartist.Bar('#catChart', data, options, responsiveOptions);
 };
 $(document).ajaxError(function (e, xhr) {
-    if (xhr.status == 401)
+    if (xhr.status === 401)
         window.location = "/Account/Login";
-    else if (xhr.status == 403)
+    else if (xhr.status === 403)
         alert("You have no enough permissions to request this resource.");
 });
-
 
 
