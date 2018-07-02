@@ -5,14 +5,13 @@
     "jquery": "3.3.1",
     "jquery-validation": "1.17.0",
     "jquery-validation-unobtrusive": "v3.2.10",
-    "metro": "v4.2.8",
-    "datatables": "1.10.18",
+    "metro": "v4.2.10",
+    "datatables": "1.10.19",
     "jquery-ajax-unobtrusive": "v3.2.5",
     "select2": "4.0.6-rc.1",
     "trumbowyg": "v2.10.0",
     "sip.js": "0.10.0",
-    "chartist": "v0.11.0",
-    "signalr": "v2.2.3"
+    "chartist": "v0.11.0"
   },
   "resolutions": {
     "jquery": "3.3.1",
@@ -21,8 +20,8 @@
     "jquery-ajax-unobtrusive": "v3.2.5",
     "jquery-validation-unobtrusive": "v3.2.10",
     "trumbowyg": "v2.10.0",
-    "metro": "v4.2.8",
+    "metro": "v4.2.10",
     "sip.js": "0.11.0",
-    "datatables": "1.10.18"
+    "datatables": "1.10.19"
   }
 }

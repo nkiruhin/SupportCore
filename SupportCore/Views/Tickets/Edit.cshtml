@@ -53,7 +53,7 @@
                     break;
             }
 
-            <ul class="d-menu" data-role="dropdown">
+            <ul class="d-menu context" data-role="dropdown">
                 @if (Model.StatusId != 1)
                 {
                     <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=1','mif-pencil','Открытие',true)">Открыта</a></li>}

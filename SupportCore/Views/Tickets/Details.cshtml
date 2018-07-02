@@ -82,7 +82,7 @@
                 <div class="cell-md-8">
                     <dl>
                         <dt><label asp-for="Name" class="control-label"></label></dt>
-                        <dd>@Model.Name</dd>
+                        <dd class="ml-0">@Model.Name</dd>
                     </dl>
                     @await Component.InvokeAsync("Form", new { FormId = 0, TicketId = Model.Id, Edit = false })
                 </div>

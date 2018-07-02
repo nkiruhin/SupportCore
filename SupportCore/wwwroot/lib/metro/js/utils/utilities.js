@@ -244,11 +244,7 @@ var Utils = {
     },
 
     inViewport: function(el){
-        if (typeof jQuery === "function" && el instanceof jQuery) {
-            el = el[0];
-        }
-
-        var rect = el.getBoundingClientRect();
+        var rect = this.rect(el);
 
         return (
             rect.top >= 0 &&
@@ -256,6 +252,16 @@ var Utils = {
             rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
             rect.right <= (window.innerWidth || document.documentElement.clientWidth)
         );
+    },
+
+    rect: function(el){
+        if (typeof jQuery === "function" && el instanceof jQuery) {
+            el = el[0];
+        }
+
+        var rect = el.getBoundingClientRect();
+
+        return rect;
     },
 
     objectLength: function(obj){
@@ -692,6 +698,14 @@ var Utils = {
 
     parseMoney: function(val){
         return Number(parseFloat(val.replace(/[^0-9-.]/g, '')));
+    },
+
+    isVisible: function(el){
+        if (this.isJQueryObject(el)) {
+            el = el[0];
+        }
+
+        return this.getStyleOne(el, "display") !== "none" && this.getStyleOne(el, "visibility") !== "hidden" && el.offsetParent !== null;
     }
 };
 

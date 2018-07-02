@@ -1,38 +1,33 @@
 ﻿@model List<SupportCore.Models.Field>
-    @{int i = 1;}
+    @*@{int i = 1;}
     @{int cells = Model.Count / 2;
-        if (Model.Count % 2 != 0) { cells = cells + 1; } }
-    
-        <div class="grid">
-            <div class="row">
-                <div class="cell">
-                    <dl class="horizontal">
-                        @for (int item = 0; item < @Model.Count; item++)
-                        {
-                            string Value = "";
-                            if (Model[item].FormEntryValue?.FirstOrDefault() != null) { Value = @Model[item].FormEntryValue.FirstOrDefault().Value; };
-                            switch (Model[item].Type)
-                            {
-                                case "html":
-                                    <dt style="float:none;text-align:left"><label>@Model[item].Name</label></dt>
-                                    <dd style="margin-left:0rem">@Html.Raw(Value)</dd>
-                                    @Html.Raw(ViewBag.Files)
-                                @:</dl></div></div><div class="row"><div class="cell"><dl class="horizontal"> 
-                cells = Model.Count-1 / 2;
+        if (Model.Count % 2 != 0) { cells = cells + 1; } }*@
+<div class="row">
+    @for (int item = 0; item < @Model.Count; item++)
+    {
+        string Value = "";
+        if (Model[item].FormEntryValue?.FirstOrDefault() != null) { Value = @Model[item].FormEntryValue.FirstOrDefault().Value; };
+        switch (Model[item].Type)
+        {
+            case "html":
+                <div class="cell-12">
+                    <dl>
+                        <dt><label>@Model[item].Name</label></dt>
+                        <dd class="ml-0">@Html.Raw(Value)</dd>
+                        @Html.Raw(ViewBag.Files)
+                    </dl>
+                </div>
                 break;
             default:
-            <dt><label>@Model[item].Name</label></dt>
-            <dd>@Value</dd>
-            break;
-            }
-            @if (i == cells)
-            {
-            @:</dl></div><div class="cell"><dl class="horizontal">
-            }
-            i++;
-        }
-                </dl></div>
-                </div>
-      </div>
+                <div class="cell-6">
+                    <dl class="horizontal">
+                        <dt><label>@Model[item].Name</label></dt>
+                        <dd>@Value</dd>
+                        </dl>
+                    </div>
+             break;
+         }
+}
+</div>
 
 

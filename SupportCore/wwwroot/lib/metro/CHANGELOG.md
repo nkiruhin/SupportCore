@@ -1,3 +1,18 @@
+### 4.2.10
++ [x] Hint: fix hiding slider hint with `data-hint-always=true` when showing others hits issue #1126
++ [x] Streamer: change streamer data with attribute `data-data`
++ [x] Date picker: fix sliders position when picker placed top or bottom of parent issue #1107
++ [x] Floating action button: new component 
++ [x] Toast: add classes `.primary`, `.secondary`, `.success`, `.alert`, `.warning`, `.yellow`, `.info`, `.light` 
+
+### 4.2.9
++ [x] Calendar: fix day item height for issue #1112
++ [x] Select: fix method `val` for issue #1116
++ [x] App bar: fix drop down for issue #1114
++ [x] Slider: fix marker position for non displayed slider fro issue #1119
++ [x] Time(date) picker: add classes `.for-top`, `.for-bottom`. Use with attribute `data-cls-picker`
++ [x] Time(date) picker: add action button border
+
 ### 4.2.8
 + [x] Sorter: new component
 + [x] Table: new component

@@ -71,7 +71,7 @@
                     {
                         <div style="position: relative">
                             <a href="" class="dropdown-toggle"> <code class="alert">Открыта</code></a>
-                            <ul class="d-menu" data-role="dropdown" style="display: none;">
+                            <ul class="d-menu context" data-role="dropdown" style="display: none;">
                                 <li><a href="#" onclick="openCustomWin('/Tasks/Close/@item.Id','mif-lock','Закрытие',true)">Закрыть</a></li>
                             </ul>
                         </div>
@@ -108,7 +108,7 @@
                 <td width="7%">
                     <div class="dropdown-button">
                         <button class="button secondary outline small dropdown-toggle">Действия</button>
-                        <ul class="d-menu" data-role="dropdown">
+                        <ul class="d-menu context" data-role="dropdown">
                             @if (item.Status == 0)
                             {
                             <li><a href="#" onclick="openCustomWin('/Tasks/Edit/@item.Id','mif-event-available','Задачи..',true)">Изменить</a></li>
