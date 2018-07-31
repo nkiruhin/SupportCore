@@ -5,7 +5,7 @@
     "jquery": "3.3.1",
     "jquery-validation": "1.17.0",
     "jquery-validation-unobtrusive": "v3.2.10",
-    "metro": "v4.2.10",
+    "metro": "v4.2.15",
     "datatables": "1.10.19",
     "jquery-ajax-unobtrusive": "v3.2.5",
     "select2": "4.0.6-rc.1",
@@ -20,7 +20,7 @@
     "jquery-ajax-unobtrusive": "v3.2.5",
     "jquery-validation-unobtrusive": "v3.2.10",
     "trumbowyg": "v2.10.0",
-    "metro": "v4.2.10",
+    "metro": "v4.2.15",
     "sip.js": "0.11.0",
     "datatables": "1.10.19"
   }

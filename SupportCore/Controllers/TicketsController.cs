@@ -262,7 +262,8 @@ namespace SupportCore.Controllers
             var Staff = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User));
             var Person = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == ticket.PersonId);
             ticket.FormEntryValue = new List<FormEntryValue>();
-            for(var i = startFormEntry; i < par.Count - 1;i++) {
+            for (var i = startFormEntry; i < par.Count - 1; i++)
+            {
                 ticket.FormEntryValue.Add(new FormEntryValue
                 {
                     FieldId = Int16.Parse(par[i].Key),
@@ -288,28 +289,31 @@ namespace SupportCore.Controllers
             };
             try
             {
-                if (Files.Count > 0) {
-                    ticket.Files=await UploadFilesAsync(Files);
+                if (Files.Count > 0)
+                {
+                    ticket.Files = await UploadFilesAsync(Files);
+                }
+                _context.Add(ticket);
+                await _context.SaveChangesAsync();
+                if (isInform)
+                {
+                    string message = $"По вашему обращению открыта заявка #{ticket.Id}. Благодарим за обращение";
+                    var template = await _context.Templates.FirstOrDefaultAsync(t => t.EventType == 1 && t.IsDefault == true);
+                    if (template != null)
+                    {
+                        message = await new Templates(_context).GetTemplate(template, ticket);
                     }
-                    _context.Add(ticket);
-                    await _context.SaveChangesAsync();
-                    if (isInform) {
-                        string message = $"По вашему обращению открыта заявка #{ticket.Id}. Благодарим за обращение";
-                        var template = await _context.Templates.FirstOrDefaultAsync(t => t.EventType == 1 && t.IsDefault == true);
-                        if (template != null) { 
-                            message = await new Templates(_context).GetTemplate(template, ticket);
-                        } 
-                        await _emailService.SendEmailAsync(Person.Email, $"Создана заявка #{ticket.Id}",message);
-                    }
+                    await _emailService.SendEmailAsync(Person.Email, $"Создана заявка #{ticket.Id}", message);
+                }
                 string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
                 TicketThread ticketThread = ticket.TicketThreads.FirstOrDefault();
                 await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString(), $"Заявка #{ticketThread.TicketId}: {ticketThread.Title}");
-                return RedirectToAction(nameof(Edit),new { id=ticket.Id });
+                return RedirectToAction(nameof(Edit), new { id = ticket.Id });
             }
             catch (DbUpdateException ex)
             {
                 //Log the error (uncomment ex variable name and write a log.
-                ModelState.AddModelError(string.Empty, "Ошибка при сохранении:"+ ex.Message);
+                ModelState.AddModelError(string.Empty, "Ошибка при сохранении:" + ex.Message);
             }
             ViewBag.StaffName = Staff.Name;
             ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name");

@@ -706,6 +706,16 @@ var Utils = {
         }
 
         return this.getStyleOne(el, "display") !== "none" && this.getStyleOne(el, "visibility") !== "hidden" && el.offsetParent !== null;
+    },
+
+    parseNumber: function(val, thousand, decimal){
+        return val.replace(new RegExp('\\'+thousand, "g"), "").replace(new RegExp('\\'+decimal, 'g'), ".");
+    },
+
+    nearest: function(val, precision, down){
+        val /= precision;
+        val = Math[down === true ? 'floor' : 'ceil'](val) * precision;
+        return val;
     }
 };
 

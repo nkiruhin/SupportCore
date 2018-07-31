@@ -1,3 +1,58 @@
+### 4.2.15
++ [x] Switch: fix works with collapse. issue #1148 
++ [x] Input, Select, Textarea, File: add `data-append` attribute 
++ [x] TreeView: fix node toggle marker position
++ [x] TreeView: fix checks nodes for tree options when inputs checked by default
++ [x] String: add extension `toDate(mask)`
++ [x] Media players: fix info box position
++ [x] Utils: add function `nearest(val, prec, down)` for search for the nearest integer, a multiple of required
++ [x] Select: fix trigger error for empty value. issue #1138 
++ [x] Time picker: add `steps` attributes `data-hours-step`, `data-minutes-step`, `data-seconds-step`. issue #1122  
++ [x] Time picker: fix sliders position when picker placed top or bottom of parent
++ [x] Input file: fix only shows the first file name for multiple option. issue #1140
++ [x] Calendar picker: add observing attributes `data-min-date`, `data-max-date`
++ [x] Input: remove webkit default clear button for `type=time`
++ [x] Table: fix create internal heads when header defining in html and data loaded from json 
++ [x] Table: add attribute `data-filter-min-length` for number of symbols inputs and start searching
++ [x] Table: add column rownum. This column shows when attribute `data-rownum="true"`
++ [x] Table: add column row check. This column shows when attribute `data-check="true"`
++ [x] Table: add column row radio. This column shows when attribute `data-check-type="radio"`
++ [x] Table: add attribute `data-check-store-key="..."` used for store selected rows in the storage
++ [x] Table: add attribute `data-view-save-mode="client|server"` used for store table view
++ [x] Table: add attribute `data-view-save-path="storage_key|url"` used for store table view
++ [x] Table: add `data-locale` attribute
++ [x] Table: add table inspector to configure columns view
++ [x] Table: add methods `openInspector(true|false)`, `toggleInspector()` to show/hide table inspector
++ [x] Table: add methods `getFilteredItems()`, `getSelectedItems()`, `getStoredKeys()`
++ [x] Table: add events `onDrawCell`, `onAppendCell`, `onAppendRow`, `onViewSave`, `onViewGet`, `onCheckDraw`
+
+### 4.2.14
++ [x] Table: fix pagination calculator when rows count changed
++ [x] Table: pagination not displayed when rows count is `-1` (show all rows)
++ [x] Table: rename attribute `data-show-all-pages` to `data-pagination-short-mode`
+
+### 4.2.13
++ [x] Windows: fix execute method onCloseClick
++ [x] Table: add classes `compact-{media}` and `normal-{media}` where `{media}` is one of `sm`, `md`, `lg`, `xl`, `xxl`
+
+### 4.2.12
++ [x] Sidebar: remove text decoration underline for menu item
++ [x] Sidebar: add menu item hover
++ [x] Tiles: fix `col-*` and `row-*` classes for tiles grid issue #1133
++ [x] Table: add all rows behavior with `-1` value for `data-rows` and `data-rows-steps`
++ [x] Table: add `data-all-records-title` attribute
++ [x] Sidenav-m3: fix icon position when dropdown issue #1134
++ [x] Table: fix init sortable column
++ [x] Table: remove generating ghost `tr` 
+
+### 4.2.11
++ [x] Table: add setup for the number formatting. Add attributes `data-thousand-separator`, `data-decimal-separator` issue #1129
++ [x] Sorter: add setup for the number formatting. Add attributes `data-thousand-separator`, `data-decimal-separator` issue #1129
++ [x] List: add setup for the number formatting. Add attributes `data-thousand-separator`, `data-decimal-separator` issue #1129
++ [x] Table: fix for the `colspan` option issue #1129
++ [x] Table: fix behavior of attribute `data-cls-column`
++ [x] Tabs: fix error if tag `a` in tab have a `valid formed url` in href attribute
+
 ### 4.2.10
 + [x] Hint: fix hiding slider hint with `data-hint-always=true` when showing others hits issue #1126
 + [x] Streamer: change streamer data with attribute `data-data`
