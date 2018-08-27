@@ -1,3 +1,66 @@
+### 4.2.19
++ [x] Change contributing rules 
++ [x] Tabs: add method `open(tab_num | tab_el)`. Tab number counting from 1. Tab element - `li` HTML element or `$("li")` jquery wrapper
++ [x] Tabs: add methods `next()`, `prev()`
++ [x] Popover: add attribute `data-popover-timeout`. Timeout before popover show.
++ [x] Sidebar: add method `isOpen` to object `Metro.sidebar`
++ [x] Table: fix method `loadData` for string value from server
++ [x] Table: fix minor bugs
++ [x] Select: for multiple add attributes `data-cls-selected-item`, `data-cls-selected-item-remover`
++ [x] TagInput: add attribute `data-tag-trigger`. The attribute must contain integer values for `keyCode` for triggering tag creating event. Default: "13,188" - Enter and comma.
++ [x] ListView: fix `checkbox` position for `selectable` mode
++ [x] ListView: add attribute `data-check-style`. Value must be `1` or `2`
++ [x] ListView: add methods `getSelected()`, `selectAll()` or `selectAll(false)` (for clear), `clearSelected()`
++ [x] Checkbox: add observing checkbox style attribute
++ [x] Radio: add observing checkbox style attribute
++ [x] Validator: add function `notequals`. Input value can't be equal to other input
++ [x] Validator: add function `equals`. Input value can be equal to other input. Different from `compare` - it use `trim()` for value
++ [x] Sizing: fix width classes `w-` for all media breakpoints
+
+### 4.2.18
++ [x] Table: fix work attributes `showTableInfo`, `showPagination` when wrappers defined
++ [x] Table: fix pagination behavior when no items for table
++ [x] Table: add observing attributes `data-check` and `data-rownnum`
++ [x] Tabs: fix tab click behavior when `<a>` have a link in `href` attribute 
++ [x] Calendar: add method `clearSelected()`
++ [x] Calendar: add method `toDay()`
++ [x] Table: add exception when data for table is not a object
++ [x] Table: add class `fixed-layout`
++ [x] Table: add `data-filter-threshold` attribute, this is a timeout before searching start
++ [x] Select: add attribute `data-template` for `option`. You can use this attribute to define html wrapper for option text in format `...any...$1`. Where `$1` used for replace by option text.
++ [x] Select: add attribute `data-cls-drop-list` to add additional class to drop down list.   
++ [x] Select: add attribute `data-append` and minor css fixes
++ [x] Select: add multiple functionality
++ [x] Inputs: refactor inputs.less to specific files `select.less`, `input.less`, `textarea.less`, `input-file.less`
++ [x] Radio: add additional style for radio component. To use it, add attribute `data-style="2"` to your radio component.
++ [x] Checkbox: add additional style for checkbox component. To use it, add attribute `data-style="2"` to your checkbox component.
++ [x] Tag input: add new component
+
+### 4.2.17
++ [x] Tabs: change behavior and attribute. For details, read the docs
++ [x] Table: add second parameter `review` to methods `reload` and `loadData`. If `true`, table view will be recreated from init values.
++ [x] Table: add head parameter `show`
++ [x] Input: add attribute `data-default-value="..."` for set default if val is empty and set to this when click clear button
++ [x] Table: add class `.subcompact` to pair to `.compact`
++ [x] Table: add attribute `data-cell-wrapper`. This class add wrapper to cell data with `no wrap` and `no overflow` props.
++ [x] Sidebar: add classes `.compact` and `.subcompact`
+
+### 4.2.16
++ [x] Export: add object `Metro.export`. Now you can export any HTML `tables` to `CSV` with method `Metro.export.tableToCSV(table, filename)`
++ [x] Utils: add function `copy(el)` for copying element to clipboard
++ [x] Utils: add function `bool(val)`. This func return true if value one of: `true`, `'true'`, `1`, `'1'`, `'on'`, `'yes'`
++ [x] Table: fix show cell if stored value `show` for view have string type `'true'` or `'false'` 
++ [x] Table: add second parameter `heads` for custom filter function
++ [x] Table: change padding and font-size for `compact` class
++ [x] Table: fix post method for save table view. Inspector post `{id: table_id, view: table_view}` 
++ [x] Table: add method `export(to, mode, filename, export_options)`. Argument `to` currently must value `CSV`. Argument mode: `all`, `checked`, `view`, `all-filtered`
++ [x] Table: add method `resetView(save)` reset table view to default
++ [x] Table: add method `getView()` return current view object
++ [x] Table: add method `getHeads()` return table internal heads
++ [x] Table: add method `clearSelected(redraw)`. This method uncheck rows and redraw table if your need
++ [x] Dialog: add attributes `data-to-top='true|false'`, `data-to-bottom='true|false'` for sticky dialog to top or bottom side.
++ [x] List: fix for issue ##1155 for IE11
+
 ### 4.2.15
 + [x] Switch: fix works with collapse. issue #1148 
 + [x] Input, Select, Textarea, File: add `data-append` attribute 

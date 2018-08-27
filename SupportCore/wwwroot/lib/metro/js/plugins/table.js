@@ -19,6 +19,7 @@ var Table = {
         this.component = null;
         this.inspector = null;
         this.view = {};
+        this.viewDefault = {};
         this.locale = Metro.locales["en-US"];
 
         this.sort = {
@@ -54,6 +55,7 @@ var Table = {
         source: null,
 
         filterMinLength: 1,
+        filterThreshold: 500,
 
         showRowsSteps: true,
         showSearch: true,
@@ -90,6 +92,8 @@ var Table = {
         rowsWrapper: null,
         infoWrapper: null,
         paginationWrapper: null,
+
+        cellWrapper: true,
 
         clsComponent: "",
         clsTable: "",
@@ -135,6 +139,7 @@ var Table = {
         onCheckDraw: Metro.noop,
         onViewSave: Metro.noop,
         onViewGet: Metro.noop,
+        onViewCreated: Metro.noop,
         onTableCreate: Metro.noop
     },
 
@@ -168,6 +173,9 @@ var Table = {
             Utils.exec(o.onDataLoad, [o.source], element[0]);
 
             $.get(o.source, function(data){
+                if (typeof data !== "object") {
+                    throw new Error("Data for table is not a object");
+                }
                 that._build(data);
                 Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
             }).fail(function( jqXHR, textStatus, errorThrown) {
@@ -179,8 +187,7 @@ var Table = {
     },
 
     _build: function(data){
-        var that = this, element = this.element;
-        var o = this.options;
+        var that = this, element = this.element, o = this.options;
         var view, id = element.attr("id");
 
         o.rows = parseInt(o.rows);
@@ -195,14 +202,8 @@ var Table = {
             this._createItemsFromHTML()
         }
 
-        $.each(this.heads, function(i){
-            that.view[i] = {
-                "index": i,
-                "index-view": i,
-                "show": !Utils.isValue(this.cls) || (Utils.isValue(this.cls) && !this.cls.contains("hidden")),
-                "size": Utils.isValue(this.size) ? this.size : "auto"
-            }
-        });
+        this.view = this._createView();
+        this.viewDefault = Utils.objectClone(this.view);
 
         if (o.viewSaveMode.toLowerCase() === "client") {
             view = Metro.storage.getItem(o.viewSavePath.replace("$1", id));
@@ -224,7 +225,10 @@ var Table = {
                     }
                     that._final();
                 }
-            );
+            ).fail(function(jqXHR, textStatus) {
+                that._final();
+                console.log("Warning! View " + textStatus + " for table " + element.attr('id') + " ");
+            });
         }
     },
 
@@ -246,6 +250,8 @@ var Table = {
         var o = this.options;
         var item_check, item_rownum;
         var service = [];
+
+        this.service = {};
 
         item_rownum = {
             title: "#",
@@ -277,19 +283,34 @@ var Table = {
         this.service = service;
     },
 
-    _createInspector: function(){
-        var that = this, o = this.options;
-        var component = this.component;
-        var inspector, table = $("<table>").addClass("table compact"), row, actions, tds = [], cells, j;
+    _createView: function(){
+        var view, o = this.options;
 
-        inspector = $("<div data-role='draggable' data-drag-element='h3' data-drag-area='body'>").addClass("table-inspector");
+        view = {};
 
-        $("<h3 class='text-light'>"+o.inspectorTitle+"</h3>").appendTo(inspector);
-        $("<hr class='thin bg-lightGray'>").appendTo(inspector);
+        $.each(this.heads, function(i){
 
-        table.appendTo(inspector);
+            if (Utils.isValue(this.cls)) {this.cls = this.cls.replace("hidden", "");}
+            if (Utils.isValue(this.clsColumn)) {this.clsColumn = this.clsColumn.replace("hidden", "");}
 
-        cells = this.heads;
+            view[i] = {
+                "index": i,
+                "index-view": i,
+                "show": !Utils.isValue(this.show) ? true : this.show,
+                "size": Utils.isValue(this.size) ? this.size : ""
+            }
+        });
+
+        Utils.exec(o.onViewCreated, [view], view);
+        return view;
+    },
+
+    _createInspectorItems: function(table){
+        var that = this;
+        var j, tds = [], row;
+        var cells = this.heads;
+
+        table.html("");
 
         for (j = 0; j < cells.length; j++){
             tds[j] = null;
@@ -299,7 +320,7 @@ var Table = {
             row = $("<tr>");
             row.data('index', i);
             row.data('index-view', i);
-            $("<td>").html("<input type='checkbox' data-role='checkbox' name='column_show_check[]' value='"+i+"' "+(that.view[i]['show'] ? "checked" : "")+">").appendTo(row);
+            $("<td>").html("<input type='checkbox' data-role='checkbox' name='column_show_check[]' value='"+i+"' "+(Utils.bool(that.view[i]['show']) ? "checked" : "")+">").appendTo(row);
             $("<td>").html(this.title).appendTo(row);
             $("<td>").html("<input type='number' name='column_size' value='"+that.view[i]['size']+"' data-index='"+i+"'>").appendTo(row);
             $("<td>").html("" +
@@ -313,15 +334,43 @@ var Table = {
         for (j = 0; j < cells.length; j++){
             tds[j].appendTo(table);
         }
+    },
+
+    _createInspector: function(){
+        var o = this.options;
+        var component = this.component;
+        var inspector, table, tbody, actions;
+
+        inspector = $("<div data-role='draggable' data-drag-element='h3' data-drag-area='body'>").addClass("table-inspector");
+
+        $("<h3 class='text-light'>"+o.inspectorTitle+"</h3>").appendTo(inspector);
+        $("<hr class='thin bg-lightGray'>").appendTo(inspector);
+
+        table = $("<table>").addClass("table subcompact");
+        tbody = $("<tbody>").appendTo(table);
+
+        table.appendTo(inspector);
+
+        this._createInspectorItems(tbody);
 
         $("<hr class='thin bg-lightGray'>").appendTo(inspector);
         actions = $("<div class='inspector-actions'>").appendTo(inspector);
         $("<button class='button primary js-table-inspector-save' type='button'>").html(this.locale.buttons.save).appendTo(actions);
+        $("<button class='button secondary js-table-inspector-reset ml-2 mr-2' type='button'>").html(this.locale.buttons.reset).appendTo(actions);
         $("<button class='button link js-table-inspector-cancel place-right' type='button'>").html(this.locale.buttons.cancel).appendTo(actions);
 
         this.inspector = inspector;
 
         component.append(inspector);
+
+        this._createInspectorEvents();
+    },
+
+    _resetInspector: function(){
+        var inspector = this.inspector;
+        var table = inspector.find("table tbody");
+        this._createInspectorItems(table);
+        this._createInspectorEvents();
     },
 
     _createHeadsFormHTML: function(){
@@ -400,6 +449,10 @@ var Table = {
     _createItemsFromJSON: function(source){
         var that = this;
 
+        if (typeof source === "string") {
+            source = JSON.parse(source);
+        }
+
         if (source.header !== undefined) {
             that.heads = source.header;
         } else {
@@ -426,9 +479,10 @@ var Table = {
     },
 
     _createTableHeader: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
         var head = $("<thead>").html('');
         var tr, th, tds = [], j, cells;
+        var view = this.view;
 
         element.find("thead").remove();
 
@@ -441,28 +495,15 @@ var Table = {
         tr = $("<tr>").addClass(o.clsHeadRow).appendTo(head);
 
         $.each(this.service, function(){
-            var item = this;
+            var item = this, classes = [];
             th = $("<th>").appendTo(tr);
-            if (item.title !== undefined) {
-                th.html(item.title);
-            }
-            if (item.size !== undefined) {
-                th.css({
-                    width: item.size
-                })
-            }
-            if (item.cls !== undefined) {
-                th.addClass(item.cls);
-            }
-
-            th.addClass(o.clsHeadCell);
-
-            if (item.type === 'rowcheck') {
-                th.addClass("check-cell");
-            }
-            if (item.type === 'rownum') {
-                th.addClass("rownum-cell");
-            }
+            if (Utils.isValue(item.title)) {th.html(item.title);}
+            if (Utils.isValue(item.size)) {th.css({width: item.size});}
+            if (Utils.isValue(item.cls)) {classes.push(item.cls);}
+            if (item.type === 'rowcheck') {classes.push("check-cell");}
+            if (item.type === 'rownum') {classes.push("rownum-cell");}
+            classes.push(o.clsHeadCell);
+            th.addClass(classes.join(" "));
         });
 
         cells = this.heads;
@@ -478,28 +519,11 @@ var Table = {
             th = $("<th>");
             th.data("index", cell_index);
 
-            if (Utils.isValue(item.title)) {
-                th.html(item.title);
-            }
-
-            if (Utils.isValue(item.format)) {
-                th.attr("data-format", item.format);
-            }
-
-            if (Utils.isValue(item.name)) {
-                th.attr("data-name", item.name);
-            }
-
-            if (Utils.isValue(item.colspan)) {
-                th.attr("colspan", item.colspan);
-            }
-
-            if (Utils.isValue(that.view[cell_index]['size'])) {
-                th.css({
-                    width: that.view[cell_index]['size']
-                })
-            }
-
+            if (Utils.isValue(item.title)) {th.html(item.title);}
+            if (Utils.isValue(item.format)) {th.attr("data-format", item.format);}
+            if (Utils.isValue(item.name)) {th.attr("data-name", item.name);}
+            if (Utils.isValue(item.colspan)) {th.attr("colspan", item.colspan);}
+            if (Utils.isValue(view[cell_index]['size'])) {th.css({width: view[cell_index]['size']});}
             if (item.sortable === true) {
                 classes.push("sortable-column");
 
@@ -507,28 +531,23 @@ var Table = {
                     classes.push("sort-" + item.sortDir);
                 }
             }
-
-            if (Utils.isValue(item.cls)) {
-                classes.push(item.cls);
-            }
-
-            classes.push(o.clsHeadCell);
-
-            if (that.view[cell_index]['show'] === false) {
+            if (Utils.isValue(item.cls)) {classes.push(item.cls);}
+            if (Utils.bool(view[cell_index]['show']) === false) {
                 classes.push("hidden");
             }
 
-            if (item.type === 'rowcheck') {
-                classes.push("check-cell");
-            }
-            if (item.type === 'rownum') {
-                classes.push("rownum-cell");
+            if (item.type === 'rowcheck') {classes.push("check-cell");}
+            if (item.type === 'rownum') {classes.push("rownum-cell");}
+
+            classes.push(o.clsHeadCell);
+
+            if (Utils.bool(view[cell_index]['show'])) {
+                Utils.arrayDelete(classes, "hidden");
             }
 
             th.addClass(classes.join(" "));
 
-            tds[that.view[cell_index]['index-view']] = th;
-
+            tds[view[cell_index]['index-view']] = th;
         });
 
         for (j = 0; j < cells.length; j++){
@@ -539,18 +558,16 @@ var Table = {
     },
 
     _createTableBody: function(){
-        var element = this.element;
-        var body, head = element.find("thead");
+        var body, head, element = this.element;
 
+        head  = element.find("thead");
         element.find("tbody").remove();
-
         body = $("<tbody>").addClass(this.options.clsBody);
         body.insertAfter(head);
     },
 
     _createTableFooter: function(){
-        var element = this.element;
-        var o = this.options;
+        var element = this.element, o = this.options;
         var foot = $("<tfoot>").addClass(o.clsFooter);
         var tr, th;
 
@@ -641,12 +658,12 @@ var Table = {
         var bottom_block = $("<div>").addClass("table-bottom").addClass(o.clsTableBottom).insertAfter(element);
         var info, pagination;
 
-        info = $("<div>").addClass("table-info").addClass(o.clsTableInfo).appendTo(bottom_block);
+        info = Utils.isValue(this.wrapperInfo) ? this.wrapperInfo : $("<div>").addClass("table-info").addClass(o.clsTableInfo).appendTo(bottom_block);
         if (o.showTableInfo !== true) {
             info.hide();
         }
 
-        pagination = $("<div>").addClass("table-pagination").addClass(o.clsTablePagination).appendTo(bottom_block);
+        pagination = Utils.isValue(this.wrapperPagination) ? this.wrapperPagination : $("<div>").addClass("table-pagination").addClass(o.clsTablePagination).appendTo(bottom_block);
         if (o.showPagination !== true) {
             pagination.hide();
         }
@@ -745,7 +762,6 @@ var Table = {
         var component = element.parent();
         var search = component.find(".table-search-block input");
         var customSearch;
-        var inspector = this.inspector;
         var id = element.attr("id");
 
         element.on(Metro.events.click, ".sortable-column", function(){
@@ -831,13 +847,20 @@ var Table = {
             Utils.exec(o.onCheckClickAll, [status], this);
         });
 
-        var _search = function(){
+        var input_interval;
+
+        var _search = function(e){
             that.filterString = this.value.trim().toLowerCase();
+
             if (that.filterString[that.filterString.length - 1] === ":") {
                 return ;
             }
-            that.currentPage = 1;
-            that._draw();
+
+            clearInterval(input_interval);
+            setTimeout(function(){
+                that.currentPage = 1;
+                that._draw();
+            }, o.filterThreshold);
         };
 
         search.on(Metro.events.inputchange, _search);
@@ -852,6 +875,9 @@ var Table = {
         function pageLinkClick(l){
             var link = $(l);
             var item = link.parent();
+            if (that.filteredItems.length === 0) {
+                return ;
+            }
 
             if (item.hasClass("active")) {
                 return ;
@@ -886,7 +912,15 @@ var Table = {
             });
         }
 
+        this._createInspectorEvents();
+    },
+
+    _createInspectorEvents: function(){
+        var that = this, inspector = this.inspector;
         // Inspector event
+
+        this._removeInspectorEvents();
+
         inspector.on(Metro.events.click, ".js-table-inspector-field-up", function(){
             var button = $(this), tr = button.closest("tr");
             var tr_prev = tr.prev("tr");
@@ -896,6 +930,10 @@ var Table = {
                 return ;
             }
             tr.insertBefore(tr_prev);
+            tr.addClass("flash");
+            setTimeout(function(){
+                tr.removeClass("flash");
+            }, 1000);
             index_view = tr.index();
 
             tr.data("index-view", index_view);
@@ -921,6 +959,10 @@ var Table = {
                 return ;
             }
             tr.insertAfter(tr_next);
+            tr.addClass("flash");
+            setTimeout(function(){
+                tr.removeClass("flash");
+            }, 1000);
             index_view = tr.index();
 
             tr.data("index-view", index_view);
@@ -945,14 +987,17 @@ var Table = {
 
             if (status) {
                 $.each(op, function(){
-                    var a = Utils.strToArray(that.heads[index][this]);
+                    var a;
+                    a = Utils.isValue(that.heads[index][this]) ? Utils.strToArray(that.heads[index][this]) : [];
                     Utils.arrayDelete(a, "hidden");
                     that.heads[index][this] = a.join(" ");
                     that.view[index]['show'] = true;
                 });
             } else {
                 $.each(op, function(){
-                    var a = Utils.strToArray(that.heads[index][this]);
+                    var a;
+
+                    a = Utils.isValue(that.heads[index][this]) ? Utils.strToArray(that.heads[index][this]) : [];
                     if (a.indexOf("hidden") === -1) {
                         a.push("hidden");
                     }
@@ -983,23 +1028,40 @@ var Table = {
         inspector.on(Metro.events.click, ".js-table-inspector-cancel", function(){
             that.openInspector(false);
         });
+
+        inspector.on(Metro.events.click, ".js-table-inspector-reset", function(e){
+            that.resetView();
+        });
+    },
+
+    _removeInspectorEvents: function(){
+        var inspector = this.inspector;
+        inspector.off(Metro.events.click, ".js-table-inspector-field-up");
+        inspector.off(Metro.events.click, ".js-table-inspector-field-down");
+        inspector.off(Metro.events.click, "input[type=checkbox]");
+        inspector.off(Metro.events.click, ".js-table-inspector-save");
+        inspector.off(Metro.events.click, ".js-table-inspector-cancel");
+        inspector.off(Metro.events.click, ".js-table-inspector-reset");
+        inspector.find("input[type=number]").off(Metro.events.inputchange);
     },
 
     _saveTableView: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
+        var view = this.view;
         var id = element.attr("id");
 
         if (o.viewSaveMode.toLowerCase() === "client") {
-            Metro.storage.setItem(o.viewSavePath.replace("$1", id), this.view);
-            Utils.exec(o.onViewSave, [o.viewSavePath, that.view], element[0]);
+            Metro.storage.setItem(o.viewSavePath.replace("$1", id), view);
+            Utils.exec(o.onViewSave, [o.viewSavePath, view], element[0]);
         } else {
             $.post(
                 o.viewSavePath,
                 {
-                    id : that.view
+                    id : element.attr("id"),
+                    view : view
                 },
                 function(data, status, xhr){
-                    Utils.exec(o.onViewSave, [o.viewSavePath, that.view, data, status, xhr], element[0]);
+                    Utils.exec(o.onViewSave, [o.viewSavePath, view, data, status, xhr], element[0]);
                 }
             );
         }
@@ -1112,6 +1174,11 @@ var Table = {
         if (this.currentPage === this.pagesCount) {
             next.addClass("disabled");
         }
+
+        if (this.filteredItems.length === 0) {
+            pagination.addClass("disabled");
+            pagination.children().addClass("disabled");
+        }
     },
 
     _filter: function(){
@@ -1133,7 +1200,8 @@ var Table = {
 
                 if (result === true && that.filters.length > 0) {
                     for (i = 0; i < that.filters.length; i++) {
-                        if (Utils.exec(that.filters[i], [row]) !== true) {
+                        if (!Utils.isValue(that.filters[i])) continue;
+                        if (Utils.exec(that.filters[i], [row, that.heads]) !== true) {
                             result = false;
                             break;
                         }
@@ -1167,6 +1235,7 @@ var Table = {
             stop = parseInt(o.rows) === -1 ? this.items.length - 1 : start + o.rows - 1;
         var items;
         var stored_keys = Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr('id')));
+        var view = this.view;
 
         body.html("");
 
@@ -1211,19 +1280,26 @@ var Table = {
                 }
 
                 $.each(cells, function(cell_index){
-                    td = $("<td>").html(this);
+                    if (o.cellWrapper === true) {
+                        td = $("<td>");
+                        $("<div>").addClass("cell-wrapper").html(this).appendTo(td);
+                    } else {
+                        td = $("<td>").html(this);
+                    }
                     td.addClass(o.clsBodyCell);
                     if (Utils.isValue(that.heads[cell_index].clsColumn)) {
                         td.addClass(that.heads[cell_index].clsColumn);
                     }
-                    if (
-                        (Utils.isValue(that.heads[cell_index].cls)
-                        && that.heads[cell_index].cls.contains("hidden"))
-                        || that.view[cell_index].show === false
-                    ) {
+
+                    if (Utils.bool(view[cell_index].show) === false) {
                         td.addClass("hidden");
                     }
-                    tds[that.view[cell_index]['index-view']] = td;
+
+                    if (Utils.bool(view[cell_index].show)) {
+                        td.removeClass("hidden");
+                    }
+
+                    tds[view[cell_index]['index-view']] = td;
                     Utils.exec(o.onDrawCell, [td, this, cell_index, that.heads[cell_index]], td[0]);
                 });
 
@@ -1232,7 +1308,7 @@ var Table = {
                     Utils.exec(o.onAppendCell, [tds[j], tr, j, element], tds[j][0])
                 }
 
-                Utils.exec(o.onDrawRow, [tr, element], tr[0]);
+                Utils.exec(o.onDrawRow, [tr, that.view, that.heads, element], tr[0]);
 
                 tr.appendTo(body);
 
@@ -1243,7 +1319,7 @@ var Table = {
         this._info(start + 1, stop + 1, items.length);
         this._paging(items.length);
 
-        this.activity.hide();
+        if (this.activity) this.activity.hide();
 
         Utils.exec(o.onDraw, [element], element[0]);
 
@@ -1322,24 +1398,20 @@ var Table = {
         this._draw();
     },
 
-    loadData: function(source){
+    loadData: function(source, review){
         var that = this, element = this.element, o = this.options;
+        var need_sort = false;
+        var sortable_columns;
 
-        if (Utils.isValue(source) !== true) {
-            return ;
+        if (!Utils.isValue(review)) {
+            review = true;
         }
 
-        o.source = source;
+        function redraw(){
 
-        Utils.exec(o.onDataLoad, [o.source], element[0]);
-
-        $.get(o.source, function(data){
-            var need_sort = false;
-            var sortable_columns;
-
-            that._createItemsFromJSON(data);
-
-            element.html("");
+            if (review === true) {
+                that.view = that._createView();
+            }
 
             that._createTableHeader();
             that._createTableBody();
@@ -1364,11 +1436,39 @@ var Table = {
             that.currentPage = 1;
 
             that._draw();
+        }
 
-            Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
-        }).fail(function( jqXHR, textStatus, errorThrown) {
-            console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
-        });
+        element.html("");
+
+        if (!Utils.isValue(source)) {
+
+            // this._createItemsFromHTML();
+            redraw();
+
+        } else {
+            o.source = source;
+
+            Utils.exec(o.onDataLoad, [o.source], element[0]);
+
+            $.get(o.source, function(data){
+
+                that.items = [];
+                that.heads = [];
+                that.foots = [];
+
+                that._createItemsFromJSON(data);
+
+                redraw();
+
+                Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
+            }).fail(function( jqXHR, textStatus, errorThrown) {
+                console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
+            });
+        }
+    },
+
+    reload: function(review){
+        this.loadData(this.options.source, review);
     },
 
     next: function(){
@@ -1432,7 +1532,7 @@ var Table = {
     },
 
     removeFilter: function(key, redraw){
-        Utils.arrayDeleteByKey(this.filters, key);
+        this.filters[key] = null;
         if (redraw === true) {
             this.currentPage = 1;
             this.draw();
@@ -1452,16 +1552,29 @@ var Table = {
         return this.items;
     },
 
+    getHeads: function(){
+        return this.heads;
+    },
+
+    getView: function(){
+        return this.view;
+    },
+
     getFilteredItems: function(){
-        return this.filteredItems;
+        return this.filteredItems.length > 0 ? this.filteredItems : this.items;
     },
 
     getSelectedItems: function(){
-        var that = this, element = this.element, o = this.options;
-        var stored_keys = Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr("id")), []);
+        var element = this.element, o = this.options;
+        var stored_keys = Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr("id")));
         var selected = [];
+
+        if (!Utils.isValue(stored_keys)) {
+            return [];
+        }
+
         $.each(this.items, function(){
-            if (stored_keys.indexOf(this[o.checkColIndex]) !== -1) {
+            if (stored_keys.indexOf(""+this[o.checkColIndex]) !== -1) {
                 selected.push(this);
             }
         });
@@ -1471,6 +1584,13 @@ var Table = {
     getStoredKeys: function(){
         var element = this.element, o = this.options;
         return Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr("id")), []);
+    },
+
+    clearSelected: function(redraw){
+        var element = this.element, o = this.options;
+        Metro.storage.setItem(o.checkStoreKey.replace("$1", element.attr("id")), []);
+        element.find("table-service-check-all input").prop("checked", false);
+        if (redraw === true) this._draw();
     },
 
     getFilters: function(){
@@ -1493,8 +1613,123 @@ var Table = {
         this.inspector.toggleClass("open");
     },
 
-    changeAttribute: function(attributeName){
+    resetView: function(){
 
+        this.view = this._createView();
+
+        this._createTableHeader();
+        this._createTableFooter();
+        this._draw();
+
+        this._resetInspector();
+        this._saveTableView();
+    },
+
+    export: function(to, mode, filename, options){
+        var that = this, o = this.options;
+        var table = document.createElement("table");
+        var head = $("<thead>").appendTo(table);
+        var body = $("<tbody>").appendTo(table);
+        var i, j, cells, tds = [], items, tr, td;
+        var start, stop;
+
+        mode = Utils.isValue(mode) ? mode.toLowerCase() : "all-filtered";
+        filename = Utils.isValue(filename) ? filename : Utils.elementId("table")+"-export.csv";
+
+        // Create table header
+        tr = $("<tr>");
+        cells = this.heads;
+
+        for (j = 0; j < cells.length; j++){
+            tds[j] = null;
+        }
+
+        $.each(cells, function(cell_index){
+            var item = this;
+            if (Utils.bool(that.view[cell_index]['show']) === false) {
+                return ;
+            }
+            td = $("<th>");
+            if (Utils.isValue(item.title)) {
+                td.html(item.title);
+            }
+            tds[that.view[cell_index]['index-view']] = td;
+        });
+
+        for (j = 0; j < cells.length; j++){
+            if (Utils.isValue(tds[j])) tds[j].appendTo(tr);
+        }
+        tr.appendTo(head);
+
+        // Create table data
+        if (mode === "checked") {
+            items = this.getSelectedItems();
+            start = 0; stop = items.length - 1;
+        } else if (mode === "view") {
+            items = this._filter();
+            start = parseInt(o.rows) === -1 ? 0 : o.rows * (this.currentPage - 1);
+            stop = parseInt(o.rows) === -1 ? items.length - 1 : start + o.rows - 1;
+        } else if (mode === "all") {
+            items = this.items;
+            start = 0; stop = items.length - 1;
+        } else {
+            items = this._filter();
+            start = 0; stop = items.length - 1;
+        }
+
+        for (i = start; i <= stop; i++) {
+            if (Utils.isValue(items[i])) {
+                tr = $("<tr>");
+
+                cells = items[i];
+
+                for (j = 0; j < cells.length; j++){
+                    tds[j] = null;
+                }
+
+                $.each(cells, function(cell_index){
+                    if (Utils.bool(that.view[cell_index].show) === false) {
+                        return ;
+                    }
+                    td = $("<td>").html(this);
+                    tds[that.view[cell_index]['index-view']] = td;
+                });
+
+                for (j = 0; j < cells.length; j++){
+                    if (Utils.isValue(tds[j])) tds[j].appendTo(tr);
+                }
+
+                tr.appendTo(body);
+            }
+        }
+
+        switch (to) {
+            default: Export.tableToCSV(table, filename, options);
+        }
+        table.remove();
+    },
+
+    changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+
+        function dataCheck(){
+            o.check = Utils.bool(element.attr("data-check"));
+            that._service();
+            that._createTableHeader();
+            that._draw();
+        }
+
+        function dataRownum(){
+            o.rownum = Utils.bool(element.attr("data-rownum"));
+            that._service();
+            that._createTableHeader();
+            that._draw();
+        }
+
+        switch (attributeName) {
+            case "data-check": dataCheck(); break;
+            case "data-rownum": dataRownum(); break;
+        }
     }
 };
 

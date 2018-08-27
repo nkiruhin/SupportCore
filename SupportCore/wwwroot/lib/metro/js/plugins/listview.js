@@ -12,6 +12,7 @@ var Listview = {
 
     options: {
         selectable: false,
+        checkStyle: 1,
         effect: "slide",
         duration: 100,
         view: Metro.listView.LIST,
@@ -129,7 +130,7 @@ var Listview = {
             }
 
             if (node.hasClass("node")) {
-                var cb = $("<input data-role='checkbox'>");
+                var cb = $("<input type='checkbox' data-role='checkbox' data-style='"+o.checkStyle+"'>");
                 cb.data("node", node);
                 node.prepend(cb);
             }
@@ -251,7 +252,7 @@ var Listview = {
 
         new_node.addClass("node").appendTo(target);
 
-        var cb = $("<input>");
+        var cb = $("<input type='checkbox'>");
         cb.data("node", new_node);
         new_node.prepend(cb);
         cb.checkbox();
@@ -315,22 +316,42 @@ var Listview = {
         Utils.exec(o.onNodeClean, [node, element]);
     },
 
-    changeView: function(){
-        var element = this.element, o = this.options;
-        var new_view = "view-"+element.attr("data-view");
-        this.view(new_view);
+    getSelected: function(){
+        var that = this, element = this.element, o = this.options;
+        var nodes = [];
+
+        $.each(element.find(":checked"), function(){
+            var check = $(this);
+            nodes.push(check.closest(".node")[0])
+        });
+
+        return nodes;
     },
 
-    changeSelectable: function(){
-        var element = this.element, o = this.options;
-        o.selectable = JSON.parse(element.attr("data-selectable")) === true;
-        this.toggleSelectable();
+    clearSelected: function(){
+        this.element.find(":checked").prop("checked", false);
+    },
+
+    selectAll: function(mode){
+        this.element.find(".node > .checkbox input").prop("checked", mode !== false);
     },
 
     changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+
+        var changeView = function(){
+            var new_view = "view-"+element.attr("data-view");
+            this.view(new_view);
+        };
+
+        var changeSelectable = function(){
+            o.selectable = JSON.parse(element.attr("data-selectable")) === true;
+            this.toggleSelectable();
+        };
+
         switch (attributeName) {
-            case "data-view": this.changeView(); break;
-            case "data-selectable": this.changeSelectable(); break;
+            case "data-view": changeView(); break;
+            case "data-selectable": changeSelectable(); break;
         }
     }
 };

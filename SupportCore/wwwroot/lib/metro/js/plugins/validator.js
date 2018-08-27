@@ -87,7 +87,12 @@ var ValidatorFuncs = {
     not: function(val, not_this){
         return val !== not_this;
     },
-
+    notequals: function(val, val2){
+        return val.trim() !== val2.trim();
+    },
+    equals: function(val, val2){
+        return val.trim() === val2.trim();
+    },
     custom: function(val, func){
         if (Utils.isFunc(func) === false) {
             return false;
@@ -154,10 +159,8 @@ var ValidatorFuncs = {
     validate: function(el, result, cb_ok, cb_error, required_mode){
         var this_result = true;
         var input = $(el);
-        var is_control = ValidatorFuncs.is_control(input);
         var funcs = input.data('validate') !== undefined ? String(input.data('validate')).split(" ").map(function(s){return s.trim();}) : [];
         var errors = [];
-        var required = funcs.indexOf('required') !== -1;
 
         if (funcs.length === 0) {
             return true;
@@ -199,7 +202,7 @@ var ValidatorFuncs = {
                 f = rule[0]; rule.shift();
                 a = rule.join("=");
 
-                if (f === 'compare') {
+                if (['compare', 'equals', 'notequals'].indexOf(f) > -1) {
                     a = input[0].form.elements[a].value;
                 }
 
@@ -215,7 +218,6 @@ var ValidatorFuncs = {
                             this_result = true;
                         }
                     }
-                    // this_result = ValidatorFuncs[f](input.val(), a);
                 }
 
                 if (this_result === false) {

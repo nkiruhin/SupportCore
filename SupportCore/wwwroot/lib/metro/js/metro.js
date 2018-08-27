@@ -137,6 +137,7 @@ var Metro = {
         resize: 'resize.metro',
         keyup: 'keyup.metro',
         keydown: 'keydown.metro',
+        keypress: 'keypredd.metro',
         dblclick: 'dblclick.metro',
         input: 'input.metro',
         change: 'change.metro',
@@ -148,6 +149,28 @@ var Metro = {
         scrollStop: 'scrollstop.metro',
         mousewheel: 'mousewheel.metro',
         inputchange: "change.metro input.metro propertychange.metro cut.metro paste.metro copy.metro"
+    },
+
+    keyCode: {
+        BACKSPACE: 8,
+        TAB: 9,
+        ENTER: 13,
+        SHIFT: 16,
+        CTRL: 17,
+        ALT: 18,
+        BREAK: 19,
+        CAPS: 20,
+        ESCAPE: 27,
+        SPACE: 32,
+        PAGEUP: 33,
+        PAGEDOWN: 34,
+        END: 35,
+        HOME: 36,
+        LEFT_ARROW: 37,
+        UP_ARROW: 38,
+        RIGHT_ARROW: 39,
+        DOWN_ARROW: 40,
+        COMMA: 188
     },
 
     media_queries: {
@@ -320,23 +343,18 @@ var Metro = {
             var $this = $(this), w = this;
             var roles = $this.data('role').split(/\s*,\s*/);
             roles.map(function (func) {
-                try {
-                    // if ($.fn[func] !== undefined && $this.data(func) === undefined) {
-                    if ($.fn[func] !== undefined && $this.attr("data-role-"+func) === undefined) {
-                        $.fn[func].call($this);
-                        $this.attr("data-role-"+func, true);
+                if ($.fn[func] !== undefined && $this.attr("data-role-"+func) === undefined) {
+                    $.fn[func].call($this);
+                    $this.attr("data-role-"+func, true);
 
-                        var mc = $this.data('metroComponent');
+                    var mc = $this.data('metroComponent');
 
-                        if (mc === undefined) {
-                            mc = [func];
-                        } else {
-                            mc.push(func);
-                        }
-                        $this.data('metroComponent', mc);
+                    if (mc === undefined) {
+                        mc = [func];
+                    } else {
+                        mc.push(func);
                     }
-                } catch (e) {
-                    console.log(e.message, e.stack);
+                    $this.data('metroComponent', mc);
                 }
             });
         });

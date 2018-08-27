@@ -599,17 +599,30 @@ var Utils = {
         Metro.locales = $.extend( {}, Metro.locales, locale );
     },
 
-    strToArray: function(str, delimiter){
+    strToArray: function(str, delimiter, type, format){
         var a;
 
         if (!this.isValue(delimiter)) {
             delimiter = ",";
         }
 
+        if (!this.isValue(type)) {
+            type = "string";
+        }
+
         a = (""+str).split(delimiter);
 
         return a.map(function(s){
-            return s.trim();
+            var result;
+
+            switch (type) {
+                case "integer": result = parseInt(s); break;
+                case "float": result = parseFloat(s); break;
+                case "date": result = !Utils.isValue(format) ? new Date(s) : s.toDate(format); break;
+                default: result = s.trim();
+            }
+
+            return result;
         })
     },
 
@@ -716,6 +729,57 @@ var Utils = {
         val /= precision;
         val = Math[down === true ? 'floor' : 'ceil'](val) * precision;
         return val;
+    },
+
+    bool: function(value){
+        switch(value){
+            case true:
+            case "true":
+            case 1:
+            case "1":
+            case "on":
+            case "yes":
+                return true;
+            default:
+                return false;
+        }
+    },
+
+    copy: function(el){
+        var body = document.body, range, sel;
+
+        if (this.isJQueryObject(el)) {
+            el = el[0];
+        }
+
+        if (document.createRange && window.getSelection) {
+            range = document.createRange();
+            sel = window.getSelection();
+            sel.removeAllRanges();
+            try {
+                range.selectNodeContents(el);
+                sel.addRange(range);
+            } catch (e) {
+                range.selectNode(el);
+                sel.addRange(range);
+            }
+        } else if (body.createTextRange) {
+            range = body.createTextRange();
+            range.moveToElementText(el);
+            range.select();
+        }
+
+        document.execCommand("Copy");
+
+        if (window.getSelection) {
+            if (window.getSelection().empty) {  // Chrome
+                window.getSelection().empty();
+            } else if (window.getSelection().removeAllRanges) {  // Firefox
+                window.getSelection().removeAllRanges();
+            }
+        } else if (document.selection) {  // IE?
+            document.selection.empty();
+        }
     }
 };
 

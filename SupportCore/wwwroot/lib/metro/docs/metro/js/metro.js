@@ -1,5 +1,5 @@
 /*
- * Metro 4 Components Library v4.2.15 build 692 (https://metroui.org.ua)
+ * Metro 4 Components Library v4.2.19 build 696 (https://metroui.org.ua)
  * Copyright 2018 Sergey Pimenov
  * Licensed under MIT
  */
@@ -80,8 +80,8 @@ var isTouch = (('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (
 
 var Metro = {
 
-    version: "4.2.15",
-    versionFull: "4.2.15.692 ",
+    version: "4.2.19",
+    versionFull: "4.2.19.696 ",
     isTouchable: isTouch,
     fullScreenEnabled: document.fullscreenEnabled,
     sheet: null,
@@ -156,6 +156,7 @@ var Metro = {
         resize: 'resize.metro',
         keyup: 'keyup.metro',
         keydown: 'keydown.metro',
+        keypress: 'keypredd.metro',
         dblclick: 'dblclick.metro',
         input: 'input.metro',
         change: 'change.metro',
@@ -167,6 +168,28 @@ var Metro = {
         scrollStop: 'scrollstop.metro',
         mousewheel: 'mousewheel.metro',
         inputchange: "change.metro input.metro propertychange.metro cut.metro paste.metro copy.metro"
+    },
+
+    keyCode: {
+        BACKSPACE: 8,
+        TAB: 9,
+        ENTER: 13,
+        SHIFT: 16,
+        CTRL: 17,
+        ALT: 18,
+        BREAK: 19,
+        CAPS: 20,
+        ESCAPE: 27,
+        SPACE: 32,
+        PAGEUP: 33,
+        PAGEDOWN: 34,
+        END: 35,
+        HOME: 36,
+        LEFT_ARROW: 37,
+        UP_ARROW: 38,
+        RIGHT_ARROW: 39,
+        DOWN_ARROW: 40,
+        COMMA: 188
     },
 
     media_queries: {
@@ -339,23 +362,18 @@ var Metro = {
             var $this = $(this), w = this;
             var roles = $this.data('role').split(/\s*,\s*/);
             roles.map(function (func) {
-                try {
-                    // if ($.fn[func] !== undefined && $this.data(func) === undefined) {
-                    if ($.fn[func] !== undefined && $this.attr("data-role-"+func) === undefined) {
-                        $.fn[func].call($this);
-                        $this.attr("data-role-"+func, true);
+                if ($.fn[func] !== undefined && $this.attr("data-role-"+func) === undefined) {
+                    $.fn[func].call($this);
+                    $this.attr("data-role-"+func, true);
 
-                        var mc = $this.data('metroComponent');
+                    var mc = $this.data('metroComponent');
 
-                        if (mc === undefined) {
-                            mc = [func];
-                        } else {
-                            mc.push(func);
-                        }
-                        $this.data('metroComponent', mc);
+                    if (mc === undefined) {
+                        mc = [func];
+                    } else {
+                        mc.push(func);
                     }
-                } catch (e) {
-                    console.log(e.message, e.stack);
+                    $this.data('metroComponent', mc);
                 }
             });
         });
@@ -840,6 +858,15 @@ var Colors = {
         return Object.keys(this[palette]);
     },
 
+    colors: function(palette){
+        var c = [];
+        palette = palette || this.PALETTES.ALL;
+        $.each(this[palette], function(){
+            c.push(this);
+        });
+        return c;
+    },
+
     hex2rgb: function(hex){
         var regex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace( regex, function( m, r, g, b ) {
@@ -1148,14 +1175,34 @@ var Colors = {
     },
 
     lighten: function(color, amount){
-        var col, type, res, alpha = 1;
+        var type, res, alpha = 1, ring = amount > 0;
+
+        var calc = function(_color, _amount){
+            var col = _color.slice(1);
+
+            var num = parseInt(col, 16);
+            var r = (num >> 16) + _amount;
+
+            if (r > 255) r = 255;
+            else if  (r < 0) r = 0;
+
+            var b = ((num >> 8) & 0x00FF) + _amount;
+
+            if (b > 255) b = 255;
+            else if  (b < 0) b = 0;
+
+            var g = (num & 0x0000FF) + _amount;
+
+            if (g > 255) g = 255;
+            else if (g < 0) g = 0;
+
+            res = "#" + (g | (b << 8) | (r << 16)).toString(16);
+            return res;
+        };
 
         if (amount === undefined) {
             amount = 10;
         }
-
-        col = this.toHEX(color);
-        col = col.slice(1);
 
         type = this.is(color);
 
@@ -1163,23 +1210,10 @@ var Colors = {
             alpha = color.a;
         }
 
-        var num = parseInt(col, 16);
-        var r = (num >> 16) + amount;
-
-        if (r > 255) r = 255;
-        else if  (r < 0) r = 0;
-
-        var b = ((num >> 8) & 0x00FF) + amount;
-
-        if (b > 255) b = 255;
-        else if  (b < 0) b = 0;
-
-        var g = (num & 0x0000FF) + amount;
-
-        if (g > 255) g = 255;
-        else if (g < 0) g = 0;
-
-        res = "#" + (g | (b << 8) | (r << 16)).toString(16);
+        do {
+            res = calc(this.toHEX(color), amount);
+            ring ? amount-- : amount++;
+        } while (res.length < 7);
 
         switch (type) {
             case "rgb": return this.toRGB(res);
@@ -1601,6 +1635,120 @@ $.extend($.easing, {
 });
 
 
+// Source: js/utils/export.js
+var Export = {
+
+    init: function(){
+        return this;
+    },
+
+    options: {
+        csvDelimiter: "\t",
+        csvNewLine: "\r\n",
+        includeHeader: true
+    },
+
+    setup: function(options){
+        this.options = $.extend({}, this.options, options);
+        return this;
+    },
+
+    base64: function(data){
+        return window.btoa(unescape(encodeURIComponent(data)));
+    },
+
+    b64toBlob: function (b64Data, contentType, sliceSize) {
+        contentType = contentType || '';
+        sliceSize = sliceSize || 512;
+
+        var byteCharacters = window.atob(b64Data);
+        var byteArrays = [];
+
+        var offset;
+        for (offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+            var byteNumbers = new Array(slice.length);
+            var i;
+            for (i = 0; i < slice.length; i = i + 1) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            var byteArray = new window.Uint8Array(byteNumbers);
+
+            byteArrays.push(byteArray);
+        }
+
+        return new Blob(byteArrays, {
+            type: contentType
+        });
+    },
+
+    tableToCSV: function(table, filename, options){
+        var that = this, o = this.options;
+        var body, head, data = "";
+        var i, j, row, cell;
+
+        o = $.extend({}, o, options);
+
+        if (Utils.isJQueryObject(table)) {
+            table = table[0];
+        }
+
+        if (Utils.bool(o.includeHeader)) {
+
+            head = table.querySelectorAll("thead")[0];
+
+            for(i = 0; i < head.rows.length; i++) {
+                row = head.rows[i];
+                for(j = 0; j < row.cells.length; j++){
+                    cell = row.cells[j];
+                    data += (j ? o.csvDelimiter : '') + cell.textContent.trim();
+                }
+                data += o.csvNewLine;
+            }
+        }
+
+        body = table.querySelectorAll("tbody")[0];
+
+        for(i = 0; i < body.rows.length; i++) {
+            row = body.rows[i];
+            for(j = 0; j < row.cells.length; j++){
+                cell = row.cells[j];
+                data += (j ? o.csvDelimiter : '') + cell.textContent.trim();
+            }
+            data += o.csvNewLine;
+        }
+
+        if (Utils.isValue(filename)) {
+            return this.createDownload(this.base64("\uFEFF" + data), 'application/csv', filename);
+        }
+
+        return data;
+    },
+
+    createDownload: function (data, contentType, filename) {
+        var blob, anchor, url;
+
+        anchor = document.createElement('a');
+        anchor.style.display = "none";
+        document.body.appendChild(anchor);
+
+        blob = this.b64toBlob(data, contentType);
+
+        url = window.URL.createObjectURL(blob);
+        anchor.href = url;
+        anchor.download = filename || Utils.elementId("download");
+        anchor.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(anchor);
+        return true;
+    }
+};
+
+Metro['export'] = Export.init();
+
+
 // Source: js/utils/extensions.js
 $.fn.extend({
     toggleAttr: function(a, v){
@@ -1734,7 +1882,7 @@ Date.prototype.format = function(format, locale){
         zeroPad = function(nNum, nPad) {
             return ('' + (Math.pow(10, nPad) + nNum)).slice(1);
         };
-    return format.replace(/%[a-z]/gi, function(sMatch) {
+    return format.replace(/(%[a-z])/gi, function(sMatch) {
         return {
             '%a': aDays[nDay].slice(0,3),
             '%A': aDays[nDay],
@@ -1743,21 +1891,27 @@ Date.prototype.format = function(format, locale){
             '%c': date.toUTCString(),
             '%C': Math.floor(nYear/100),
             '%d': zeroPad(nDate, 2),
+            // 'dd': zeroPad(nDate, 2),
             '%e': nDate,
             '%F': date.toISOString().slice(0,10),
             '%G': getThursday().getFullYear(),
             '%g': ('' + getThursday().getFullYear()).slice(2),
             '%H': zeroPad(nHour, 2),
+            // 'HH': zeroPad(nHour, 2),
             '%I': zeroPad((nHour+11)%12 + 1, 2),
             '%j': zeroPad(aDayCount[nMonth] + nDate + ((nMonth>1 && isLeapYear()) ? 1 : 0), 3),
             '%k': '' + nHour,
             '%l': (nHour+11)%12 + 1,
             '%m': zeroPad(nMonth + 1, 2),
+            // 'mm': zeroPad(nMonth + 1, 2),
             '%M': zeroPad(date.getMinutes(), 2),
+            // 'MM': zeroPad(date.getMinutes(), 2),
             '%p': (nHour<12) ? 'AM' : 'PM',
             '%P': (nHour<12) ? 'am' : 'pm',
             '%s': Math.round(date.getTime()/1000),
+            // 'ss': Math.round(date.getTime()/1000),
             '%S': zeroPad(date.getSeconds(), 2),
+            // 'SS': zeroPad(date.getSeconds(), 2),
             '%u': nDay || 7,
             '%V': (function() {
                 var target = getThursday(),
@@ -1771,7 +1925,9 @@ Date.prototype.format = function(format, locale){
             '%x': date.toLocaleDateString(),
             '%X': date.toLocaleTimeString(),
             '%y': ('' + nYear).slice(2),
+            // 'yy': ('' + nYear).slice(2),
             '%Y': nYear,
+            // 'YYYY': nYear,
             '%z': date.toTimeString().replace(/.+GMT([+-]\d+).+/, '$1'),
             '%Z': date.toTimeString().replace(/.+\((.+?)\)$/, '$1')
         }[sMatch] || sMatch;
@@ -2015,7 +2171,8 @@ var Locales = {
             "yes": "Yes",
             "no": "No",
             "random": "Random",
-            "save": "Save"
+            "save": "Save",
+            "reset": "Reset"
         }
     },
     
@@ -2051,7 +2208,8 @@ var Locales = {
             "yes": "是",
             "no": "否",
             "random": "随机",
-            "save": "保存"
+            "save": "保存",
+            "reset": "重啟"
         }
     },
     
@@ -2085,7 +2243,8 @@ var Locales = {
             "yes": "Ja",
             "no": "Nein",
             "random": "Zufällig",
-            "save": "Sparen"
+            "save": "Sparen",
+            "reset": "Zurücksetzen"
         }
     },
 
@@ -2118,7 +2277,8 @@ var Locales = {
             "yes": "Igen",
             "no": "Nem",
             "random": "Véletlen",
-            "save": "Mentés"
+            "save": "Mentés",
+            "reset": "Visszaállítás"
         }
     },
 
@@ -2151,7 +2311,8 @@ var Locales = {
             "yes": "Да",
             "no": "Нет",
             "random": "Случайно",
-            "save": "Сохранить"
+            "save": "Сохранить",
+            "reset": "Сброс"
         }
     },
 
@@ -2184,7 +2345,8 @@ var Locales = {
             "yes": "Так",
             "no": "Ні",
             "random": "Випадково",
-            "save": "Зберегти"
+            "save": "Зберегти",
+            "reset": "Скинути"
         }
     },
 
@@ -2220,7 +2382,8 @@ var Locales = {
             "yes": "Si",
             "no": "No",
             "random": "Aleatorio",
-            "save": "Salvar"
+            "save": "Salvar",
+            "reset": "Reiniciar"
         }
     },
 
@@ -2256,7 +2419,8 @@ var Locales = {
             "yes": "Oui",
             "no": "Non",
             "random": "Aléatoire",
-            "save": "Sauvegarder"
+            "save": "Sauvegarder",
+            "reset": "Réinitialiser"
         }
     },
 
@@ -2292,7 +2456,8 @@ var Locales = {
             "yes": "Sì",
             "no": "No",
             "random": "Random",
-            "save": "Salvare"
+            "save": "Salvare",
+            "reset": "Reset"
         }
     }
 };
@@ -3697,17 +3862,30 @@ var d = new Date().getTime();
         Metro.locales = $.extend( {}, Metro.locales, locale );
     },
 
-    strToArray: function(str, delimiter){
+    strToArray: function(str, delimiter, type, format){
         var a;
 
         if (!this.isValue(delimiter)) {
             delimiter = ",";
         }
 
+        if (!this.isValue(type)) {
+            type = "string";
+        }
+
         a = (""+str).split(delimiter);
 
         return a.map(function(s){
-            return s.trim();
+            var result;
+
+            switch (type) {
+                case "integer": result = parseInt(s); break;
+                case "float": result = parseFloat(s); break;
+                case "date": result = !Utils.isValue(format) ? new Date(s) : s.toDate(format); break;
+                default: result = s.trim();
+            }
+
+            return result;
         })
     },
 
@@ -3814,6 +3992,57 @@ var d = new Date().getTime();
         val /= precision;
         val = Math[down === true ? 'floor' : 'ceil'](val) * precision;
         return val;
+    },
+
+    bool: function(value){
+        switch(value){
+            case true:
+            case "true":
+            case 1:
+            case "1":
+            case "on":
+            case "yes":
+                return true;
+            default:
+                return false;
+        }
+    },
+
+    copy: function(el){
+        var body = document.body, range, sel;
+
+        if (this.isJQueryObject(el)) {
+            el = el[0];
+        }
+
+        if (document.createRange && window.getSelection) {
+            range = document.createRange();
+            sel = window.getSelection();
+            sel.removeAllRanges();
+            try {
+                range.selectNodeContents(el);
+                sel.addRange(range);
+            } catch (e) {
+                range.selectNode(el);
+                sel.addRange(range);
+            }
+        } else if (body.createTextRange) {
+            range = body.createTextRange();
+            range.moveToElementText(el);
+            range.select();
+        }
+
+        document.execCommand("Copy");
+
+        if (window.getSelection) {
+            if (window.getSelection().empty) {  // Chrome
+                window.getSelection().empty();
+            } else if (window.getSelection().removeAllRanges) {  // Firefox
+                window.getSelection().removeAllRanges();
+            }
+        } else if (document.selection) {  // IE?
+            document.selection.empty();
+        }
     }
 };
 
@@ -5066,14 +5295,15 @@ var Calendar = {
         });
 
         element.on(Metro.events.click, ".button.today", function(e){
-            that.today = new Date();
-            that.current = {
-                year: that.today.getFullYear(),
-                month: that.today.getMonth(),
-                day: that.today.getDate()
-            };
-            that._drawHeader();
-            that._drawContent();
+            // that.today = new Date();
+            // that.current = {
+            //     year: that.today.getFullYear(),
+            //     month: that.today.getMonth(),
+            //     day: that.today.getDate()
+            // };
+            // that._drawHeader();
+            // that._drawContent();
+            that.toDay();
             Utils.exec(o.onToday, [that.today, element]);
 
             e.preventDefault();
@@ -5516,6 +5746,22 @@ var Calendar = {
 
     getCurrent: function(){
         return this.current;
+    },
+
+    clearSelected: function(){
+        this.selected = [];
+        this._drawContent();
+    },
+
+    toDay: function(){
+        this.today = new Date();
+        this.current = {
+            year: this.today.getFullYear(),
+            month: this.today.getMonth(),
+            day: this.today.getDate()
+        };
+        this._drawHeader();
+        this._drawContent();
     },
 
     setExclude: function(exclude){
@@ -6751,6 +6997,7 @@ var Checkbox = {
         return this;
     },
     options: {
+        style: 1,
         caption: "",
         indeterminate: false,
         captionPosition: "right",
@@ -6779,7 +7026,7 @@ var Checkbox = {
         var that = this, element = this.element, o = this.options;
         var prev = element.prev();
         var parent = element.parent();
-        var checkbox = $("<label>").addClass("checkbox " + element[0].className);
+        var checkbox = $("<label>").addClass("checkbox " + element[0].className).addClass(o.style === 2 ? "style2" : "");
         var check = $("<span>").addClass("check");
         var caption = $("<span>").addClass("caption").html(o.caption);
 
@@ -6850,9 +7097,22 @@ var Checkbox = {
     },
 
     changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+        var parent = element.parent();
+
+        var changeStyle = function(){
+            var new_style = parseInt(element.attr("data-style"));
+
+            if (!Utils.isInt(new_style)) return;
+
+            o.style = new_style;
+            parent.removeClass("style1 style2").addClass("style"+new_style);
+        };
+
         switch (attributeName) {
             case 'disabled': this.toggleState(); break;
             case 'data-indeterminate': this.toggleIndeterminate(); break;
+            case 'data-style': changeStyle(); break;
         }
     },
 
@@ -8476,6 +8736,8 @@ var Dialog = {
     },
 
     options: {
+        toTop: false,
+        toBottom: false,
         locale: METRO_LOCALE,
         title: "",
         content: "",
@@ -8653,9 +8915,24 @@ var Dialog = {
     },
 
     setPosition: function(){
-        var element = this.element;
+        var element = this.element, o = this.options;
+        var top, left, bottom;
+        if (o.toTop !== true && o.toBottom !== true) {
+            top = ( $(window).height() - element.outerHeight() ) / 2;
+            bottom = "auto";
+        } else {
+            if (o.toTop === true) {
+                top = 0;
+                bottom = "auto";
+            }
+            if (o.toTop !== true && o.toBottom === true) {
+                bottom = 0;
+                top = "auto";
+            }
+        }
         element.css({
-            top: ( $(window).height() - element.outerHeight() ) / 2,
+            top: top,
+            bottom: bottom,
             left: ( $(window).width() - element.outerWidth() ) / 2
         });
     },
@@ -10006,6 +10283,7 @@ var Input = {
         return this;
     },
     options: {
+        defaultValue: "",
         clsElement: "",
         clsInput: "",
         clsPrepend: "",
@@ -10060,10 +10338,14 @@ var Input = {
         element.appendTo(container);
         buttons.appendTo(container);
 
+        if (!Utils.isValue(element.val().trim())) {
+            element.val(o.defaultValue);
+        }
+
         if (o.clearButton !== false) {
             clearButton = $("<button>").addClass("button input-clear-button").addClass(o.clsClearButton).attr("tabindex", -1).attr("type", "button").html(o.clearButtonIcon);
             clearButton.on(Metro.events.click, function(){
-                element.val("").trigger('change').trigger('keyup').focus();
+                element.val(Utils.isValue(o.defaultValue) ? o.defaultValue : "").trigger('change').trigger('keyup').focus();
             });
             clearButton.appendTo(buttons);
         }
@@ -10850,7 +11132,8 @@ var List = {
             })
         }
 
-        element.html("").addClass(o.clsList);
+        // element.html("").addClass(o.clsList);
+        element.addClass(o.clsList);
 
         this._createTopBlock();
         this._createBottomBlock();
@@ -11111,14 +11394,13 @@ var List = {
             stop = o.items === -1 ? this.items.length - 1 : start + o.items - 1;
         var items;
 
-        element.html("");
-
         items = this._filter();
+
+        element.children(o.sortTarget).remove();
 
         for (i = start; i <= stop; i++) {
             if (Utils.isValue(items[i])) {
-                items[i].className += " "+o.clsListItem;
-                element[0].appendChild(items[i]);
+                $(items[i]).addClass(o.clsListItem).appendTo(element);
             }
             Utils.exec(o.onDrawItem, [items[i]], element[0]);
         }
@@ -11142,15 +11424,15 @@ var List = {
 
         if (Utils.isValue(o.sortClass)) {
             data = "";
-            inset = item.getElementsByClassName(o.sortClass);
+            inset = $(item).find("."+o.sortClass);
 
             if (inset.length > 0) for (i = 0; i < inset.length; i++) {
                 data += inset[i].textContent;
             }
-            format = inset[0].dataset.format;
+            format = inset.length > 0 ? inset[0].getAttribute("data-format") : "";
         } else {
             data = item.textContent;
-            format = item.dataset.format;
+            format = item.getAttribute("data-format");
         }
 
         data = (""+data).toLowerCase().replace(/[\n\r]+|[\s]{2,}/g, ' ').trim();
@@ -11419,6 +11701,7 @@ var Listview = {
 
     options: {
         selectable: false,
+        checkStyle: 1,
         effect: "slide",
         duration: 100,
         view: Metro.listView.LIST,
@@ -11536,7 +11819,7 @@ var Listview = {
             }
 
             if (node.hasClass("node")) {
-                var cb = $("<input data-role='checkbox'>");
+                var cb = $("<input type='checkbox' data-role='checkbox' data-style='"+o.checkStyle+"'>");
                 cb.data("node", node);
                 node.prepend(cb);
             }
@@ -11658,7 +11941,7 @@ var Listview = {
 
         new_node.addClass("node").appendTo(target);
 
-        var cb = $("<input>");
+        var cb = $("<input type='checkbox'>");
         cb.data("node", new_node);
         new_node.prepend(cb);
         cb.checkbox();
@@ -11722,22 +12005,42 @@ var Listview = {
         Utils.exec(o.onNodeClean, [node, element]);
     },
 
-    changeView: function(){
-        var element = this.element, o = this.options;
-        var new_view = "view-"+element.attr("data-view");
-        this.view(new_view);
+    getSelected: function(){
+        var that = this, element = this.element, o = this.options;
+        var nodes = [];
+
+        $.each(element.find(":checked"), function(){
+            var check = $(this);
+            nodes.push(check.closest(".node")[0])
+        });
+
+        return nodes;
     },
 
-    changeSelectable: function(){
-        var element = this.element, o = this.options;
-        o.selectable = JSON.parse(element.attr("data-selectable")) === true;
-        this.toggleSelectable();
+    clearSelected: function(){
+        this.element.find(":checked").prop("checked", false);
+    },
+
+    selectAll: function(mode){
+        this.element.find(".node > .checkbox input").prop("checked", mode !== false);
     },
 
     changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+
+        var changeView = function(){
+            var new_view = "view-"+element.attr("data-view");
+            this.view(new_view);
+        };
+
+        var changeSelectable = function(){
+            o.selectable = JSON.parse(element.attr("data-selectable")) === true;
+            this.toggleSelectable();
+        };
+
         switch (attributeName) {
-            case "data-view": this.changeView(); break;
-            case "data-selectable": this.changeSelectable(); break;
+            case "data-view": changeView(); break;
+            case "data-selectable": changeSelectable(); break;
         }
     }
 };
@@ -12527,6 +12830,7 @@ var Popover = {
     options: {
         popoverText: "",
         popoverHide: 3000,
+        popoverTimeout: 100,
         popoverOffset: 10,
         popoverTrigger: Metro.popoverEvents.HOVER,
         popoverPosition: Metro.position.TOP,
@@ -12571,12 +12875,14 @@ var Popover = {
             if (that.popover !== null || that.popovered === true) {
                 return ;
             }
-            that.createPopover();
-            if (o.popoverHide > 0) {
-                setTimeout(function(){
-                    that.removePopover();
-                }, o.popoverHide);
-            }
+            setTimeout(function(){
+                that.createPopover();
+                if (o.popoverHide > 0) {
+                    setTimeout(function(){
+                        that.removePopover();
+                    }, o.popoverHide);
+                }
+            }, o.popoverTimeout);
         });
 
         if (o.hideOnLeave === true && !Utils.isTouchDevice()) {
@@ -12681,12 +12987,14 @@ var Popover = {
             return ;
         }
 
-        this.createPopover();
-        if (o.popoverHide > 0) {
-            setTimeout(function(){
-                that.removePopover();
-            }, o.popoverHide);
-        }
+        setTimeout(function(){
+            that.createPopover();
+            if (o.popoverHide > 0) {
+                setTimeout(function(){
+                    that.removePopover();
+                }, o.popoverHide);
+            }
+        }, o.popoverTimeout);
     },
 
     hide: function(){
@@ -12890,6 +13198,7 @@ var Radio = {
         return this;
     },
     options: {
+        style: 1,
         caption: "",
         captionPosition: "right",
         disabled: false,
@@ -12917,7 +13226,7 @@ var Radio = {
         var that = this, element = this.element, o = this.options;
         var prev = element.prev();
         var parent = element.parent();
-        var radio = $("<label>").addClass("radio " + element[0].className);
+        var radio = $("<label>").addClass("radio " + element[0].className).addClass(o.style === 2 ? "style2" : "");
         var check = $("<span>").addClass("check");
         var caption = $("<span>").addClass("caption").html(o.caption);
 
@@ -12970,8 +13279,21 @@ var Radio = {
     },
 
     changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+        var parent = element.parent();
+
+        var changeStyle = function(){
+            var new_style = parseInt(element.attr("data-style"));
+
+            if (!Utils.isInt(new_style)) return;
+
+            o.style = new_style;
+            parent.removeClass("style1 style2").addClass("style"+new_style);
+        };
+
         switch (attributeName) {
             case 'disabled': this.toggleState(); break;
+            case 'data-style': changeStyle(); break;
         }
     },
 
@@ -13727,9 +14049,14 @@ var Select = {
         clsElement: "",
         clsSelect: "",
         clsPrepend: "",
+        clsAppend: "",
         clsOption: "",
         clsOptionGroup: "",
+        clsDropList: "",
+        clsSelectedItem: "",
+        clsSelectedItemRemover: "",
         prepend: "",
+        append: "",
         placeholder: "",
         filterPlaceholder: "",
         filter: true,
@@ -13765,16 +14092,26 @@ var Select = {
         var option = $(item);
         var l, a;
         var element = this.element, o = this.options;
-        var input = element.siblings("input");
+        var multiple = element[0].multiple;
+        var input = element.siblings(".select-input");
+        var html = Utils.isValue(option.data('template'))?option.data('template').replace("$1", item.text):item.text;
+        var selected_item;
 
-        l = $("<li>").addClass(o.clsOption).data("text", item.text).data('value', Utils.isValue(item.value) ? item.value : "").appendTo(parent);
-        a = $("<a>").html(item.text).appendTo(l).addClass(item.className);
+        l = $("<li>").addClass(o.clsOption).data("option", item).data("text", item.text).data('value', Utils.isValue(item.value) ? item.value : "").appendTo(parent);
+        a = $("<a>").html(html).appendTo(l).addClass(item.className);
 
-        if (option.is(":selected")) {
-            element.val(item.value);
-            input.val(item.text).trigger("change");
-            element.trigger("change");
-            l.addClass("active");
+        if (item.getAttribute("selected") !== null) {
+            if (multiple) {
+                l.addClass("d-none");
+                selected_item = $("<div>").addClass("selected-item").addClass(o.clsSelectedItem).html("<span class='title'>"+html+"</span>").appendTo(input);
+                selected_item.data("option", l);
+                $("<span>").addClass("remover").addClass(o.clsSelectedItemRemover).html("&times;").appendTo(selected_item);
+            } else {
+                element.val(item.value);
+                input.html(html);
+                element.trigger("change");
+                l.addClass("active");
+            }
         }
 
         a.appendTo(l);
@@ -13798,10 +14135,16 @@ var Select = {
         var prev = element.prev();
         var parent = element.parent();
         var container = $("<div>").addClass("select " + element[0].className).addClass(o.clsElement);
-        var multiple = element.prop("multiple");
+        var multiple = element[0].multiple;
         var select_id = Utils.elementId("select");
+        var buttons = $("<div>").addClass("button-group");
+        var input, drop_container, list, filter_input;
 
         container.attr("id", select_id).addClass("dropdown-toggle");
+
+        if (multiple) {
+            container.addClass("multiple");
+        }
 
         if (prev.length === 0) {
             parent.prepend(container);
@@ -13811,75 +14154,78 @@ var Select = {
 
         element.appendTo(container);
         element.addClass(o.clsSelect);
+        buttons.appendTo(container);
 
-        if (multiple === false) {
+        input = $("<div>").addClass("select-input").attr("name", "__" + select_id + "__");
+        drop_container = $("<div>").addClass("drop-container");
+        list = $("<ul>").addClass("d-menu").addClass(o.clsDropList).css({
+            "max-height": o.dropHeight
+        });
+        filter_input = $("<input type='text' data-role='input'>").attr("placeholder", o.filterPlaceholder);
 
-            var input = $("<input>").attr("placeholder", o.placeholder).attr("type", "text").attr("name", "__" + select_id + "__").prop("readonly", true);
-            var drop_container = $("<div>").addClass("drop-container");
-            var list = $("<ul>").addClass("d-menu").css({
-                "max-height": o.dropHeight
-            });
-            var filter_input = $("<input type='text' data-role='input'>").attr("placeholder", o.filterPlaceholder);
+        container.append(input);
+        container.append(drop_container);
 
-            container.append(input);
-            container.append(drop_container);
+        drop_container.append(filter_input);
 
-            drop_container.append(filter_input);
-
-            if (o.filter !== true) {
-                filter_input.hide();
-            }
-
-            drop_container.append(list);
-
-            $.each(element.children(), function(){
-                if (this.tagName === "OPTION") {
-                    that._addOption(this, list);
-                } else if (this.tagName === "OPTGROUP") {
-                    that._addOptionGroup(this, list);
-                }
-            });
-
-            drop_container.dropdown({
-                duration: o.duration,
-                toggleElement: "#"+select_id,
-                onDrop: function(){
-                    var dropped, target;
-
-                    dropped = $(".select .drop-container");
-                    $.each(dropped, function(){
-                        var drop = $(this);
-                        if (drop.is(drop_container)) {
-                            return ;
-                        }
-                        drop.data('dropdown').close();
-                    });
-
-                    filter_input.val("").trigger(Metro.events.keyup).focus();
-
-                    target = list.find("li.active").length > 0 ? $(list.find("li.active")[0]) : undefined;
-                    if (target !== undefined) {
-                        list.scrollTop(0);
-                        setTimeout(function(){
-                            list.animate({
-                                scrollTop: target.position().top - ( (list.height() - target.height() )/ 2)
-                            }, 100);
-                        }, 200);
-                    }
-
-                    Utils.exec(o.onDrop, [list, element], list[0]);
-                },
-                onUp: function(){
-                    Utils.exec(o.onUp, [list, element], list[0]);
-                }
-            });
-
-            this.list = list;
+        if (o.filter !== true) {
+            filter_input.hide();
         }
+
+        drop_container.append(list);
+
+        $.each(element.children(), function(){
+            if (this.tagName === "OPTION") {
+                that._addOption(this, list);
+            } else if (this.tagName === "OPTGROUP") {
+                that._addOptionGroup(this, list);
+            }
+        });
+
+        drop_container.dropdown({
+            duration: o.duration,
+            toggleElement: "#"+select_id,
+            onDrop: function(){
+                var dropped, target;
+
+                dropped = $(".select .drop-container");
+                $.each(dropped, function(){
+                    var drop = $(this);
+                    if (drop.is(drop_container)) {
+                        return ;
+                    }
+                    drop.data('dropdown').close();
+                });
+
+                filter_input.val("").trigger(Metro.events.keyup).focus();
+
+                target = list.find("li.active").length > 0 ? $(list.find("li.active")[0]) : undefined;
+                if (target !== undefined) {
+                    list.scrollTop(0);
+                    setTimeout(function(){
+                        list.animate({
+                            scrollTop: target.position().top - ( (list.height() - target.height() )/ 2)
+                        }, 100);
+                    }, 200);
+                }
+
+                Utils.exec(o.onDrop, [list, element], list[0]);
+            },
+            onUp: function(){
+                Utils.exec(o.onUp, [list, element], list[0]);
+            }
+        });
+
+        this.list = list;
 
         if (o.prepend !== "") {
             var prepend = Utils.isTag(o.prepend) ? $(o.prepend) : $("<span>"+o.prepend+"</span>");
             prepend.addClass("prepend").addClass(o.clsPrepend).appendTo(container);
+        }
+
+        if (o.append !== "") {
+            var append = Utils.isTag(o.append) ? $(o.append) : $("<span>"+o.append+"</span>");
+            append.addClass("append").addClass(o.clsAppend).appendTo(container);
         }
 
         if (o.copyInlineStyles === true) {
@@ -13901,10 +14247,10 @@ var Select = {
     },
 
     _createEvents: function(){
-        var element = this.element, o = this.options;
+        var that = this, element = this.element, o = this.options;
         var container = element.closest(".select");
         var drop_container = container.find(".drop-container");
-        var input = element.siblings("input");
+        var input = element.siblings(".select-input");
         var filter_input = drop_container.find("input");
         var list = drop_container.find("ul");
 
@@ -13913,8 +14259,7 @@ var Select = {
             e.stopPropagation();
         });
 
-        input.on(Metro.events.blur, function(){container.removeClass("focused");});
-        input.on(Metro.events.focus, function(){container.addClass("focused");});
+        input.on(Metro.events.click, function(){container.toggleClass("focused");});
         filter_input.on(Metro.events.blur, function(){container.removeClass("focused");});
         filter_input.on(Metro.events.focus, function(){container.addClass("focused");});
 
@@ -13927,14 +14272,43 @@ var Select = {
             var leaf = $(this);
             var val = leaf.data('value');
             var txt = leaf.data('text');
+            var html = leaf.children('a').html();
+            var selected_item;
 
-            list.find("li.active").removeClass("active");
-            leaf.addClass("active");
-            input.val(txt).trigger("change");
-            element.val(val);
-            element.trigger("change");
-            drop_container.data("dropdown").close();
+            if (element[0].multiple) {
+                leaf.addClass("d-none");
+                selected_item = $("<div>").addClass("selected-item").html("<span class='title'>"+html+"</span>").appendTo(input);
+                selected_item.data("option", leaf);
+                $("<span>").addClass("remover").html("&times;").appendTo(selected_item);
+                $.each(element.find("option"), function(){
+                    if (this === leaf.data("option")) {
+                        this.selected = true;
+                    }
+                });
+            } else {
+                list.find("li.active").removeClass("active");
+                leaf.addClass("active");
+                input.html(html);
+                element.val(val);
+                element.trigger("change");
+                drop_container.data("dropdown").close();
+            }
+
             Utils.exec(o.onChange, [val], element[0]);
+        });
+
+        input.on("click", ".selected-item .remover", function(e){
+            var item = $(this).closest(".selected-item");
+            var leaf = item.data("option");
+            leaf.removeClass("d-none");
+            $.each(element.find("option"), function(){
+                if (this === leaf.data("option")) {
+                    this.selected = false;
+                }
+            });
+            item.remove();
+            e.preventDefault();
+            e.stopPropagation();
         });
 
         filter_input.on(Metro.events.keyup, function(){
@@ -13958,14 +14332,19 @@ var Select = {
         });
     },
 
+    reset: function(){
+        var that = this, element = this.element, o = this.options;
+        //TODO
+    },
+
     disable: function(){
         this.element.data("disabled", true);
-        this.element.parent().addClass("disabled");
+        this.element.closest(".select").addClass("disabled");
     },
 
     enable: function(){
         this.element.data("disabled", false);
-        this.element.parent().removeClass("disabled");
+        this.element.closest(".select").removeClass("disabled");
     },
 
     val: function(v){
@@ -14044,13 +14423,13 @@ var Select = {
         var element = this.element;
         var container = element.closest(".select");
         var drop_container = container.find(".drop-container");
-        var input = element.siblings("input");
+        var input = element.siblings(".select-input");
         var filter_input = drop_container.find("input");
         var list = drop_container.find("ul");
 
         container.off(Metro.events.click);
-        input.off(Metro.events.blur);
-        input.off(Metro.events.focus);
+        container.off(Metro.events.click, ".input-clear-button");
+        input.off(Metro.events.click);
         filter_input.off(Metro.events.blur);
         filter_input.off(Metro.events.focus);
         list.off(Metro.events.click, "li");
@@ -14282,6 +14661,13 @@ Metro['sidebar'] = {
             return ;
         }
         $(el).data("sidebar").toggle();
+    },
+
+    isOpen: function(el){
+        if (!this.isSidebar(el)) {
+            return ;
+        }
+        return $(el).data("sidebar").isOpen();
     }
 };
 
@@ -15876,6 +16262,7 @@ var Table = {
         this.component = null;
         this.inspector = null;
         this.view = {};
+        this.viewDefault = {};
         this.locale = Metro.locales["en-US"];
 
         this.sort = {
@@ -15911,6 +16298,7 @@ var Table = {
         source: null,
 
         filterMinLength: 1,
+        filterThreshold: 500,
 
         showRowsSteps: true,
         showSearch: true,
@@ -15947,6 +16335,8 @@ var Table = {
         rowsWrapper: null,
         infoWrapper: null,
         paginationWrapper: null,
+
+        cellWrapper: true,
 
         clsComponent: "",
         clsTable: "",
@@ -15992,6 +16382,7 @@ var Table = {
         onCheckDraw: Metro.noop,
         onViewSave: Metro.noop,
         onViewGet: Metro.noop,
+        onViewCreated: Metro.noop,
         onTableCreate: Metro.noop
     },
 
@@ -16025,6 +16416,9 @@ var Table = {
             Utils.exec(o.onDataLoad, [o.source], element[0]);
 
             $.get(o.source, function(data){
+                if (typeof data !== "object") {
+                    throw new Error("Data for table is not a object");
+                }
                 that._build(data);
                 Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
             }).fail(function( jqXHR, textStatus, errorThrown) {
@@ -16036,8 +16430,7 @@ var Table = {
     },
 
     _build: function(data){
-        var that = this, element = this.element;
-        var o = this.options;
+        var that = this, element = this.element, o = this.options;
         var view, id = element.attr("id");
 
         o.rows = parseInt(o.rows);
@@ -16052,14 +16445,8 @@ var Table = {
             this._createItemsFromHTML()
         }
 
-        $.each(this.heads, function(i){
-            that.view[i] = {
-                "index": i,
-                "index-view": i,
-                "show": !Utils.isValue(this.cls) || (Utils.isValue(this.cls) && !this.cls.contains("hidden")),
-                "size": Utils.isValue(this.size) ? this.size : "auto"
-            }
-        });
+        this.view = this._createView();
+        this.viewDefault = Utils.objectClone(this.view);
 
         if (o.viewSaveMode.toLowerCase() === "client") {
             view = Metro.storage.getItem(o.viewSavePath.replace("$1", id));
@@ -16081,7 +16468,10 @@ var Table = {
                     }
                     that._final();
                 }
-            );
+            ).fail(function(jqXHR, textStatus) {
+                that._final();
+                console.log("Warning! View " + textStatus + " for table " + element.attr('id') + " ");
+            });
         }
     },
 
@@ -16103,6 +16493,8 @@ var Table = {
         var o = this.options;
         var item_check, item_rownum;
         var service = [];
+
+        this.service = {};
 
         item_rownum = {
             title: "#",
@@ -16134,19 +16526,34 @@ var Table = {
         this.service = service;
     },
 
-    _createInspector: function(){
-        var that = this, o = this.options;
-        var component = this.component;
-        var inspector, table = $("<table>").addClass("table compact"), row, actions, tds = [], cells, j;
+    _createView: function(){
+        var view, o = this.options;
 
-        inspector = $("<div data-role='draggable' data-drag-element='h3' data-drag-area='body'>").addClass("table-inspector");
+        view = {};
 
-        $("<h3 class='text-light'>"+o.inspectorTitle+"</h3>").appendTo(inspector);
-        $("<hr class='thin bg-lightGray'>").appendTo(inspector);
+        $.each(this.heads, function(i){
 
-        table.appendTo(inspector);
+            if (Utils.isValue(this.cls)) {this.cls = this.cls.replace("hidden", "");}
+            if (Utils.isValue(this.clsColumn)) {this.clsColumn = this.clsColumn.replace("hidden", "");}
 
-        cells = this.heads;
+            view[i] = {
+                "index": i,
+                "index-view": i,
+                "show": !Utils.isValue(this.show) ? true : this.show,
+                "size": Utils.isValue(this.size) ? this.size : ""
+            }
+        });
+
+        Utils.exec(o.onViewCreated, [view], view);
+        return view;
+    },
+
+    _createInspectorItems: function(table){
+        var that = this;
+        var j, tds = [], row;
+        var cells = this.heads;
+
+        table.html("");
 
         for (j = 0; j < cells.length; j++){
             tds[j] = null;
@@ -16156,7 +16563,7 @@ var Table = {
             row = $("<tr>");
             row.data('index', i);
             row.data('index-view', i);
-            $("<td>").html("<input type='checkbox' data-role='checkbox' name='column_show_check[]' value='"+i+"' "+(that.view[i]['show'] ? "checked" : "")+">").appendTo(row);
+            $("<td>").html("<input type='checkbox' data-role='checkbox' name='column_show_check[]' value='"+i+"' "+(Utils.bool(that.view[i]['show']) ? "checked" : "")+">").appendTo(row);
             $("<td>").html(this.title).appendTo(row);
             $("<td>").html("<input type='number' name='column_size' value='"+that.view[i]['size']+"' data-index='"+i+"'>").appendTo(row);
             $("<td>").html("" +
@@ -16170,15 +16577,43 @@ var Table = {
         for (j = 0; j < cells.length; j++){
             tds[j].appendTo(table);
         }
+    },
+
+    _createInspector: function(){
+        var o = this.options;
+        var component = this.component;
+        var inspector, table, tbody, actions;
+
+        inspector = $("<div data-role='draggable' data-drag-element='h3' data-drag-area='body'>").addClass("table-inspector");
+
+        $("<h3 class='text-light'>"+o.inspectorTitle+"</h3>").appendTo(inspector);
+        $("<hr class='thin bg-lightGray'>").appendTo(inspector);
+
+        table = $("<table>").addClass("table subcompact");
+        tbody = $("<tbody>").appendTo(table);
+
+        table.appendTo(inspector);
+
+        this._createInspectorItems(tbody);
 
         $("<hr class='thin bg-lightGray'>").appendTo(inspector);
         actions = $("<div class='inspector-actions'>").appendTo(inspector);
         $("<button class='button primary js-table-inspector-save' type='button'>").html(this.locale.buttons.save).appendTo(actions);
+        $("<button class='button secondary js-table-inspector-reset ml-2 mr-2' type='button'>").html(this.locale.buttons.reset).appendTo(actions);
         $("<button class='button link js-table-inspector-cancel place-right' type='button'>").html(this.locale.buttons.cancel).appendTo(actions);
 
         this.inspector = inspector;
 
         component.append(inspector);
+
+        this._createInspectorEvents();
+    },
+
+    _resetInspector: function(){
+        var inspector = this.inspector;
+        var table = inspector.find("table tbody");
+        this._createInspectorItems(table);
+        this._createInspectorEvents();
     },
 
     _createHeadsFormHTML: function(){
@@ -16257,6 +16692,10 @@ var Table = {
     _createItemsFromJSON: function(source){
         var that = this;
 
+        if (typeof source === "string") {
+            source = JSON.parse(source);
+        }
+
         if (source.header !== undefined) {
             that.heads = source.header;
         } else {
@@ -16283,9 +16722,10 @@ var Table = {
     },
 
     _createTableHeader: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
         var head = $("<thead>").html('');
         var tr, th, tds = [], j, cells;
+        var view = this.view;
 
         element.find("thead").remove();
 
@@ -16298,28 +16738,15 @@ var Table = {
         tr = $("<tr>").addClass(o.clsHeadRow).appendTo(head);
 
         $.each(this.service, function(){
-            var item = this;
+            var item = this, classes = [];
             th = $("<th>").appendTo(tr);
-            if (item.title !== undefined) {
-                th.html(item.title);
-            }
-            if (item.size !== undefined) {
-                th.css({
-                    width: item.size
-                })
-            }
-            if (item.cls !== undefined) {
-                th.addClass(item.cls);
-            }
-
-            th.addClass(o.clsHeadCell);
-
-            if (item.type === 'rowcheck') {
-                th.addClass("check-cell");
-            }
-            if (item.type === 'rownum') {
-                th.addClass("rownum-cell");
-            }
+            if (Utils.isValue(item.title)) {th.html(item.title);}
+            if (Utils.isValue(item.size)) {th.css({width: item.size});}
+            if (Utils.isValue(item.cls)) {classes.push(item.cls);}
+            if (item.type === 'rowcheck') {classes.push("check-cell");}
+            if (item.type === 'rownum') {classes.push("rownum-cell");}
+            classes.push(o.clsHeadCell);
+            th.addClass(classes.join(" "));
         });
 
         cells = this.heads;
@@ -16335,28 +16762,11 @@ var Table = {
             th = $("<th>");
             th.data("index", cell_index);
 
-            if (Utils.isValue(item.title)) {
-                th.html(item.title);
-            }
-
-            if (Utils.isValue(item.format)) {
-                th.attr("data-format", item.format);
-            }
-
-            if (Utils.isValue(item.name)) {
-                th.attr("data-name", item.name);
-            }
-
-            if (Utils.isValue(item.colspan)) {
-                th.attr("colspan", item.colspan);
-            }
-
-            if (Utils.isValue(that.view[cell_index]['size'])) {
-                th.css({
-                    width: that.view[cell_index]['size']
-                })
-            }
-
+            if (Utils.isValue(item.title)) {th.html(item.title);}
+            if (Utils.isValue(item.format)) {th.attr("data-format", item.format);}
+            if (Utils.isValue(item.name)) {th.attr("data-name", item.name);}
+            if (Utils.isValue(item.colspan)) {th.attr("colspan", item.colspan);}
+            if (Utils.isValue(view[cell_index]['size'])) {th.css({width: view[cell_index]['size']});}
             if (item.sortable === true) {
                 classes.push("sortable-column");
 
@@ -16364,28 +16774,23 @@ var Table = {
                     classes.push("sort-" + item.sortDir);
                 }
             }
-
-            if (Utils.isValue(item.cls)) {
-                classes.push(item.cls);
-            }
-
-            classes.push(o.clsHeadCell);
-
-            if (that.view[cell_index]['show'] === false) {
+            if (Utils.isValue(item.cls)) {classes.push(item.cls);}
+            if (Utils.bool(view[cell_index]['show']) === false) {
                 classes.push("hidden");
             }
 
-            if (item.type === 'rowcheck') {
-                classes.push("check-cell");
-            }
-            if (item.type === 'rownum') {
-                classes.push("rownum-cell");
+            if (item.type === 'rowcheck') {classes.push("check-cell");}
+            if (item.type === 'rownum') {classes.push("rownum-cell");}
+
+            classes.push(o.clsHeadCell);
+
+            if (Utils.bool(view[cell_index]['show'])) {
+                Utils.arrayDelete(classes, "hidden");
             }
 
             th.addClass(classes.join(" "));
 
-            tds[that.view[cell_index]['index-view']] = th;
-
+            tds[view[cell_index]['index-view']] = th;
         });
 
         for (j = 0; j < cells.length; j++){
@@ -16396,18 +16801,16 @@ var Table = {
     },
 
     _createTableBody: function(){
-        var element = this.element;
-        var body, head = element.find("thead");
+        var body, head, element = this.element;
 
+        head  = element.find("thead");
         element.find("tbody").remove();
-
         body = $("<tbody>").addClass(this.options.clsBody);
         body.insertAfter(head);
     },
 
     _createTableFooter: function(){
-        var element = this.element;
-        var o = this.options;
+        var element = this.element, o = this.options;
         var foot = $("<tfoot>").addClass(o.clsFooter);
         var tr, th;
 
@@ -16498,12 +16901,12 @@ var Table = {
         var bottom_block = $("<div>").addClass("table-bottom").addClass(o.clsTableBottom).insertAfter(element);
         var info, pagination;
 
-        info = $("<div>").addClass("table-info").addClass(o.clsTableInfo).appendTo(bottom_block);
+        info = Utils.isValue(this.wrapperInfo) ? this.wrapperInfo : $("<div>").addClass("table-info").addClass(o.clsTableInfo).appendTo(bottom_block);
         if (o.showTableInfo !== true) {
             info.hide();
         }
 
-        pagination = $("<div>").addClass("table-pagination").addClass(o.clsTablePagination).appendTo(bottom_block);
+        pagination = Utils.isValue(this.wrapperPagination) ? this.wrapperPagination : $("<div>").addClass("table-pagination").addClass(o.clsTablePagination).appendTo(bottom_block);
         if (o.showPagination !== true) {
             pagination.hide();
         }
@@ -16602,7 +17005,6 @@ var Table = {
         var component = element.parent();
         var search = component.find(".table-search-block input");
         var customSearch;
-        var inspector = this.inspector;
         var id = element.attr("id");
 
         element.on(Metro.events.click, ".sortable-column", function(){
@@ -16688,13 +17090,20 @@ var Table = {
             Utils.exec(o.onCheckClickAll, [status], this);
         });
 
-        var _search = function(){
+        var input_interval;
+
+        var _search = function(e){
             that.filterString = this.value.trim().toLowerCase();
+
             if (that.filterString[that.filterString.length - 1] === ":") {
                 return ;
             }
-            that.currentPage = 1;
-            that._draw();
+
+            clearInterval(input_interval);
+            setTimeout(function(){
+                that.currentPage = 1;
+                that._draw();
+            }, o.filterThreshold);
         };
 
         search.on(Metro.events.inputchange, _search);
@@ -16709,6 +17118,9 @@ var Table = {
         function pageLinkClick(l){
             var link = $(l);
             var item = link.parent();
+            if (that.filteredItems.length === 0) {
+                return ;
+            }
 
             if (item.hasClass("active")) {
                 return ;
@@ -16743,7 +17155,15 @@ var Table = {
             });
         }
 
+        this._createInspectorEvents();
+    },
+
+    _createInspectorEvents: function(){
+        var that = this, inspector = this.inspector;
         // Inspector event
+
+        this._removeInspectorEvents();
+
         inspector.on(Metro.events.click, ".js-table-inspector-field-up", function(){
             var button = $(this), tr = button.closest("tr");
             var tr_prev = tr.prev("tr");
@@ -16753,6 +17173,10 @@ var Table = {
                 return ;
             }
             tr.insertBefore(tr_prev);
+            tr.addClass("flash");
+            setTimeout(function(){
+                tr.removeClass("flash");
+            }, 1000);
             index_view = tr.index();
 
             tr.data("index-view", index_view);
@@ -16778,6 +17202,10 @@ var Table = {
                 return ;
             }
             tr.insertAfter(tr_next);
+            tr.addClass("flash");
+            setTimeout(function(){
+                tr.removeClass("flash");
+            }, 1000);
             index_view = tr.index();
 
             tr.data("index-view", index_view);
@@ -16802,14 +17230,17 @@ var Table = {
 
             if (status) {
                 $.each(op, function(){
-                    var a = Utils.strToArray(that.heads[index][this]);
+                    var a;
+                    a = Utils.isValue(that.heads[index][this]) ? Utils.strToArray(that.heads[index][this]) : [];
                     Utils.arrayDelete(a, "hidden");
                     that.heads[index][this] = a.join(" ");
                     that.view[index]['show'] = true;
                 });
             } else {
                 $.each(op, function(){
-                    var a = Utils.strToArray(that.heads[index][this]);
+                    var a;
+
+                    a = Utils.isValue(that.heads[index][this]) ? Utils.strToArray(that.heads[index][this]) : [];
                     if (a.indexOf("hidden") === -1) {
                         a.push("hidden");
                     }
@@ -16840,23 +17271,40 @@ var Table = {
         inspector.on(Metro.events.click, ".js-table-inspector-cancel", function(){
             that.openInspector(false);
         });
+
+        inspector.on(Metro.events.click, ".js-table-inspector-reset", function(e){
+            that.resetView();
+        });
+    },
+
+    _removeInspectorEvents: function(){
+        var inspector = this.inspector;
+        inspector.off(Metro.events.click, ".js-table-inspector-field-up");
+        inspector.off(Metro.events.click, ".js-table-inspector-field-down");
+        inspector.off(Metro.events.click, "input[type=checkbox]");
+        inspector.off(Metro.events.click, ".js-table-inspector-save");
+        inspector.off(Metro.events.click, ".js-table-inspector-cancel");
+        inspector.off(Metro.events.click, ".js-table-inspector-reset");
+        inspector.find("input[type=number]").off(Metro.events.inputchange);
     },
 
     _saveTableView: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
+        var view = this.view;
         var id = element.attr("id");
 
         if (o.viewSaveMode.toLowerCase() === "client") {
-            Metro.storage.setItem(o.viewSavePath.replace("$1", id), this.view);
-            Utils.exec(o.onViewSave, [o.viewSavePath, that.view], element[0]);
+            Metro.storage.setItem(o.viewSavePath.replace("$1", id), view);
+            Utils.exec(o.onViewSave, [o.viewSavePath, view], element[0]);
         } else {
             $.post(
                 o.viewSavePath,
                 {
-                    id : that.view
+                    id : element.attr("id"),
+                    view : view
                 },
                 function(data, status, xhr){
-                    Utils.exec(o.onViewSave, [o.viewSavePath, that.view, data, status, xhr], element[0]);
+                    Utils.exec(o.onViewSave, [o.viewSavePath, view, data, status, xhr], element[0]);
                 }
             );
         }
@@ -16969,6 +17417,11 @@ var Table = {
         if (this.currentPage === this.pagesCount) {
             next.addClass("disabled");
         }
+
+        if (this.filteredItems.length === 0) {
+            pagination.addClass("disabled");
+            pagination.children().addClass("disabled");
+        }
     },
 
     _filter: function(){
@@ -16990,7 +17443,8 @@ var Table = {
 
                 if (result === true && that.filters.length > 0) {
                     for (i = 0; i < that.filters.length; i++) {
-                        if (Utils.exec(that.filters[i], [row]) !== true) {
+                        if (!Utils.isValue(that.filters[i])) continue;
+                        if (Utils.exec(that.filters[i], [row, that.heads]) !== true) {
                             result = false;
                             break;
                         }
@@ -17024,6 +17478,7 @@ var Table = {
             stop = parseInt(o.rows) === -1 ? this.items.length - 1 : start + o.rows - 1;
         var items;
         var stored_keys = Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr('id')));
+        var view = this.view;
 
         body.html("");
 
@@ -17068,19 +17523,26 @@ var Table = {
                 }
 
                 $.each(cells, function(cell_index){
-                    td = $("<td>").html(this);
+                    if (o.cellWrapper === true) {
+                        td = $("<td>");
+                        $("<div>").addClass("cell-wrapper").html(this).appendTo(td);
+                    } else {
+                        td = $("<td>").html(this);
+                    }
                     td.addClass(o.clsBodyCell);
                     if (Utils.isValue(that.heads[cell_index].clsColumn)) {
                         td.addClass(that.heads[cell_index].clsColumn);
                     }
-                    if (
-                        (Utils.isValue(that.heads[cell_index].cls)
-                        && that.heads[cell_index].cls.contains("hidden"))
-                        || that.view[cell_index].show === false
-                    ) {
+
+                    if (Utils.bool(view[cell_index].show) === false) {
                         td.addClass("hidden");
                     }
-                    tds[that.view[cell_index]['index-view']] = td;
+
+                    if (Utils.bool(view[cell_index].show)) {
+                        td.removeClass("hidden");
+                    }
+
+                    tds[view[cell_index]['index-view']] = td;
                     Utils.exec(o.onDrawCell, [td, this, cell_index, that.heads[cell_index]], td[0]);
                 });
 
@@ -17089,7 +17551,7 @@ var Table = {
                     Utils.exec(o.onAppendCell, [tds[j], tr, j, element], tds[j][0])
                 }
 
-                Utils.exec(o.onDrawRow, [tr, element], tr[0]);
+                Utils.exec(o.onDrawRow, [tr, that.view, that.heads, element], tr[0]);
 
                 tr.appendTo(body);
 
@@ -17100,7 +17562,7 @@ var Table = {
         this._info(start + 1, stop + 1, items.length);
         this._paging(items.length);
 
-        this.activity.hide();
+        if (this.activity) this.activity.hide();
 
         Utils.exec(o.onDraw, [element], element[0]);
 
@@ -17179,24 +17641,20 @@ var Table = {
         this._draw();
     },
 
-    loadData: function(source){
+    loadData: function(source, review){
         var that = this, element = this.element, o = this.options;
+        var need_sort = false;
+        var sortable_columns;
 
-        if (Utils.isValue(source) !== true) {
-            return ;
+        if (!Utils.isValue(review)) {
+            review = true;
         }
 
-        o.source = source;
+        function redraw(){
 
-        Utils.exec(o.onDataLoad, [o.source], element[0]);
-
-        $.get(o.source, function(data){
-            var need_sort = false;
-            var sortable_columns;
-
-            that._createItemsFromJSON(data);
-
-            element.html("");
+            if (review === true) {
+                that.view = that._createView();
+            }
 
             that._createTableHeader();
             that._createTableBody();
@@ -17221,11 +17679,39 @@ var Table = {
             that.currentPage = 1;
 
             that._draw();
+        }
 
-            Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
-        }).fail(function( jqXHR, textStatus, errorThrown) {
-            console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
-        });
+        element.html("");
+
+        if (!Utils.isValue(source)) {
+
+            // this._createItemsFromHTML();
+            redraw();
+
+        } else {
+            o.source = source;
+
+            Utils.exec(o.onDataLoad, [o.source], element[0]);
+
+            $.get(o.source, function(data){
+
+                that.items = [];
+                that.heads = [];
+                that.foots = [];
+
+                that._createItemsFromJSON(data);
+
+                redraw();
+
+                Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
+            }).fail(function( jqXHR, textStatus, errorThrown) {
+                console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
+            });
+        }
+    },
+
+    reload: function(review){
+        this.loadData(this.options.source, review);
     },
 
     next: function(){
@@ -17289,7 +17775,7 @@ var Table = {
     },
 
     removeFilter: function(key, redraw){
-        Utils.arrayDeleteByKey(this.filters, key);
+        this.filters[key] = null;
         if (redraw === true) {
             this.currentPage = 1;
             this.draw();
@@ -17309,16 +17795,29 @@ var Table = {
         return this.items;
     },
 
+    getHeads: function(){
+        return this.heads;
+    },
+
+    getView: function(){
+        return this.view;
+    },
+
     getFilteredItems: function(){
-        return this.filteredItems;
+        return this.filteredItems.length > 0 ? this.filteredItems : this.items;
     },
 
     getSelectedItems: function(){
-        var that = this, element = this.element, o = this.options;
-        var stored_keys = Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr("id")), []);
+        var element = this.element, o = this.options;
+        var stored_keys = Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr("id")));
         var selected = [];
+
+        if (!Utils.isValue(stored_keys)) {
+            return [];
+        }
+
         $.each(this.items, function(){
-            if (stored_keys.indexOf(this[o.checkColIndex]) !== -1) {
+            if (stored_keys.indexOf(""+this[o.checkColIndex]) !== -1) {
                 selected.push(this);
             }
         });
@@ -17328,6 +17827,13 @@ var Table = {
     getStoredKeys: function(){
         var element = this.element, o = this.options;
         return Metro.storage.getItem(o.checkStoreKey.replace("$1", element.attr("id")), []);
+    },
+
+    clearSelected: function(redraw){
+        var element = this.element, o = this.options;
+        Metro.storage.setItem(o.checkStoreKey.replace("$1", element.attr("id")), []);
+        element.find("table-service-check-all input").prop("checked", false);
+        if (redraw === true) this._draw();
     },
 
     getFilters: function(){
@@ -17350,8 +17856,123 @@ var Table = {
         this.inspector.toggleClass("open");
     },
 
-    changeAttribute: function(attributeName){
+    resetView: function(){
 
+        this.view = this._createView();
+
+        this._createTableHeader();
+        this._createTableFooter();
+        this._draw();
+
+        this._resetInspector();
+        this._saveTableView();
+    },
+
+    export: function(to, mode, filename, options){
+        var that = this, o = this.options;
+        var table = document.createElement("table");
+        var head = $("<thead>").appendTo(table);
+        var body = $("<tbody>").appendTo(table);
+        var i, j, cells, tds = [], items, tr, td;
+        var start, stop;
+
+        mode = Utils.isValue(mode) ? mode.toLowerCase() : "all-filtered";
+        filename = Utils.isValue(filename) ? filename : Utils.elementId("table")+"-export.csv";
+
+        // Create table header
+        tr = $("<tr>");
+        cells = this.heads;
+
+        for (j = 0; j < cells.length; j++){
+            tds[j] = null;
+        }
+
+        $.each(cells, function(cell_index){
+            var item = this;
+            if (Utils.bool(that.view[cell_index]['show']) === false) {
+                return ;
+            }
+            td = $("<th>");
+            if (Utils.isValue(item.title)) {
+                td.html(item.title);
+            }
+            tds[that.view[cell_index]['index-view']] = td;
+        });
+
+        for (j = 0; j < cells.length; j++){
+            if (Utils.isValue(tds[j])) tds[j].appendTo(tr);
+        }
+        tr.appendTo(head);
+
+        // Create table data
+        if (mode === "checked") {
+            items = this.getSelectedItems();
+            start = 0; stop = items.length - 1;
+        } else if (mode === "view") {
+            items = this._filter();
+            start = parseInt(o.rows) === -1 ? 0 : o.rows * (this.currentPage - 1);
+            stop = parseInt(o.rows) === -1 ? items.length - 1 : start + o.rows - 1;
+        } else if (mode === "all") {
+            items = this.items;
+            start = 0; stop = items.length - 1;
+        } else {
+            items = this._filter();
+            start = 0; stop = items.length - 1;
+        }
+
+        for (i = start; i <= stop; i++) {
+            if (Utils.isValue(items[i])) {
+                tr = $("<tr>");
+
+                cells = items[i];
+
+                for (j = 0; j < cells.length; j++){
+                    tds[j] = null;
+                }
+
+                $.each(cells, function(cell_index){
+                    if (Utils.bool(that.view[cell_index].show) === false) {
+                        return ;
+                    }
+                    td = $("<td>").html(this);
+                    tds[that.view[cell_index]['index-view']] = td;
+                });
+
+                for (j = 0; j < cells.length; j++){
+                    if (Utils.isValue(tds[j])) tds[j].appendTo(tr);
+                }
+
+                tr.appendTo(body);
+            }
+        }
+
+        switch (to) {
+            default: Export.tableToCSV(table, filename, options);
+        }
+        table.remove();
+    },
+
+    changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+
+        function dataCheck(){
+            o.check = Utils.bool(element.attr("data-check"));
+            that._service();
+            that._createTableHeader();
+            that._draw();
+        }
+
+        function dataRownum(){
+            o.rownum = Utils.bool(element.attr("data-rownum"));
+            that._service();
+            that._createTableHeader();
+            that._draw();
+        }
+
+        switch (attributeName) {
+            case "data-check": dataCheck(); break;
+            case "data-rownum": dataRownum(); break;
+        }
     }
 };
 
@@ -17374,6 +17995,13 @@ var Tabs = {
     },
 
     options: {
+        expand: null,
+        tabsPosition: "top",
+
+        clsTabs: "",
+        clsTabsList: "",
+        clsTabsListItem: "",
+
         onTab: Metro.noop,
         onBeforeTab: Metro.noop_true,
         onTabsCreate: Metro.noop
@@ -17406,18 +18034,24 @@ var Tabs = {
         var that = this, element = this.element, o = this.options;
         var prev = element.prev();
         var parent = element.parent();
-        var container = $("<div>").addClass("tabs tabs-wrapper " + element[0].className);
+        var right_parent = parent.hasClass("tabs");
+        var container = right_parent ? parent : $("<div>").addClass("tabs tabs-wrapper");
         var expandTitle, hamburger;
 
-        element[0].className = "";
-
-        if (prev.length === 0) {
-            parent.prepend(container);
-        } else {
-            container.insertAfter(prev);
+        if (Utils.isValue(o.expand)) {
+            container.addClass("tabs-expand-"+o.expand);
         }
 
-        element.appendTo(container);
+        container.addClass(o.tabsPosition.replace(["-", "_", "+"], " "));
+        if (o.tabsPosition.contains("vertical")) {
+            container.addClass("tabs-expand-fs"); // TODO need redesign this behavior
+        }
+
+        element.addClass("tabs-list");
+        if (!right_parent) {
+            container.insertBefore(element);
+            element.appendTo(container);
+        }
 
         element.data('expanded', false);
 
@@ -17434,6 +18068,9 @@ var Tabs = {
             }
         }
 
+        container.addClass(o.clsTabs);
+        element.addClass(o.clsTabsList);
+        element.children("li").addClass(o.clsTabsListItem);
     },
 
     _createEvents: function(){
@@ -17454,8 +18091,12 @@ var Tabs = {
 
         element.on(Metro.events.click, "a", function(e){
             var link = $(this);
-            var href = link.attr("href");
+            var href = link.attr("href").trim();
             var tab = link.parent("li");
+
+            if (tab.hasClass("active")) {
+                e.preventDefault();
+            }
 
             if (element.data('expanded') === true) {
                 element.removeClass("expand");
@@ -17467,7 +18108,7 @@ var Tabs = {
                 return false;
             }
 
-            if (!Utils.isUrl(href)) {
+            if (Utils.isValue(href) && href[0] === "#") {
                 that._open(tab);
                 e.preventDefault();
             }
@@ -17520,7 +18161,7 @@ var Tabs = {
             if (t.length > 0) t.hide();
         });
 
-        if (target !== "#") {
+        if (target !== "#" && target[0] === "#") {
             $(target).show();
         }
 
@@ -17529,12 +18170,273 @@ var Tabs = {
         Utils.exec(o.onTab, [tab, element]);
     },
 
+    next: function(){
+        var that = this, element = this.element, o = this.options;
+        var next, active_tab = element.find("li.active");
+
+        next = active_tab.next("li");
+        if (next.length > 0) {
+            this._open(next);
+        }
+    },
+
+    prev: function(){
+        var that = this, element = this.element, o = this.options;
+        var next, active_tab = element.find("li.active");
+
+        next = active_tab.prev("li");
+        if (next.length > 0) {
+            this._open(next);
+        }
+    },
+
+    open: function(tab){
+        var that = this, element = this.element, o = this.options;
+        var tabs = element.find("li");
+
+        if (!Utils.isValue(tab)) {
+            tab = 1;
+        }
+
+        if (Utils.isInt(tab)) {
+            if (Utils.isValue(tabs[tab-1])) this._open($(tabs[tab-1]));
+        } else {
+            this._open($(tab));
+        }
+    },
+
     changeAttribute: function(attributeName){
 
     }
 };
 
 Metro.plugin('tabs', Tabs);
+
+// Source: js/plugins/tag-input.js
+var TagInput = {
+    init: function( options, elem ) {
+        this.options = $.extend( {}, this.options, options );
+        this.elem  = elem;
+        this.element = $(elem);
+        this.values = [];
+
+        this._setOptionsFromDOM();
+        this._create();
+
+        return this;
+    },
+
+    options: {
+        randomColor: false,
+        maxTags: 0,
+        tagSeparator: ",",
+        tagTrigger: "13,188",
+        clsTag: "",
+        clsTagTitle: "",
+        clsTagRemover: "",
+        onBeforeTagAdd: Metro.noop_true,
+        onTagAdd: Metro.noop,
+        onBeforeTagRemove: Metro.noop_true,
+        onTagRemove: Metro.noop,
+        onTag: Metro.noop,
+        onTagInputCreate: Metro.noop
+    },
+
+    _setOptionsFromDOM: function(){
+        var element = this.element, o = this.options;
+
+        $.each(element.data(), function(key, value){
+            if (key in o) {
+                try {
+                    o[key] = JSON.parse(value);
+                } catch (e) {
+                    o[key] = value;
+                }
+            }
+        });
+    },
+
+    _create: function(){
+        var element = this.element, o = this.options;
+
+        this._createStructure();
+        this._createEvents();
+
+        Utils.exec(o.onTagInputCreate, [element], element[0]);
+    },
+
+    _createStructure: function(){
+        var that = this, element = this.element, o = this.options;
+        var container, input;
+        var values = element.val().trim();
+
+        container = $("<div>").addClass("tag-input "  + element[0].className).insertBefore(element);
+        element.appendTo(container);
+
+        element[0].className = "";
+
+        element.addClass("original-input");
+        input = $("<input type='text'>").addClass("input-wrapper");
+        input.appendTo(container);
+
+        if (Utils.isValue(values)) {
+            $.each(Utils.strToArray(values, o.tagSeparator), function(){
+                that._addTag(this);
+            })
+        }
+    },
+
+    _createEvents: function(){
+        var that = this, element = this.element, o = this.options;
+        var container = element.closest(".tag-input");
+        var input = container.find(".input-wrapper");
+
+        input.on(Metro.events.focus, function(){
+            container.addClass("focused");
+        });
+
+        input.on(Metro.events.blur, function(){
+            container.removeClass("focused");
+        });
+
+        input.on(Metro.events.keyup, function(e){
+            var val = input.val().trim();
+
+            if (val === "") {return ;}
+
+            if (Utils.strToArray(o.tagTrigger, ",", "integer").indexOf(e.keyCode) === -1) {
+                return ;
+            }
+
+            input.val("");
+            that._addTag(val.replace(",", ""));
+        });
+
+        container.on(Metro.events.click, ".tag .remover", function(){
+            var tag = $(this).closest(".tag");
+            that._delTag(tag);
+        });
+
+        container.on(Metro.events.click, function(){
+            input.focus();
+        });
+    },
+
+    _addTag: function(val){
+        var element = this.element, o = this.options;
+        var container = element.closest(".tag-input");
+        var input = container.find(".input-wrapper");
+        var tag, title, remover;
+
+        if (o.maxTags > 0 && this.values.length === o.maxTags) {
+            return ;
+        }
+
+        if (!Utils.exec(o.onBeforeTagAdd, [val, this.values], element[0])) {
+            return ;
+        }
+
+
+        tag = $("<span>").addClass("tag").addClass(o.clsTag).insertBefore(input);
+        tag.data("value", val);
+
+        title = $("<span>").addClass("title").addClass(o.clsTagTitle).html(val);
+        remover = $("<span>").addClass("remover").addClass(o.clsTagRemover).html("&times;");
+
+        title.appendTo(tag);
+        remover.appendTo(tag);
+
+        if (o.randomColor === true) {
+            var colors = Colors.colors(Colors.PALETTES.ALL), bg, fg, bg_r;
+
+            bg = colors[Utils.random(0, colors.length - 1)];
+            bg_r = Colors.darken(bg, 15);
+            fg = Colors.isDark(bg) ? "#ffffff" : "#000000";
+
+            tag.css({
+                backgroundColor: bg,
+                color: fg
+            });
+            remover.css({
+                backgroundColor: bg_r,
+                color: fg
+            });
+        }
+
+        this.values.push(val);
+        element.val(this.values.join(o.tagSeparator));
+
+        Utils.exec(o.onTagAdd, [tag, val, this.values], element[0]);
+        Utils.exec(o.onTag, [tag, val, this.values], element[0]);
+    },
+
+    _delTag: function(tag) {
+        var element = this.element, o = this.options;
+        var val = tag.data("value");
+
+        if (!Utils.exec(o.onBeforeTagAdd, [tag, val, this.values, tag], element[0])) {
+            return ;
+        }
+
+        Utils.arrayDelete(this.values, val);
+        element.val(this.values.join(o.tagSeparator));
+
+        Utils.exec(o.onTagRemove, [tag, val, this.values], element[0]);
+        Utils.exec(o.onTag, [tag, val, this.values], element[0]);
+        tag.remove();
+    },
+
+    tags: function(){
+        return this.values;
+    },
+
+    val: function(v){
+        var that = this, o = this.options;
+
+        if (!Utils.isValue(v)) {
+            return this.tags();
+        }
+
+        this.values = [];
+
+        if (Utils.isValue(values)) {
+            $.each(Utils.strToArray(values, o.tagSeparator), function(){
+                that._addTag(this);
+            })
+        }
+    },
+
+    clear: function(){
+        var element = this.element;
+        var container = element.closest(".tag-input");
+
+        this.values = [];
+        element.val("");
+
+        container.find(".tag").remove();
+    },
+
+    changeAttribute: function(attributeName){
+
+    },
+
+    destroy: function(){
+        var element = this.element;
+        var container = element.closest(".tag-input");
+        var input = container.find(".input-wrapper");
+
+        input.off(Metro.events.focus);
+        input.off(Metro.events.blur);
+        input.off(Metro.events.keydown);
+        container.off(Metro.events.click, ".tag .remover");
+        container.off(Metro.events.click);
+
+        element.insertBefore(container);
+        container.remove();
+    }
+};
+
+Metro.plugin('taginput', TagInput);
 
 // Source: js/plugins/textarea.js
 var Textarea = {
@@ -18813,7 +19715,12 @@ var ValidatorFuncs = {
     not: function(val, not_this){
         return val !== not_this;
     },
-
+    notequals: function(val, val2){
+        return val.trim() !== val2.trim();
+    },
+    equals: function(val, val2){
+        return val.trim() === val2.trim();
+    },
     custom: function(val, func){
         if (Utils.isFunc(func) === false) {
             return false;
@@ -18880,10 +19787,8 @@ var ValidatorFuncs = {
     validate: function(el, result, cb_ok, cb_error, required_mode){
         var this_result = true;
         var input = $(el);
-        var is_control = ValidatorFuncs.is_control(input);
         var funcs = input.data('validate') !== undefined ? String(input.data('validate')).split(" ").map(function(s){return s.trim();}) : [];
         var errors = [];
-        var required = funcs.indexOf('required') !== -1;
 
         if (funcs.length === 0) {
             return true;
@@ -18925,7 +19830,7 @@ var ValidatorFuncs = {
                 f = rule[0]; rule.shift();
                 a = rule.join("=");
 
-                if (f === 'compare') {
+                if (['compare', 'equals', 'notequals'].indexOf(f) > -1) {
                     a = input[0].form.elements[a].value;
                 }
 
@@ -18941,7 +19846,6 @@ var ValidatorFuncs = {
                             this_result = true;
                         }
                     }
-                    // this_result = ValidatorFuncs[f](input.val(), a);
                 }
 
                 if (this_result === false) {

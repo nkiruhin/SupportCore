@@ -256,6 +256,15 @@ var Colors = {
         return Object.keys(this[palette]);
     },
 
+    colors: function(palette){
+        var c = [];
+        palette = palette || this.PALETTES.ALL;
+        $.each(this[palette], function(){
+            c.push(this);
+        });
+        return c;
+    },
+
     hex2rgb: function(hex){
         var regex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
         hex = hex.replace( regex, function( m, r, g, b ) {
@@ -564,14 +573,34 @@ var Colors = {
     },
 
     lighten: function(color, amount){
-        var col, type, res, alpha = 1;
+        var type, res, alpha = 1, ring = amount > 0;
+
+        var calc = function(_color, _amount){
+            var col = _color.slice(1);
+
+            var num = parseInt(col, 16);
+            var r = (num >> 16) + _amount;
+
+            if (r > 255) r = 255;
+            else if  (r < 0) r = 0;
+
+            var b = ((num >> 8) & 0x00FF) + _amount;
+
+            if (b > 255) b = 255;
+            else if  (b < 0) b = 0;
+
+            var g = (num & 0x0000FF) + _amount;
+
+            if (g > 255) g = 255;
+            else if (g < 0) g = 0;
+
+            res = "#" + (g | (b << 8) | (r << 16)).toString(16);
+            return res;
+        };
 
         if (amount === undefined) {
             amount = 10;
         }
-
-        col = this.toHEX(color);
-        col = col.slice(1);
 
         type = this.is(color);
 
@@ -579,23 +608,10 @@ var Colors = {
             alpha = color.a;
         }
 
-        var num = parseInt(col, 16);
-        var r = (num >> 16) + amount;
-
-        if (r > 255) r = 255;
-        else if  (r < 0) r = 0;
-
-        var b = ((num >> 8) & 0x00FF) + amount;
-
-        if (b > 255) b = 255;
-        else if  (b < 0) b = 0;
-
-        var g = (num & 0x0000FF) + amount;
-
-        if (g > 255) g = 255;
-        else if (g < 0) g = 0;
-
-        res = "#" + (g | (b << 8) | (r << 16)).toString(16);
+        do {
+            res = calc(this.toHEX(color), amount);
+            ring ? amount-- : amount++;
+        } while (res.length < 7);
 
         switch (type) {
             case "rgb": return this.toRGB(res);

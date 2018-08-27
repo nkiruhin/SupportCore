@@ -15,6 +15,7 @@ var Checkbox = {
         return this;
     },
     options: {
+        style: 1,
         caption: "",
         indeterminate: false,
         captionPosition: "right",
@@ -43,7 +44,7 @@ var Checkbox = {
         var that = this, element = this.element, o = this.options;
         var prev = element.prev();
         var parent = element.parent();
-        var checkbox = $("<label>").addClass("checkbox " + element[0].className);
+        var checkbox = $("<label>").addClass("checkbox " + element[0].className).addClass(o.style === 2 ? "style2" : "");
         var check = $("<span>").addClass("check");
         var caption = $("<span>").addClass("caption").html(o.caption);
 
@@ -114,9 +115,22 @@ var Checkbox = {
     },
 
     changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+        var parent = element.parent();
+
+        var changeStyle = function(){
+            var new_style = parseInt(element.attr("data-style"));
+
+            if (!Utils.isInt(new_style)) return;
+
+            o.style = new_style;
+            parent.removeClass("style1 style2").addClass("style"+new_style);
+        };
+
         switch (attributeName) {
             case 'disabled': this.toggleState(); break;
             case 'data-indeterminate': this.toggleIndeterminate(); break;
+            case 'data-style': changeStyle(); break;
         }
     },
 

@@ -20,9 +20,12 @@
         <div data-role="activity" data-type="cycle" data-style="color"></div>
     </div>
 
-    <div><button class="button alert" onclick="$('#t2').data('table').openInspector(true)">Inspector</button></div>
+    <div>
+        <button class="button alert" onclick="$('#t2').data('table').openInspector(true)">Inspector</button>
+        <button class="button alert" onclick="$('#t2').data('table').reload()">Reload</button>
+    </div>
 
-    <table class="table compact striped table-border mt-4" id="t2"
+    <table class="table subcompact fixed-layout striped table-border mt-4" id="t2"
            data-role="table"
            data-cls-component="mt-4"
            data-rows="10"
@@ -34,6 +37,7 @@
            data-check="true"
            data-check-col-index="0"
            data-check-type="checkbox"
+           data-on-view-created="console.log(this)"
     ></table>
 </div>
 

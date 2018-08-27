@@ -37,7 +37,7 @@
                 <label asp-for="OrganizationId"></label>
                 <select asp-for="OrganizationId"
                         class="jselect2"
-                        data-ajax-url="@Url.Action("List","Organizations",null,"http")">
+                        data-ajax-url="@Url.Action("List","Organizations",new { isProvider = true },"http")">
                     <option value="@Model.OrganizationId" selected="selected">@Model.Organization?.Name</option>
                 </select>
             </div>
@@ -71,8 +71,7 @@
     })
     $('#OrganizationId').select2({
         placeholder: 'Выберите организацию',
-        language: 'ru',
-        templateResult: formatData
+        language: 'ru'
     });
     $('#Staffer').select2({
         placeholder: 'Выберите сотрудника',
