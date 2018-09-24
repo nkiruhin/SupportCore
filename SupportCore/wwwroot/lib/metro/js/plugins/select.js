@@ -14,15 +14,6 @@ var Select = {
     },
     options: {
         duration: 100,
-        clsElement: "",
-        clsSelect: "",
-        clsPrepend: "",
-        clsAppend: "",
-        clsOption: "",
-        clsOptionGroup: "",
-        clsDropList: "",
-        clsSelectedItem: "",
-        clsSelectedItemRemover: "",
         prepend: "",
         append: "",
         placeholder: "",
@@ -30,11 +21,23 @@ var Select = {
         filter: true,
         copyInlineStyles: true,
         dropHeight: 200,
-        disabled: false,
+
+        clsSelect: "",
+        clsSelectInput: "",
+        clsPrepend: "",
+        clsAppend: "",
+        clsOption: "",
+        clsOptionGroup: "",
+        clsDropList: "",
+        clsSelectedItem: "",
+        clsSelectedItemRemover: "",
+
         onChange: Metro.noop,
-        onSelectCreate: Metro.noop,
         onUp: Metro.noop,
-        onDrop: Metro.noop
+        onDrop: Metro.noop,
+        onItemSelect: Metro.noop,
+        onItemDeselect: Metro.noop,
+        onSelectCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -62,18 +65,18 @@ var Select = {
         var element = this.element, o = this.options;
         var multiple = element[0].multiple;
         var input = element.siblings(".select-input");
-        var html = Utils.isValue(option.data('template'))?option.data('template').replace("$1", item.text):item.text;
-        var selected_item;
+        var html = Utils.isValue(option.attr('data-template')) ? option.attr('data-template').replace("$1", item.text):item.text;
+        var tag;
 
-        l = $("<li>").addClass(o.clsOption).data("option", item).data("text", item.text).data('value', Utils.isValue(item.value) ? item.value : "").appendTo(parent);
+        l = $("<li>").addClass(o.clsOption).data("option", item).attr("data-text", item.text).attr('data-value', Utils.isValue(item.value) ? item.value : "").appendTo(parent);
         a = $("<a>").html(html).appendTo(l).addClass(item.className);
 
-        if (item.getAttribute("selected") !== null) {
+        if (option.is(":selected")) {
             if (multiple) {
                 l.addClass("d-none");
-                selected_item = $("<div>").addClass("selected-item").addClass(o.clsSelectedItem).html("<span class='title'>"+html+"</span>").appendTo(input);
-                selected_item.data("option", l);
-                $("<span>").addClass("remover").addClass(o.clsSelectedItemRemover).html("&times;").appendTo(selected_item);
+                tag = $("<div>").addClass("selected-item").addClass(o.clsSelectedItem).html("<span class='title'>"+html+"</span>").appendTo(input);
+                tag.data("option", l);
+                $("<span>").addClass("remover").addClass(o.clsSelectedItemRemover).html("&times;").appendTo(tag);
             } else {
                 element.val(item.value);
                 input.html(html);
@@ -97,12 +100,25 @@ var Select = {
         })
     },
 
+    _createOptions: function(){
+        var that = this, element = this.element, select = element.parent();
+        var list = select.find("ul").html("");
+
+        $.each(element.children(), function(){
+            if (this.tagName === "OPTION") {
+                that._addOption(this, list);
+            } else if (this.tagName === "OPTGROUP") {
+                that._addOptionGroup(this, list);
+            }
+        });
+    },
+
     _createSelect: function(){
         var that = this, element = this.element, o = this.options;
 
         var prev = element.prev();
         var parent = element.parent();
-        var container = $("<div>").addClass("select " + element[0].className).addClass(o.clsElement);
+        var container = $("<label>").addClass("select " + element[0].className).addClass(o.clsSelect);
         var multiple = element[0].multiple;
         var select_id = Utils.elementId("select");
         var buttons = $("<div>").addClass("button-group");
@@ -121,10 +137,9 @@ var Select = {
         }
 
         element.appendTo(container);
-        element.addClass(o.clsSelect);
         buttons.appendTo(container);
 
-        input = $("<div>").addClass("select-input").attr("name", "__" + select_id + "__");
+        input = $("<div>").addClass("select-input").addClass(o.clsSelectInput).attr("name", "__" + select_id + "__");
         drop_container = $("<div>").addClass("drop-container");
         list = $("<ul>").addClass("d-menu").addClass(o.clsDropList).css({
             "max-height": o.dropHeight
@@ -142,13 +157,7 @@ var Select = {
 
         drop_container.append(list);
 
-        $.each(element.children(), function(){
-            if (this.tagName === "OPTION") {
-                that._addOption(this, list);
-            } else if (this.tagName === "OPTGROUP") {
-                that._addOptionGroup(this, list);
-            }
-        });
+        this._createOptions();
 
         drop_container.dropdown({
             duration: o.duration,
@@ -187,12 +196,12 @@ var Select = {
         this.list = list;
 
         if (o.prepend !== "") {
-            var prepend = Utils.isTag(o.prepend) ? $(o.prepend) : $("<span>"+o.prepend+"</span>");
+            var prepend = $("<div>").html(o.prepend);
             prepend.addClass("prepend").addClass(o.clsPrepend).appendTo(container);
         }
 
         if (o.append !== "") {
-            var append = Utils.isTag(o.append) ? $(o.append) : $("<span>"+o.append+"</span>");
+            var append = $("<div>").html(o.append);
             append.addClass("append").addClass(o.clsAppend).appendTo(container);
         }
 
@@ -206,7 +215,7 @@ var Select = {
             container.addClass("rtl").attr("dir", "rtl");
         }
 
-        if (o.disabled === true || element.is(':disabled')) {
+        if (element.is(':disabled')) {
             this.disable();
         } else {
             this.enable();
@@ -221,6 +230,14 @@ var Select = {
         var input = element.siblings(".select-input");
         var filter_input = drop_container.find("input");
         var list = drop_container.find("ul");
+
+        element.on(Metro.events.focus, function(){
+            container.addClass("focused");
+        });
+
+        element.on(Metro.events.blur, function(){
+            container.removeClass("focused");
+        });
 
         container.on(Metro.events.click, function(e){
             e.preventDefault();
@@ -242,39 +259,46 @@ var Select = {
             var txt = leaf.data('text');
             var html = leaf.children('a').html();
             var selected_item;
+            var option = leaf.data("option");
+            var options = element.find("option");
 
             if (element[0].multiple) {
                 leaf.addClass("d-none");
-                selected_item = $("<div>").addClass("selected-item").html("<span class='title'>"+html+"</span>").appendTo(input);
+                selected_item = $("<div>").addClass("selected-item").addClass(o.clsSelectedItem).html("<span class='title'>"+html+"</span>").appendTo(input);
                 selected_item.data("option", leaf);
-                $("<span>").addClass("remover").html("&times;").appendTo(selected_item);
-                $.each(element.find("option"), function(){
-                    if (this === leaf.data("option")) {
-                        this.selected = true;
-                    }
-                });
+                $("<span>").addClass("remover").addClass(o.clsSelectedItemRemover).html("&times;").appendTo(selected_item);
             } else {
                 list.find("li.active").removeClass("active");
                 leaf.addClass("active");
                 input.html(html);
-                element.val(val);
-                element.trigger("change");
                 drop_container.data("dropdown").close();
             }
 
-            Utils.exec(o.onChange, [val], element[0]);
+            $.each(options, function(){
+                if (this === option) {
+                    this.selected = true;
+                }
+            });
+
+            element.trigger("change");
+
+            Utils.exec(o.onItemSelect, [val, option, leaf], element[0]);
+            Utils.exec(o.onChange, [that.getSelected()], element[0]);
         });
 
         input.on("click", ".selected-item .remover", function(e){
             var item = $(this).closest(".selected-item");
             var leaf = item.data("option");
+            var option = leaf.data('option');
             leaf.removeClass("d-none");
             $.each(element.find("option"), function(){
-                if (this === leaf.data("option")) {
+                if (this === option) {
                     this.selected = false;
                 }
             });
             item.remove();
+            Utils.exec(o.onItemDeselect, [option], element[0]);
+            Utils.exec(o.onChange, [that.getSelected()], element[0]);
             e.preventDefault();
             e.stopPropagation();
         });
@@ -300,11 +324,6 @@ var Select = {
         });
     },
 
-    reset: function(){
-        var that = this, element = this.element, o = this.options;
-        //TODO
-    },
-
     disable: function(){
         this.element.data("disabled", true);
         this.element.closest(".select").addClass("disabled");
@@ -315,49 +334,106 @@ var Select = {
         this.element.closest(".select").removeClass("disabled");
     },
 
-    val: function(v){
-        var element = this.element, o = this.options;
-        var input = element.siblings("input");
-        var options = element.find("option");
-        var items = this.list.find("li");
+    toggleState: function(){
+        if (this.element.data("disabled") === false) {
+            this.disable();
+        } else {
+            this.enable();
+        }
+    },
 
-        if (v === undefined) {
-            return element.val();
+    reset: function(to_default){
+        var element = this.element, o = this.options;
+        var options = element.find("option");
+        var select = element.closest('.select');
+
+        $.each(options, function(){
+            console.log(this.defaultSelected);
+            this.selected = !Utils.isNull(to_default) ? this.defaultSelected : false;
+        });
+
+        this.list.find("li").remove();
+        select.find(".select-input").html('');
+
+        this._createOptions();
+
+        element.trigger('change');
+        Utils.exec(o.onChange, [this.getSelected()], element[0]);
+    },
+
+    getSelected: function(){
+        var element = this.element;
+        var result = [];
+
+        element.find("option:selected").each(function(){
+            result.push(this.value);
+        });
+
+        return result;
+    },
+
+    val: function(val){
+        var that = this, element = this.element, o = this.options;
+        var input = element.siblings(".select-input");
+        var options = element.find("option");
+        var list_items = this.list.find("li");
+        var result = [];
+        var multiple = element.attr("multiple") !== undefined;
+        var option;
+        var i, html, list_item, option_value, tag;
+
+        if (Utils.isNull(val)) {
+            $.each(options, function(){
+                if (this.selected) result.push(this.value);
+            });
+            return result;
         }
 
-        options.removeAttr("selected");
-        $.each(options, function(){
-            var op = this;
+        $.each(options, function(){this.selected = false;});
+        list_items.removeClass("active");
+        input.html('');
 
-            if (""+op.value === ""+v) {
-                op.setAttribute("selected", "selected");
-                input.val(op.text);
-                element.trigger("change");
+        if (Array.isArray(val) === false) {
+            val  = [val];
+        }
 
-                items.removeClass("active");
-                $.each(items, function(){
-                    var item = $(this);
+        $.each(val, function(){
+            for (i = 0; i < options.length; i++) {
+                option = options[i];
+                html = Utils.isValue(option.getAttribute('data-template')) ? option.getAttribute('data-template').replace("$1", option.text) : option.text;
+                if (""+option.value === ""+this) {
+                    option.selected = true;
+                    break;
+                }
+            }
 
-                    if (item.hasClass("group-title")) return ;
-
-                    if (""+item.data("value") === ""+v) {
-                        item.addClass("active");
+            for(i = 0; i < list_items.length; i++) {
+                list_item = $(list_items[i]);
+                option_value = list_item.attr("data-value");
+                if (""+option_value === ""+this) {
+                    if (multiple) {
+                        list_item.addClass("d-none");
+                        tag = $("<div>").addClass("selected-item").addClass(o.clsSelectedItem).html("<span class='title'>"+html+"</span>").appendTo(input);
+                        tag.data("option", list_item);
+                        $("<span>").addClass("remover").addClass(o.clsSelectedItemRemover).html("&times;").appendTo(tag);
+                    } else {
+                        list_item.addClass("active");
+                        input.html(html);
                     }
-                });
-
-                Utils.exec(o.onChange, [v], element[0]);
+                    break;
+                }
             }
         });
+
+        element.trigger('change');
+        Utils.exec(o.onChange, [this.getSelected()], element[0]);
     },
 
     data: function(op){
-        var that = this, element = this.element;
-        var select = element.parent();
-        var list = select.find("ul");
+        var element = this.element;
         var option_group;
 
         element.html("");
-        list.html("");
 
         if (typeof op === 'string') {
             element.html(op);
@@ -374,17 +450,13 @@ var Select = {
             });
         }
 
-        $.each(element.children(), function(){
-            if (this.tagName === "OPTION") {
-                that._addOption(this, list);
-            } else if (this.tagName === "OPTGROUP") {
-                that._addOptionGroup(this, list);
-            }
-        });
+        this._createOptions();
     },
 
     changeAttribute: function(attributeName){
-
+        switch (attributeName) {
+            case 'disabled': this.toggleState(); break;
+        }
     },
 
     destroy: function(){

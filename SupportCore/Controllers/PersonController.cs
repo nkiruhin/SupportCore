@@ -47,7 +47,11 @@ namespace SupportCore.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return PartialView();
+            Person Person = new Person
+            {
+                IsStaff = false
+            };
+            return PartialView(Person);
         }
         // GET: Create Person from dialog
         public IActionResult CreateDialog()
@@ -275,24 +279,15 @@ namespace SupportCore.Controllers
         // GET: Person/SelectList
         public async Task<JsonResult> SelectList(bool isStaff, string term)
         {
-            if (term != null)
-            {
-                var results = await _context.Person.AsNoTracking().Where(n => n.Name.Contains(term) && n.IsStaff == isStaff).Select(r => new
-                {
-                    id = r.Id,
-                    text = r.Name + $"<{r.Email}>"
-                }).Take(10).ToListAsync();
-                return Json(new { results });
-            }
-            else
-            {
-                var results = await _context.Person.AsNoTracking().Where(n => n.IsStaff == isStaff).Select(r => new
-                {
-                    id = r.Id,
-                    text = r.Name + $"<{r.Email}>"
-                }).Take(10).ToListAsync();
-                return Json(new { results });
-            }
+                var results = await _context.Person.AsNoTracking()
+                    .Where(n =>(String.IsNullOrEmpty(term) || n.Name.Contains(term)) && n.IsStaff == isStaff)
+                    .OrderBy(n=>n.Name).Take(10)
+                    .Select(r => new
+                    {
+                        id = r.Id,
+                        text = r.Name + $"<{r.Email}>"
+                    }).ToListAsync();
+                return Json(new { results });           
         }
 
 

@@ -14,14 +14,14 @@
 var signalRStart = function () {
     console.log("signalr client start")
     const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/hub")
-    .build();
-    connection.on("ReceiveMessage", (user,date, message) => {
-    //console.log("Принято сообщение:" + message + "от "+user+"в "+date)
+        .withUrl("/hub")
+        .build();
+    connection.on("ReceiveMessage", (user, date, message) => {
+        //console.log("Принято сообщение:" + message + "от "+user+"в "+date)
         Metro.notify.create(message, 'Оповещение от ' + user + ' ' + date, { cls: "info", width: 300 });
     });
     connection.start().catch(err => console.error(err.toString()));
-}
+};
 function TableReady(url, columns) {
     var Table = $('.dataTable').DataTable({
         "searching": true,
@@ -136,18 +136,18 @@ function edit(element) {
 //CustomDialogWin
 function openCustomWin(href, icon, title, modal) {
     $.get(href, function (html) {
-      Metro.window.create({
-          title: title,
-          overlay:true,
-          shadow:true,
-          modal: modal,
-          overlayColor: "#000000",
-          clsCaption: "bg-darkCyan",
-          icon: "<span class='" + icon + "'></span>",
-          content: html,
-          place: "center"
+        Metro.window.create({
+            title: title,
+            overlay: true,
+            shadow: true,
+            modal: modal,
+            overlayColor: "#000000",
+            clsCaption: "bg-darkCyan",
+            icon: "<span class='" + icon + "'></span>",
+            content: html,
+            place: "center"
         });
-    })
+    });
 }
 //Close Win
 var closeWin = function () {
@@ -171,7 +171,7 @@ function openCustomDialog(href, title, end) {
                 },
                 {
                     caption: "Отмена",
-                    cls: "js-dialog-close"
+                    cls: "js-dialog-close secondary"
                 }
             ]
         });
@@ -322,7 +322,7 @@ var OnSuccessChart = function (response) {
     ];
     if (response.type === 'C') new Chartist.Pie('#catChart', data, options, responsiveOptions);
     if (response.type === 'S') new Chartist.Pie('#statusChart', data, options, responsiveOptions);
-}
+};
 var loadTicketStatforStaff = function (url) {
     $.ajax({
         type: "POST",
@@ -331,7 +331,7 @@ var loadTicketStatforStaff = function (url) {
         dataType: "json",
         success: OnSuccessChartforStaff
     });
-}
+};
 var OnSuccessChartforStaff = function (response) {
     var data = response;
     var options = {
@@ -351,6 +351,19 @@ var OnSuccessChartforStaff = function (response) {
 
     new Chartist.Bar('#catChart', data, options, responsiveOptions);
 };
+
+function closed(id, table) {
+    $.get('/TicketThreads/IsTask?Id=' + id, function (data) {
+        if (data === 'true') {
+            Metro.infobox.create("<h6>Действие невозможно!</h6><p>В заявке имеются не закрытые задачи!", "alert");
+            return;
+        }
+        table_p = '';
+        if (table) table_p = '&table=true';
+        openCustomWin('/TicketThreads/Create/' + id + '?Type=1&Event=2' + table_p, 'mif-pencil', 'Закрытие', true);
+    });
+}
+
 $(document).ajaxError(function (e, xhr) {
     if (xhr.status === 401)
         window.location = "/Account/Login";
@@ -358,4 +371,5 @@ $(document).ajaxError(function (e, xhr) {
         alert("You have no enough permissions to request this resource.");
 });
 
+// For ajax data return
 

@@ -15,11 +15,11 @@
        data-ajax-method="GET"
        data-ajax-update="#cell-content"
        data-ajax-mode="update"
-       class="button primary" data-role="button">
+       class="button primary" data-role="button"><span class="mif-plus"></span>
         Создать заявку
     </a>
     <input asp-for="Id" hidden />
-    <button type="submit" class="button warning">Отметить как прочитанное</button>
+    <button type="submit" class="button warning"><span class="mif-checkmark"></span> Отметить как прочитанное</button>
 </form>
 
 @Html.DisplayForModel()

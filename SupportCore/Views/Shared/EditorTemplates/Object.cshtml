@@ -23,7 +23,9 @@
                         else
                         {
                             <div class="cell-6">
-                                <label>@prop.GetDisplayName()</label>
+                                @if(prop.ModelType.IsGenericType) { 
+                                    <label>@prop.GetDisplayName()</label> 
+                                }
                                 @Html.Editor(prop.PropertyName)
                             </div>
                         }

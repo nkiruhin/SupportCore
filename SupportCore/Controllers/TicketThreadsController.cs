@@ -55,19 +55,14 @@ namespace SupportCore.Controllers
             return PartialView(ticketThread);
         }
 
+        public IActionResult IsTask (int Id)
+        {
+            if (_context.Tasks.AsNoTracking().Where(t => t.TicketId == Id && t.Status == 0).Count() > 0) return Ok("true");
+            return Ok("false");
+        }
         // GET: TicketThreads/Create/Id
         public IActionResult Create(int Id, int Event, int Type,string table)
         {
-            if (Event == 2&&_context.Tasks.AsNoTracking().Where(t => t.TicketId == Id && t.Status == 0).Count()>0)
-            {
-                //return new HtmlString("Действие невозможно!В заявке имеются не закрытые задачи!");
-               // return Content("<script language='javascript' type='text/javascript'>Metro.infobox.create('Действие невозможно!В заявке имеются не закрытые задачи!', 'alert');</script>");
-                return new ContentResult
-                {
-                    ContentType = "text/html",
-                    Content = "<div class='p-3'><h6><p>Действие невозможно!В заявке имеются не закрытые задачи!</h6></div>"
-                };
-            }
             if (table == null) table="false" ;
             ViewBag.Event = Event;
             ViewBag.table = table;

@@ -53,20 +53,21 @@
                     break;
             }
 
-            <ul class="d-menu context" data-role="dropdown">
-                @if (Model.StatusId != 1)
-                {
-                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=1','mif-pencil','Открытие',true)">Открыта</a></li>}
-                @if (Model.StatusId != 2)
-                {
-                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=2','mif-pencil','Закрытие',true)">Закрыта</a></li>}
-                @if (Model.StatusId != 3)
-                {
-                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=3','mif-pencil','Отложить',true)">Отложена</a></li>}
-                @if (Model.StatusId != 5)
-                {
-                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=5','mif-pencil','Выполнение',true)">Выполнена</a></li>}
-            </ul>
+                    <ul class="d-menu context" data-role="dropdown">
+                        @if (Model.StatusId != 1)
+                        {
+                            <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=1','mif-pencil','Открытие',true)">Открыта</a></li>}
+                        @if (Model.StatusId != 2)
+                        {
+                            @*<li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=2','mif-pencil','Закрытие',true)">Закрыта</a></li>}*@
+                            <li><a href="#" onclick="closed('@Model.Id')">Закрыта</a></li> }
+                        @if (Model.StatusId != 3)
+                        {
+                            <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=3','mif-pencil','Отложить',true)">Отложена</a></li>}
+                        @if (Model.StatusId != 5)
+                        {
+                            <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=5','mif-pencil','Выполнение',true)">Выполнена</a></li>}
+                    </ul>
         </div>
         <hr />
 
@@ -103,16 +104,20 @@
                     </div>
                     <div class="form-group m-0">
                         <label asp-for="DueDate" class="control-label"></label>
-                        <input asp-for="DueDate" />
+                
+                        <input asp-for="DueDate"
+                               data-role="calendarpicker"
+                               data-cls-calendar="compact"
+                               data-min-date="@DateTime.Now.ToString("yyyy-MM-dd")" />                               
                     </div>
                     <div class="pt-8-md">
-                        <button type="submit" class="button primary" onclick="return Save();">Сохранить</button>
+                        <button type="submit" class="button primary" onclick="return Save();"><span class="mif-floppy-disk"></span> Сохранить</button>
                         <a asp-action="Index" asp-controller="Tickets"
                            data-ajax="true"
                            data-ajax-method="GET"
                            data-ajax-update="#cell-content"
                            data-ajax-mode="update"
-                           class="button secondary" data-role="button">К списку</a>
+                           class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
                     </div>
                 </div>
                 <div class="cell-md-8">
@@ -122,7 +127,7 @@
                     </div>
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     @await Component.InvokeAsync("Form", new { FormId = 0, TicketId = Model.Id, Edit = true })
-                    @*</form>*@
+                    
                 </div>
             </div>
             <div id="CustomForm">
@@ -143,6 +148,7 @@
               data-ajax-method="POST"
               data-ajax-update="#history"
               data-ajax-loading ="#editPreloader"
+              data-ajax-failure ="onError(xhr.responseText)"
               data-ajax-mode="update">
             <div class="form-group">
                 <label asp-for="CoAuthors"></label>
@@ -153,7 +159,7 @@
             <div class="form-group pb-4-md">
                 <input asp-for="Id" hidden />
                 <input asp-for="Name" hidden />
-                <button type="submit" class="button primary">Сохранить</button>
+                <button type="submit" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
                 </div>
             </form>
             <div id="Tasks">
@@ -164,7 +170,7 @@
 <script>
     $(document).ready(function () {
         var form = $.validator.unobtrusive.parse('#EditTicket');
-    })
+    });
     var personSelect = $('#PersonId').select2({
         placeholder: 'Выберите пользователя',
         language: 'ru'
@@ -185,20 +191,20 @@
         var markup = data.text + " <" + data.email + ">"
         return markup;
     }
-        $('#CategoryId').on('change', function () {
-            if (!this.value) {
-                $('#CustomForm').empty();
-                return null;
-            }
-            url = '@Url.Action("GetCustomForm")' + '?CategoryId=' + this.value;
-            $('#CustomForm').load(url);
-            var form = $.validator.unobtrusive.parse('#CustomForm');
-    })
+    $('#CategoryId').on('change', function () {
+        if (!this.value) {
+            $('#CustomForm').empty();
+            return null;
+        }
+        url = '@Url.Action("GetCustomForm")' + '?CategoryId=' + this.value;
+        $('#CustomForm').load(url);
+        var form = $.validator.unobtrusive.parse('#CustomForm');
+    });
 function Save() {
             if (!$('#EditTicket').valid()) return false;
             openCustomWin('/TicketThreads/Create?Id=@Model.Id&Event=4', 'mif-user-plus','Редактирование',true);     
             return false;
     }
-    
+   
    
 </script>

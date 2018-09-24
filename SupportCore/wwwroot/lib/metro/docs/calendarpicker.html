@@ -47,7 +47,12 @@
                 <hr/>
                 <ul class="toc-nav">
                     <li class="toc-entry"><a href="#">Calendar picker</a></li>
-                    <li class="toc-entry"><a href="#_calendarpicker_create">Create</a></li>
+                    <li class="toc-entry"><a href="#_calendarpicker_about">About</a></li>
+                    <li class="toc-entry"><a href="#_calendarpicker_value">Picker value</a></li>
+                    <li class="toc-entry"><a href="#_calendarpicker_output">Output value</a></li>
+                    <li class="toc-entry"><a href="#_calendarpicker_dialog_mode">Dialog mode</a></li>
+                    <li class="toc-entry"><a href="#_calendarpicker_compact">Compact calendar</a></li>
+                    <li class="toc-entry"><a href="#_calendarpicker_wide">Wide calendar</a></li>
                     <li class="toc-entry"><a href="#_calendarpicker_options">Picker options</a></li>
                     <li class="toc-entry"><a href="#_calendarpicker_calendar">Calendar options</a></li>
                     <li class="toc-entry"><a href="#_calendarpicker_events">Events</a></li>
@@ -69,26 +74,60 @@
 
                 <!-- ads-html -->
 
-                <h3 id="_calendarpicker_create">Create calendar picker</h3>
+                <h3 id="_calendarpicker_about">About</h3>
+                <p class="text-small">Updated in 4.2.21</p>
                 <p>
-                    To create <code>calendarpicker</code> component add attribute <code>data-role="calendarpicker"</code> to form input element.
+                    You can organize date selection for the user with the calendar picker component.
+                    To create <code>calendar picker</code> component, add attribute <code>data-role="calendarpicker"</code> to form input element.
                 </p>
                 <div class="example">
-                    <input type="text" data-role="calendarpicker" data-size="280" class="mx-auto">
+                    <input type="text" data-role="calendarpicker" data-size="280" class="mx-auto" data-dialog-point="360">
                 </div>
                 <pre><code class="html">
                     &lt;input type="text" data-role="calendarpicker"&gt;
                 </code></pre>
+
+                <h3 id="_calendarpicker_value">Picker value</h3>
+                <p>
+                    You can setup value for picker with attribute <code>value</code>.
+                    If you value of date different from ECAMScript date value, you must define format with attribute <code>data-input-format</code>.
+                    Input format can contains next parts:
+                </p>
+                <ul class="unstyled-list">
+                    <li><code>dd</code>, <code>%d</code> - day</li>
+                    <li><code>mm</code>, <code>%m</code> - month</li>
+                    <li><code>yy</code>, <code>%y</code>, <code>yyyy</code> - year</li>
+                    <li><code>hh</code>, <code>%h</code> - hours</li>
+                    <li><code>ii</code>, <code>%i</code>, <code>mi</code> - minutes</li>
+                    <li><code>ss</code>, <code>%s</code> - seconds</li>
+                </ul>
+                <div class="example">
+                    <input type="text" data-role="calendarpicker" data-size="280" class="mx-auto" data-input-format="%d/%m/%y" value="21/12/1972" data-dialog-point="360">
+                </div>
+                <pre><code class="html">
+                    &lt;input type="text" data-role="calendarpicker"
+                        data-input-format="%d/%m/%y" value="21/12/1972"&gt;
+                </code></pre>
+
+                <h3 id="_calendarpicker_output">Output format</h3>
+                <p>
+                    By default, output format for picker value defined in <code>METRO_DATE_FORMAT</code> var in have default value is <code>%Y-%m-%d</code>.
+                    You can redefine this global or with attribute <code>data-format</code>. Detailed about formatting date value, you can read in <a href="dateformat.html">this article</a>.
+                </p>
+
                 <div class="example">
                     <div class="row">
                         <div class="cell-md-4">
-                            <input type="text" data-role="calendarpicker">
+                            <p>Default</p>
+                            <input type="text" data-role="calendarpicker"  data-dialog-point="360">
                         </div>
                         <div class="cell-md-4">
-                            <input type="text" data-role="calendarpicker" value="1972/12/21" data-format="%d %b %Y">
+                            <p>%d %b %Y</p>
+                            <input type="text" data-role="calendarpicker" value="1972/12/21" data-format="%d %b %Y" data-dialog-point="360">
                         </div>
                         <div class="cell-md-4">
-                            <input type="text" data-role="calendarpicker" data-format="%d %B %Y">
+                            <p>%d %B %Y</p>
+                            <input type="text" data-role="calendarpicker" data-format="%d %B %Y" data-dialog-point="360">
                         </div>
                     </div>
                 </div>
@@ -98,11 +137,59 @@
                     &lt;input type="text" data-role="calendarpicker" data-format="%d %B %Y"&gt;
                 </code></pre>
 
+                <h3 id="_calendarpicker_dialog_mode">Dialog mode</h3>
+                <p>
+                    If you need, (example for small screen), you can set picker into dialog mode.
+                    To set it use attribute <code>data-dialog-mode="true"</code> - persistent or <code>data-dialog-point</code>.
+                    If you set <code>data-dialog-mode="true"</code>, picker always shown as dialog.
+                </p>
+                <div class="example">
+                    <input type="text" data-role="calendarpicker"  data-dialog-mode="true">
+                </div>
+                <pre><code>
+                    &lt;input type="text" data-role="calendarpicker"  data-dialog-mode="true"&gt;
+                </code></pre>
+                <p>
+                    You can set specific size, when picker shown in dialog mode. Use for it attribute <code>data-dialog-point</code>.
+                    Value for this attribute must be a integer value. Metro use this value to build rule: <code>max-width: Xpx</code>.
+                </p>
+                <div class="example">
+                    <input type="text" data-role="calendarpicker"  data-dialog-point="360">
+                </div>
+                <pre><code>
+                    &lt;input type="text" data-role="calendarpicker"  data-dialog-point="360"&gt;
+                </code></pre>
+
+                <h3 id="_calendarpicker_compact">Compact mode</h3>
+                <p>
+                    You can set <code>compact</code> mode for calendar.
+                    To set it, use attribute <code>data-cls-calendar="compact"</code>
+                </p>
+                <div class="example">
+                    <input type="text" data-role="calendarpicker" data-cls-calendar="compact">
+                </div>
+                <pre><code>
+                    &lt;input type="text" data-role="calendarpicker"  data-cls-calendar="compact"&gt;
+                </code></pre>
+
+                <h3 id="_calendarpicker_wide">Wide mode</h3>
+                <p>
+                    You can set <code>wide</code> mode for calendar.
+                    To set it, use attribute <code>data-calendar-wide="true"</code> - persistent or <code>data-calendar-wide-point</code>
+                    where <code>point</code> is one of the <a href="media.html">Metro 4 media point</a> (fs, sm, md, lg, xl, xxl).
+                </p>
+                <div class="example">
+                    <input type="text" data-role="calendarpicker" data-calendar-wide-point="md">
+                </div>
+                <pre><code>
+                    &lt;input type="text" data-role="calendarpicker"  data-calendar-wide-point="md"&gt;
+                </code></pre>
+
                 <h3 id="_calendarpicker_options">Picker options</h3>
                 <p>
                     Calendar picker has several options, who effects to behavior of the component.
                 </p>
-                <table class="table cell-border table-border options-table">
+                <table class="table cell-border table-border options-table mt-4">
                     <thead>
                     <tr>
                         <th>Option</th>
@@ -112,6 +199,36 @@
                     </tr>
                     </thead>
                     <tbody>
+                    <tr>
+                        <td>dialogMode</td>
+                        <td><code>data-dialog-mode</code></td>
+                        <td>false</td>
+                        <td>Set picker into dialog mode</td>
+                    </tr>
+                    <tr>
+                        <td>dialogPoint</td>
+                        <td><code>data-dialog-point</code></td>
+                        <td>360</td>
+                        <td>Set max screen width when picker switch into dialog mode</td>
+                    </tr>
+                    <tr>
+                        <td>dialogOverlay</td>
+                        <td><code>data-dialog-overlay</code></td>
+                        <td>true</td>
+                        <td>Create overlay for dialog mode</td>
+                    </tr>
+                    <tr>
+                        <td>overlayColor</td>
+                        <td><code>data-overlay-color</code></td>
+                        <td>#000000</td>
+                        <td>Overlay color</td>
+                    </tr>
+                    <tr>
+                        <td>overlayAlpha</td>
+                        <td><code>data-overlay-alpha</code></td>
+                        <td>.5</td>
+                        <td>Overlay alpha color channel</td>
+                    </tr>
                     <tr>
                         <td>size</td>
                         <td><code>data-locale</code></td>
@@ -131,6 +248,12 @@
                         <td>Output date format</td>
                     </tr>
                     <tr>
+                        <td>inputFormat</td>
+                        <td><code>data-input-format</code></td>
+                        <td>null</td>
+                        <td>Input date format</td>
+                    </tr>
+                    <tr>
                         <td>clearButton</td>
                         <td><code>data-clear-button</code></td>
                         <td>false</td>
@@ -147,12 +270,6 @@
                         <td><code>data-calendar-button-icon</code></td>
                         <td>&lt;span class='mif-calendar'&gt;&lt;/span&gt;</td>
                         <td>Icon for show calendar button</td>
-                    </tr>
-                    <tr>
-                        <td>copyInlineStyles</td>
-                        <td><code>data-copy-inline-styles</code></td>
-                        <td>false</td>
-                        <td>Copy inline styles input to wrapper</td>
                     </tr>
                     <tr>
                         <td>clsPicker</td>
@@ -221,10 +338,10 @@
                         <td>Dates can be excluded from selection</td>
                     </tr>
                     <tr>
-                        <td>preset</td>
-                        <td><code>data-preset</code></td>
+                        <td>special</td>
+                        <td><code>data-special</code></td>
                         <td>null</td>
-                        <td>Dates can be preselect</td>
+                        <td>Dates, who can be selected</td>
                     </tr>
                     <tr>
                         <td>minDate</td>
@@ -237,6 +354,12 @@
                         <td><code>data-max-date</code></td>
                         <td>null</td>
                         <td>Max date</td>
+                    </tr>
+                    <tr>
+                        <td>showHeader</td>
+                        <td><code>data-show-header</code></td>
+                        <td>true</td>
+                        <td>Show or hide calendar header</td>
                     </tr>
                     <tr>
                         <td>clsToday</td>
@@ -273,12 +396,6 @@
                         <td><code>data-cls-calendar-content</code></td>
                         <td></td>
                         <td>Additional class for calendar content</td>
-                    </tr>
-                    <tr>
-                        <td>clsCalendarFooter</td>
-                        <td><code>data-cls-calendar-footer</code></td>
-                        <td></td>
-                        <td>Additional class for calendar footer</td>
                     </tr>
                     <tr>
                         <td>clsCalendarMonths</td>
@@ -333,6 +450,18 @@
                         <td><code>data-on-change</code></td>
                         <td>Metro.noop</td>
                         <td>Callback for picker value was changed</td>
+                    </tr>
+                    <tr>
+                        <td><code>onMonthChange(...)</code></td>
+                        <td><code>data-on-month-change</code></td>
+                        <td>Metro.noop</td>
+                        <td>Callback for picker month value was changed</td>
+                    </tr>
+                    <tr>
+                        <td><code>onYearChange(...)</code></td>
+                        <td><code>data-on-year-change</code></td>
+                        <td>Metro.noop</td>
+                        <td>Callback for picker year value was changed</td>
                     </tr>
                     <tr>
                         <td><code>onCalendarPickerCreate(el)</code></td>

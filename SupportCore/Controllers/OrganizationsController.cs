@@ -26,25 +26,17 @@ namespace SupportCore.Controllers
             return PartialView(await _context.Organizations.ToListAsync());
         }
 
-        public ActionResult List(string term,bool isProvider=false)
-        {
-            if (term !=null)
-            {
-                var results = _context.Organizations.AsNoTracking().Where(n => n.Name.Contains(term)&&n.isProvider==isProvider).Select(r => new
-                {
-                    id = r.Id,
-                    text = r.Name + $"<{r.Email}>"
-                }).Take(10);
+        public async Task<ActionResult> List(string term,bool isProvider=false)
+        {          
+                var results = await _context.Organizations.AsNoTracking()
+                    .Where(n => (String.IsNullOrEmpty(term)||n.Name.Contains(term))&&n.isProvider==isProvider)
+                    .OrderBy(n => n.Name).Take(10)
+                    .Select(r => new
+                         {
+                             id = r.Id,
+                             text = r.Name + $"<{r.Email}>"
+                          }).ToListAsync();
                 return Json(new { results });
-            }
-            else { 
-            var results = _context.Organizations.AsNoTracking().Where(n=>n.isProvider==isProvider).Select(r => new
-            {
-                id = r.Id,
-                text = r.Name+ $"<{r.Email}>"
-            }).Take(10);
-                return Json(new { results });
-            }
             
         }
         // GET: Organizations/Details/5

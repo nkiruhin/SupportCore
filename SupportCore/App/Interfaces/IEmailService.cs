@@ -91,7 +91,7 @@ namespace SupportCore.App.Interfaces
                        
                         var Email = messages[m].Envelope.From.Mailboxes.FirstOrDefault().Address.ToString();
                               string PersonId = null;
-                              var person = await _context.Person.AsNoTracking().SingleOrDefaultAsync(e => e.Email == Email);
+                              var person = await _context.Person.AsNoTracking().FirstOrDefaultAsync(e => e.Email == Email);
                               if (person != null)
                               {
                                     Email = person.Name;
@@ -148,7 +148,7 @@ namespace SupportCore.App.Interfaces
                 var message = await emailClient.Inbox.GetMessageAsync(new MailKit.UniqueId(uid));              
                 var Email = message.From.Mailboxes.FirstOrDefault().Address.ToString();
                 string PersonId = null;
-                var person = await _context.Person.AsNoTracking().SingleOrDefaultAsync(e => e.Email == Email);
+                var person = await _context.Person.AsNoTracking().FirstOrDefaultAsync(e => e.Email == Email);
                 if (person != null)
                 {
                     Email = person.Name;

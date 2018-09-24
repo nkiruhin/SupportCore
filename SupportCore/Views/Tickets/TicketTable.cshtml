@@ -22,115 +22,125 @@
 
 <script>
     $(function () {
-        url = '@Html.Raw(Url.Action("IndexJson", "Tickets", Model))'
+        url = '@Html.Raw(Url.Action("IndexJson", "Tickets", Model))';
         TicketsTable(url);
-    })
+    });
     function TicketsTable(url) {
-    columns = [
-        //{
-        //    "render": function (data, type, full, meta) {
-        //        switch (full.priority) {
-        //            case "Немедленный": tagPriority = '<span title="Немедленный" class="mif-notification fg-red"></span>'
-        //                break;
-        //            case "Средний": tagPriority = '<span title="Средний" class="mif-notification fg-cyan"></span>'
-        //                break;
-        //            default: tagPriority = '';
-        //                break;
-        //        }
-        //        over = full.isOverdue == true ? ' <span title="Просрочено" class="mif-bell fg-red"></span>' : '';
-        //        coahors = full.isCoAthors == true ? ' <span title="Соавторы" class="mif-users"></span>' : '';
-        //        files = full.withFiles == true ? ' <span title="Файлы" class="mif-attachment"></span>' : '';
-        //        tasks = full.withTasks == true ? ' <span title="Задачи" class="mif-event-available"></span>' : '';
-        //        return tagPriority + over + files + tasks+ coahors;
-        //    },"autoWidth":true,
-        //},
-        {
-            "data": "id",
-            "render": function (data, type, full, meta) {
-                switch (full.sourceId) {
-                    case 1: source = '<span class="mif-perm-phone-msg"></span>'
-                        break;
-                    case 2: source = '<span class="mif-mail"></span>'
-                        break;
-                    case 3: source = '<span class="mif-file-text"></span>'
-                        break;
+        columns = [
+            //{
+            //    "render": function (data, type, full, meta) {
+            //        switch (full.priority) {
+            //            case "Немедленный": tagPriority = '<span title="Немедленный" class="mif-notification fg-red"></span>'
+            //                break;
+            //            case "Средний": tagPriority = '<span title="Средний" class="mif-notification fg-cyan"></span>'
+            //                break;
+            //            default: tagPriority = '';
+            //                break;
+            //        }
+            //        over = full.isOverdue == true ? ' <span title="Просрочено" class="mif-bell fg-red"></span>' : '';
+            //        coahors = full.isCoAthors == true ? ' <span title="Соавторы" class="mif-users"></span>' : '';
+            //        files = full.withFiles == true ? ' <span title="Файлы" class="mif-attachment"></span>' : '';
+            //        tasks = full.withTasks == true ? ' <span title="Задачи" class="mif-event-available"></span>' : '';
+            //        return tagPriority + over + files + tasks+ coahors;
+            //    },"autoWidth":true,
+            //},
+            {
+                "data": "id",
+                "render": function (data, type, full, meta) {
+                    switch (full.sourceId) {
+                        case 1: source = '<span class="mif-perm-phone-msg"></span>'
+                            break;
+                        case 2: source = '<span class="mif-mail"></span>'
+                            break;
+                        case 3: source = '<span class="mif-file-text"></span>'
+                            break;
+                    }
+                    return source + '   ' + data;
+                }, "width": "4%"
+            },
+            { "data": "dateCreate", "width": "10%" },
+            {
+                "data": "name", className: "ellipsis",
+                "render": function (data, type, full, meta) {
+                    switch (full.priority) {
+                        case "Немедленный": tagPriority = '<span title="Немедленный" class="mif-notification fg-red"></span>'
+                            break;
+                        case "Средний": tagPriority = '<span title="Средний" class="mif-notification fg-cyan"></span>'
+                            break;
+                        default: tagPriority = '';
+                            break;
+                    }
+                    over = full.isOverdue === true ? ' <span title="Просрочено" class="mif-bell fg-red"></span>' : '';
+                    coahors = full.isCoAthors === true ? ' <span title="Соавторы" class="mif-users"></span>' : '';
+                    files = full.withFiles === true ? ' <span title="Файлы" class="mif-attachment"></span>' : '';
+                    tasks = full.withTasks === true ? ' <span title="Задачи" class="mif-event-available" data-role="popover" data-on-popover-show="getTask" \
+                        data-hide-on-leave="true" \
+                        data-popover-position="bottom" \
+                        data-popover-trigger="click" \
+                        data-popover-hide="0" \
+                        data-ticketid="' + full.id + '" ></span > ' : '';
+                    return tagPriority + over + files + tasks + coahors + ' ' + '<span title="Шелкните для информации" data-role="popover" data-on-popover-show="getDescription" \
+                        data-hide-on-leave="true" \
+                        data-popover-position="bottom" \
+                        data-popover-trigger="click" \
+                        data-cls-popover="drop-shadow text-secondary m-0" \
+                        data-popover-hide="0" data-TicketId="' + full.id +'">'+data+'<span>';
                 }
-                return source + '   ' + data;
-            }, "width": "4%"
-        },
-        { "data": "dateCreate", "width": "10%" },
-        {
-            "data": "name", className: "ellipsis",
-            "render": function (data, type, full, meta) {
-                switch (full.priority) {
-                    case "Немедленный": tagPriority = '<span title="Немедленный" class="mif-notification fg-red"></span>'
-                        break;
-                    case "Средний": tagPriority = '<span title="Средний" class="mif-notification fg-cyan"></span>'
-                        break;
-                    default: tagPriority = '';
-                        break;
-                }
-                over = full.isOverdue == true ? ' <span title="Просрочено" class="mif-bell fg-red"></span>' : '';
-                coahors = full.isCoAthors == true ? ' <span title="Соавторы" class="mif-users"></span>' : '';
-                files = full.withFiles == true ? ' <span title="Файлы" class="mif-attachment"></span>' : '';
-                tasks = full.withTasks == true ? ' <span title="Задачи" class="mif-event-available"></span>' : '';
-                return tagPriority + over + files + tasks + coahors + ' ' + data;
-            }
-        },
-        { "data": "person", className: "ellipsis", "width": "10%" },
-        { "data": "staff", "defaultContent": "<i>Не назначена</i>", className: "ellipsis", "width": "10%" },
-        //{ "data": "priority","autoWidth": true },
-        {
-            //"data": "status",
-            "render": function (data, type, full) {
-                urlm = 'openCustomWin(\'@Url.Action("Create","TicketThreads")/' + full.id + '\?Type=1&table=true';
-                switch (full.status) {
-                    case 1:
-                        tag = '<code class="alert">Открыта</code>'
-                        menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
-                            <li><a href="#" onclick="`+ urlm + `&Event=2\',\'mif-pencil\','Закрытие',true)">Закрыта</a></li>
+            },
+            { "data": "person", className: "ellipsis", "width": "10%" },
+            { "data": "staff", "defaultContent": "<i>Не назначена</i>", className: "ellipsis", "width": "10%" },
+            //{ "data": "priority","autoWidth": true },
+            {
+                //"data": "status",
+                "render": function (data, type, full) {
+                    urlm = 'openCustomWin(\'@Url.Action("Create","TicketThreads")/' + full.id + '\?Type=1&table=true';
+                    switch (full.status) {
+                        case 1:
+                            tag = '<code class="alert">Открыта</code>';
+                            menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
+                            <li><a href="#" onclick="closed('`+ full.id + `',true)">Закрыта</a></li>
                             <li><a href="#" onclick="`+ urlm + `&Event=3\',\'mif-pencil\','Отложить',true)">Отложена</a></li>
                             <li><a href="#" onclick="`+ urlm + `&Event=5\',\'mif-pencil\','Выполнение',true)">Выполнена</a></li>
-                            </ul>`
-                        break;
-                    case 2:
-                        tag = '<code class="success" title="Дата закрытия ' + full.closed+'">Закрыта</code>'
-                        menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
+                            </ul>`;
+                            break;
+                        case 2:
+                            tag = '<code class="success" title="Дата закрытия ' + full.closed + '">Закрыта</code>';
+                            menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
                             <li><a href="#" onclick="`+ urlm + `&Event=1\',\'mif-pencil\','Открытие',true)">Открыта</a></li>
-                            </ul>`
-                        break;
-                    case 3:
-                        tag = '<code class="default">Отложена</code>'
-                        menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
+                            </ul>`;
+                            break;
+                        case 3:
+                            tag = '<code class="default">Отложена</code>';
+                            menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
                             <li><a href="#" onclick="`+ urlm + `&Event=1\',\'mif-pencil'\,'Открытие',true')">О1ткрыта</a></li>
-                            <li><a href="#" onclick="`+ urlm + `&Event=2\',\'mif-pencil\','Закрытие',true)">Закрыта</a></li>
+                            <li><a href="#" onclick="closed('`+ full.id + `',true)">Закрыта</a></li>
                             <li><a href="#" onclick="`+ urlm + `&Event=5\',\'mif-pencil\','Выполнение',true)">Выполнена</a></li>
-                            </ul>`
-                        break;
-                    case 5:
-                        tag = '<code class="info">Выполнена</code>'
-                        menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
+                            </ul>`;
+                            break;
+                        case 5:
+                            tag = '<code class="info">Выполнена</code>';
+                            menu = `<ul class="d-menu context" data-role="dropdown" style="display: none;">
                             <li><a href="#" onclick="`+ urlm + `&Event=1\',\'mif-pencil\','Открытие',true)">Открыта</a></li>
-                            <li><a href="#" onclick="`+ urlm + `&Event=2\',\'mif-pencil\','Закрытие',true)">Закрыта</a></li>
+                            <li><a href="#" onclick="closed('`+ full.id + `',true)">Закрыта</a></li>
                             <li><a href="#" onclick="`+ urlm + `&Event=3\',\'mif-pencil\','Отложить',true)">Отложена</a></li>
-                            </ul>`
-                        break;
-                }
-                return `<div style="position: relative">
+                            </ul>`;
+                            break;
+                    }
+                    return `<div style="position: relative">
                         <a href="" class="dropdown-toggle">`
-                    + tag +
-                    '</a>' + menu + "<\div>"
-            }, "width": "7%"
-        },
-        {
-            "render": function (data, type, full, meta) {
-                menu_button = "<div class='dropdown-button'><button class='button small dropdown-toggle secondary outline'>Действия</button><ul class='d-menu context' data-role='dropdown'>";
-                if (full.status != 2) {
-                    edit = '<li><a href=@Url.Action("Edit","Tickets")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Редактировать"><span class="mif-pencil icon"></span>&nbsp;Изменить</a></li>';
-                } else {
-                    edit = '';
-                }
-                detail = ' <li><a href=@Url.Action("Details", "Tickets")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Просмотреть"><span class="mif-zoom-in icon"></span>&nbsp;Просмотреть</a></li>';
+                        + tag +
+                        '</a>' + menu + "<\div>";
+                }, "width": "7%"
+            },
+            {
+                "render": function (data, type, full, meta) {
+                    menu_button = "<div class='dropdown-button'><button class='button small dropdown-toggle secondary outline'>Действия</button><ul class='d-menu context' data-role='dropdown'>";
+                    if (full.status !== 2) {
+                        edit = '<li><a href=@Url.Action("Edit","Tickets")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a></li>';
+                    } else {
+                        edit = '';
+                    }
+                    detail = ' <li><a href=@Url.Action("Details", "Tickets")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Просмотреть"><span class="mif-zoom-in icon"></span>Просмотреть</a></li>';
                 @if (User.IsInRole("Администратор") || User.IsInRole("Менеджер")) {
                     @: del = '<li><a href="#" title="Удалить" onclick="openCustomDialog(\'@Url.Action("Delete", "Tickets")/' + full.id + '\',\'Удалить\',end)"><span class="mif-bin icon"></span>Удалить</a></li>';
                 }
@@ -139,10 +149,10 @@
 
                 }
 
-                return menu_button + edit + detail + del + "</ul></div>"
-            }, "width": "6%"
-        }
-    ]
+                    return menu_button + edit + detail + del + "</ul></div>";
+                }, "width": "6%"
+            }
+        ];
     TicketTable = TableReady(url, columns);
 }
     function ReloadTable(f) {
@@ -151,9 +161,37 @@
         getCounters();
         return;
     }
-        url = '@Url.Action("IndexJson", "Tickets", null, "http")' + '?StatusId=' + f
-        if (f != null) { TicketTable.ajax.url(url) }
-        TicketTable.ajax.reload(null, false)
+        url = '@Url.Action("IndexJson", "Tickets", null, "http")' + '?StatusId=' + f;
+        if (f !== null) { TicketTable.ajax.url(url); }
+        TicketTable.ajax.reload(null, false);
         getCounters();
+    }
+    function getTask(popover, element) {
+        var TicketId = element.data('ticketid');
+        var xhr = new XMLHttpRequest();
+        var url = '@Url.Action("SimpleList","Tasks")' + '?TicketId=' + TicketId;
+        xhr.open("POST", url, true);
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                if (this.status === 200) {
+                    popover.html(this.responseText);
+                }
+            }
+        };
+        xhr.send();
+    }
+     function getDescription(popover, element) {
+        var TicketId = element.data('ticketid');
+        var xhr = new XMLHttpRequest();
+        var url = '@Url.Action("getDescription", "Tickets")' + '?TicketId=' + TicketId;
+        xhr.open("POST", url, true);
+        xhr.onreadystatechange = function () {
+            if (this.readyState === 4 && this.status === 200) {
+                if (this.status === 200) {
+                    popover.html(this.responseText);
+                }
+            }
+        };
+        xhr.send();
     }
 </script>

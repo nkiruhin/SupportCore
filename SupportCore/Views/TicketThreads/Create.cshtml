@@ -9,7 +9,7 @@
       data-ajax-begin="disableButton">
     <h5><label asp-for="Body"></label></h5>
     <hr class="thin bg-grayLighter" />
-    <button type="submit" class="button success" id="tThreadCreate">Сохранить</button>
+    <button type="submit" class="button primary" id="tThreadCreate"><span class="mif-floppy-disk"></span> Сохранить</button>
     <label class="checkbox">
         <input name="isInform" type="checkbox" checked value="true">
         <span class="check"></span>
@@ -20,7 +20,7 @@
     </div>
     <hr class="thin bg-grayLighter" />
     @await Component.InvokeAsync("Template", new { Event = ViewBag.Event })
-    <textarea asp-for="Body" id="Body" />
+    <textarea asp-for="Body" id="Body" style="width:54em" />
     <span asp-validation-for="Body"></span>
     <input asp-for="TicketId" hidden />
     <input asp-for="Type" hidden />
@@ -33,6 +33,7 @@
         var editor = $('#Body').trumbowyg(
             {
                 lang: 'ru',
+                resetCss: true,
                 btns: [
                     ['undo', 'redo'], // Only supported in Blink browsers
                     ['formatting'],
@@ -44,16 +45,16 @@
                     ['unorderedList', 'orderedList'],
                     ['horizontalRule'],
                     ['removeformat'],
-                ]
+                ],
             });
-        getTemplate();
+        getTemplate(editor);
         var form = $.validator.unobtrusive.parse('#CreateThread');
     })
 
     var onSuccess = function (context) {
         closeWin();
         if (context == 'OK') {
-            if (@ViewBag.Event== 4) {
+            if (@ViewBag.Event == 4) {
                 url = '@Url.Action("Edit", "Tickets", new { id = Model.TicketId })';
                 ticketSave(url);
             } else {
@@ -64,14 +65,18 @@
             $('#cell-content').html(context);
         }
     };
-    function getTemplate() {
+    function getTemplate(editor) {
         var TemplateId = document.getElementById("TemplateId").value;
         url = '@Url.Action("GetTemplate","Templates",new {Model.TicketId })' + '&id=' + TemplateId;
         //console.log(url);
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-                if (this.responseText == 'empty') { $('#Body').trumbowyg(this.responseText) } else {
+                console.log(this.responseText)
+
+                if (this.responseText == 'empty') {
+                    $('#Body').trumbowyg(this.responseText)
+                } else {
                     $('#Body').trumbowyg('html', this.responseText);
                 }
                }

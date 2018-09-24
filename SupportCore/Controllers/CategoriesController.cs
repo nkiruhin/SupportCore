@@ -40,7 +40,6 @@ namespace SupportCore.Controllers
             {
                 return NotFound();
             }
-
             return PartialView(category);
         }
 

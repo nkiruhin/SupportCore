@@ -1,0 +1,54 @@
+﻿@model List<SupportCore.Models.Tasks>
+<table class="w-100 dataTable table-border compact cell-border striped ">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            <th class="text-left-md p-1-md">
+                @Html.DisplayNameFor(model => model[0].DateCreate)
+            </th>
+            <th class="text-left-md p-1-md">
+                Номер
+            </th>
+            <th class="text-left-md">
+                @Html.DisplayNameFor(model => model[0].Title)
+            </th>
+
+            <th class="text-left-md">
+                @Html.DisplayNameFor(model => model[0].Status)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @item.DateCreate.ToString("d")
+            </td>
+            <td class="text-ellipsis" style="max-width:100px">
+                @if (item.Number == null)
+                {
+                    @:#@item.Id
+                }
+                else
+                {
+                    @:<a href="@item.Number">@item.Number.Split('/').Last()</a>
+                }
+            </td>
+            <td class="text-ellipsis" style="max-width:220px">
+                <span data-role="hint"
+                      data-hint-position="bottom"
+                      data-hint-text="@item.Body">@item.Title</span>
+                </td>
+                <td>
+                    @if (item.Status == 0)
+                    {
+                            <code class="alert">Открыта</code>
+                    }
+                    else
+                    {
+                            <code class="success">Закрыта</code>
+                    }
+                </td>
+            </tr>
+}
+    </tbody>
+</table>

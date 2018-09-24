@@ -29,23 +29,23 @@
                     data-ajax-url="@Url.Action("List","Organizations",null,"http")"></select>
         </div>
         <div class="pt-6-md">
-            <button type="submit" class="button primary">Сохранить и продолжить</button>
+            <button type="submit" class="button primary"><span class="mif-arrow-right"></span>  Далее</button>
             <a asp-action="Index"
                data-ajax="true"
                data-ajax-method="GET"
                data-ajax-update="#cell-content"
                data-ajax-mode="update"
-               class="button secondary" data-role="button">К списку</a>
+               class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
         </div>
     </form>  
 
     <script>
         $(document).ready(function () {
             var form = $.validator.unobtrusive.parse('#PersonCreate');
-        })
+        });
         $('.jselect2').select2({
             placeholder: 'Выберите организацию из списка',
-            language: 'ru',
+            language: 'ru'
         });
         $('.check-box').on('click', function () {
             if (this.checked) {
@@ -53,7 +53,7 @@
                     .val(null).trigger('change');
             } else { $('.jselect2').prop("disabled", false) }
 
-        })
+        });
         $('.jselect2').on('select2:select', function (e) {
                 orgEmail();
             });

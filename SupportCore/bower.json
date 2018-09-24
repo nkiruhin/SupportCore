@@ -3,24 +3,24 @@
   "private": true,
   "dependencies": {
     "jquery": "3.3.1",
-    "jquery-validation": "1.17.0",
+    "jquery-validation": "1.18.0",
     "jquery-validation-unobtrusive": "v3.2.10",
-    "metro": "v4.2.19",
+    "metro": "v4.2.22",
     "datatables": "1.10.19",
     "jquery-ajax-unobtrusive": "v3.2.5",
     "select2": "4.0.6-rc.1",
-    "trumbowyg": "v2.10.0",
+    "trumbowyg": "v2.11.0",
     "sip.js": "0.10.0",
     "chartist": "v0.11.0"
   },
   "resolutions": {
     "jquery": "3.3.1",
-    "jquery-validation": "1.17.0",
+    "jquery-validation": "1.18.0",
     "select2": "4.0.6-rc.1",
     "jquery-ajax-unobtrusive": "v3.2.5",
     "jquery-validation-unobtrusive": "v3.2.10",
-    "trumbowyg": "v2.10.0",
-    "metro": "v4.2.19",
+    "trumbowyg": "v2.11.0",
+    "metro": "v4.2.22",
     "sip.js": "0.11.0",
     "datatables": "1.10.19"
   }

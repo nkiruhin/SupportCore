@@ -23,6 +23,7 @@ namespace SupportCore.Models
         [ScaffoldColumn(false)]
         public Person Person { set; get; }
         [DataType(DataType.PhoneNumber)]
+        [Display(Name = "Телефон")]
         public string Phone { set; get; }
         [Display(Name = "Тема")]
         public string Subject { set; get; }

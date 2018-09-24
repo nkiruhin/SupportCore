@@ -9,11 +9,15 @@
     data-ajax-update="#Tasks"
     data-ajax-mode="update"
     data-ajax-success="closeWin()">
-    <button type="submit" class="button primary" id="tThreadClose">Сохранить</button>
+    <button type="submit" class="button primary" id="tThreadClose"><span class="mif-floppy-disk"></span> Сохранить</button>
 
     <div class="form-group">
         <label asp-for="DateClose"></label>
-        <input asp-for="DateClose">
+        <input asp-for="DateClose" 
+            data-role="calendarpicker" 
+            data-dialog-mode="true"
+            data-cls-calendar="compact"
+        >
         <span asp-validation-for="Result"></span>
     </div>
     <div class="form-group">

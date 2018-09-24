@@ -474,9 +474,10 @@ namespace SupportCore.Controllers
             string[] coAuthorsOld = await _context.CoAuthors
                 .AsNoTracking()
                 .Where(n => n.TicketId == Id).Select(n => n.PersonId).ToArrayAsync<string>();
-            if (coAuthors.Length == 0&&coAuthorsOld.Length==0) return Ok("Нет соавторов");           
+            if (coAuthors.Length == 0&&coAuthorsOld.Length==0) return BadRequest("Нет соавторов");           
             string [] coAuthorsforAdd=coAuthors.Except(coAuthorsOld).ToArray();
             string[] coAuthorsforRemove = coAuthorsOld.Except(coAuthors).ToArray();
+            if(coAuthorsforAdd.Length==0&&coAuthorsforRemove.Length==0) return BadRequest("Нет соавторов");
             string coAuthorsList="";
             if (coAuthorsforAdd.Length > 0)// Add new coauthors
             {
@@ -571,6 +572,20 @@ namespace SupportCore.Controllers
             var path = Path.Combine(_appSetting.Value.UploadDirectory, fileforDownload.FileName);
             var stream = new FileStream(path, FileMode.Open);
             return File(stream, fileforDownload.ContentType);
+        }
+        public async Task<IActionResult> getDescription(int? TicketId)
+        {
+            if (TicketId == null)
+            {
+                return NotFound();
+            }
+            var desc = await _context.FormEntryValues.AsNoTracking()
+                .Include(f=>f.Field)
+                .SingleOrDefaultAsync(n => n.TicketId == TicketId && n.Field.Label == "description");
+            if(desc!=null) { 
+            return Ok(desc.Value);
+            }
+            return NotFound();
         }
         //POST Tickets/Send
         //public async Task<IActionResult> Send()

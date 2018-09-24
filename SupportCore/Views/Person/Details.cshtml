@@ -10,14 +10,14 @@
        data-ajax-update="#cell-content"
        data-ajax-mode="update"
        asp-route-id="@Model.Id"
-       class="button primary">Изменить</a>
+       class="button primary"><span class="mif-pencil"></span>  Изменить</a>
 
     <a asp-action="Index"
        data-ajax="true"
        data-ajax-method="GET"
        data-ajax-update="#cell-content"
        data-ajax-mode="update"
-       class="button secondary" data-role="button">К списку</a>
+       class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
 </div>
 
 <ul data-expand="md" data-role="tabs">
@@ -58,7 +58,7 @@
                    data-ajax-method="GET"
                    data-ajax-update="#cell-content"
                    data-ajax-mode="update"
-                   class="button primary" data-role="button">Создать заявку</a>
+                   class="button primary" data-role="button"><span class="mif-plus"></span> Добавить...</a>
             </div>
             @await Html.PartialAsync("../Tickets/TicketTable", new Filter { PersonId = Model.Id, StatusId = 1, UserId = "all" })
         </div>

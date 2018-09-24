@@ -58,7 +58,12 @@
             </div>
             <div class="form-group m-0">
                 <label asp-for="DueDate" class="control-label"></label>
-                <input asp-for="DueDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                @*<input asp-for="DueDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" />*@
+                <input asp-for="DueDate"                 
+                    data-role="calendarpicker" 
+                    data-cls-calendar="compact"
+                    data-min-date="@DateTime.Now.ToString("yyyy-MM-dd")"
+                />
                 <span asp-validation-for="DueDate"></span>
             </div>
             <label class="input-control checkbox small-check">
@@ -68,13 +73,13 @@
                 <span class="caption">Информировать пользователя</span>
             </label>
             <div class="pt-2">
-                <button type="submit" class="button primary" id="tCreateSubmit">Создать...</button>
+                <button type="submit" class="button primary" id="tCreateSubmit"><span class="mif-floppy-disk"></span>  Сохранить</button>
                 <a asp-action="Index" asp-controller="Tickets"
                    data-ajax="true"
                    data-ajax-method="GET"
                    data-ajax-update="#cell-content"
                    data-ajax-mode="update"
-                   class="button secondary" data-role="button">К списку</a>
+                   class="button secondary" data-role="button"><span class="mif-home"></span>  К списку</a>
             </div>
         </div>
         <div class="cell-8">

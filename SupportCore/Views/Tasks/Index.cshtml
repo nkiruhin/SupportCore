@@ -3,23 +3,23 @@
 @if (ViewBag.Edit != null){
 <div class="row p-3-md">
     <a class="button primary" data-role="button" href="#" onclick="openCustomWin('/Tasks/Create/@Model.Id','mif-event-available','Задачи..',true)">
-        Добавить...
+        <span class="mif-plus"></span> Добавить...
     </a>
 </div>
 }
-<table class="w-100">
+<table class="w-100 dataTable table-border compact cell-border striped">
     <thead class="bg-darkCyan fg-white">
         <tr>
-            <th class="text-left-md p-1-md">
+            <th class="text-left-md p-1-md" >
                 <label asp-for="@Model.Tasks.FirstOrDefault().DateCreate"></label>
             </th>
-            <th class="text-left-md">
+            <th class="text-left-md" >
                 <label asp-for="@Model.Tasks.FirstOrDefault().DateClose"></label>
             </th>
             <th class="text-left-md">
-                <label asp-for="@Model.Tasks.FirstOrDefault().Number"></label>
+                <label>Номер</label>
             </th>
-            <th class="text-left-md">
+            <th class="text-left-md" style="width:50%">
                 <label asp-for="@Model.Tasks.FirstOrDefault().Title"></label>
             </th>
 
@@ -39,7 +39,7 @@
 @foreach (var item in Model.Tasks) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.DateCreate)
+                @item.DateCreate.ToString("d")
             </td>
             <td>
                 @if (item.DateClose < new DateTime(1800, 1, 1))
@@ -51,17 +51,17 @@
                     @item.DateClose.ToShortDateString();
                 }
             </td>
-            <td class="text-ellipsis" style="max-width:100px">
+            <td class="text-ellipsis" style="max-width:50px">
                 @if (item.Number == null)
                 {
                     @:#@item.Id
                 }
                 else
                 {
-                    @:<a href="@item.Number">@item.Number</a>
+                    @:<a href="@item.Number">@item.Number.Split('/').Last()</a>
                 }
             </td>
-            <td class="text-ellipsis" style="max-width:220px">
+            <td class="text-ellipsis" style="max-width:320px">
                 <span data-role="hint"
                       data-hint-position="bottom"
                       data-hint-text="@item.Body">@item.Title</span>
@@ -107,22 +107,22 @@
                 </td>
                 <td width="7%">
                     <div class="dropdown-button">
-                        <button class="button secondary outline small dropdown-toggle">Действия</button>
+                        <button class="button small dropdown-toggle secondary outline">Действия</button>
                         <ul class="d-menu context" data-role="dropdown">
                             @if (item.Status == 0)
                             {
-                            <li><a href="#" onclick="openCustomWin('/Tasks/Edit/@item.Id','mif-event-available','Задачи..',true)">Изменить</a></li>
+                            <li><a href="#" onclick="openCustomWin('/Tasks/Edit/@item.Id','mif-event-available','Задачи..',true)"><span class="mif-pencil icon"></span>Изменить</a></li>
                             }
                             @if (item.Status == 0 && item.Number != null)
                             {
-                            <li><a href="#" onclick="openCustomWin('/Tasks/GetIssue/@item.Number.Split('/').Last()','mif-checkmark','Задачи..',true)">Проверить</a></li>
+                            <li><a href="#" onclick="openCustomWin('/Tasks/GetIssue/@item.Number.Split('/').Last()','mif-checkmark','Задачи..',true)"><span class="mif-checkmark icon"></span>Проверить</a></li>
                             }
-                            <li><a href="#" onclick="openCustomWin('/Tasks/Details/@item.Id','mif-event-available','Задачи..',true)">Просмотреть</a></li>
+                            <li><a href="#" onclick="openCustomWin('/Tasks/Details/@item.Id','mif-event-available','Задачи..',true)"><span class="mif-zoom-in icon"></span>Просмотреть</a></li>
                             @if (User.IsInRole("Администратор") || User.IsInRole("Менеджер"))
                             {
                             <li>
                                 <a href="#"
-                                   title="Удалить" onclick="openCustomDialog('/Task/Delete/@item.Id','mif-bin')">Удалить</a>
+                                   title="Удалить" onclick="openCustomDialog('/Task/Delete/@item.Id','mif-bin')"><span class="mif-bin icon"></span>Удалить</a>
                             </li>}
                         </ul>
                     </div>

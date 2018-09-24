@@ -23,7 +23,7 @@ It's an independent project with its ongoing development made possible entirely 
 <br>
 <hr>
  
-## Current Version 4.2.19
+## Current Version 4.2.22
 
 ### Status
 [![Build Status](https://travis-ci.org/olton/Metro-UI-CSS.svg?branch=master)](https://travis-ci.org/olton/Metro-UI-CSS)
@@ -59,6 +59,7 @@ It's an independent project with its ongoing development made possible entirely 
 - jQuery Core [jquery](https://jquery.com/)
 - scrolStop by Ross Allen [ssorallen](https://github.com/ssorallen)
 - function b64toBlob by [Jeremy Banks](http://stackoverflow.com/users/1114/jeremy-banks)
+- Date.getWeek by [Nick Baicoianu](http://www.epoch-calendar.com)
 - All who brought something good 
 
 ### Browser Compatibility

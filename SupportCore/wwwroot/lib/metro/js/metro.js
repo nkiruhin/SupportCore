@@ -9,6 +9,8 @@ if ('MutationObserver' in window === false) {
 var meta_init = $("meta[name='metro4:init']").attr("content");
 var meta_locale = $("meta[name='metro4:locale']").attr("content");
 var meta_week_start = $("meta[name='metro4:week_start']").attr("content");
+var meta_date_format = $("meta[name='metro4:date_format']").attr("content");
+var meta_date_format_input = $("meta[name='metro4:date_format_input']").attr("content");
 var meta_animation_duration = $("meta[name='metro4:animation_duration']").attr("content");
 var meta_callback_timeout = $("meta[name='metro4:callback_timeout']").attr("content");
 var meta_timeout = $("meta[name='metro4:timeout']").attr("content");
@@ -19,7 +21,13 @@ if (window.METRO_INIT === undefined) {
 if (window.METRO_DEBUG === undefined) {window.METRO_DEBUG = true;}
 
 if (window.METRO_WEEK_START === undefined) {
-    window.METRO_WEEK_START = meta_week_start !== undefined ? parseInt(meta_week_start) : 1;
+    window.METRO_WEEK_START = meta_week_start !== undefined ? parseInt(meta_week_start) : 0;
+}
+if (window.METRO_DATE_FORMAT === undefined) {
+    window.METRO_DATE_FORMAT = meta_date_format !== undefined ? meta_date_format : "%Y-%m-%d";
+}
+if (window.METRO_DATE_FORMAT_INPUT === undefined) {
+    window.METRO_DATE_FORMAT_INPUT = meta_date_format_input !== undefined ? meta_date_format_input : "%Y-%m-%d";
 }
 if (window.METRO_LOCALE === undefined) {
     window.METRO_LOCALE = meta_locale !== undefined ? meta_locale : 'en-US';
@@ -143,12 +151,18 @@ var Metro = {
         change: 'change.metro',
         cut: 'cut.metro',
         paste: 'paste.metro',
-        drop: 'drop.metro',
         scroll: 'scroll.metro',
         scrollStart: 'scrollstart.metro',
         scrollStop: 'scrollstop.metro',
         mousewheel: 'mousewheel.metro',
-        inputchange: "change.metro input.metro propertychange.metro cut.metro paste.metro copy.metro"
+        inputchange: "change.metro input.metro propertychange.metro cut.metro paste.metro copy.metro",
+        dragstart: "dragstart.metro",
+        dragend: "dragend.metro",
+        dragenter: "dragenter.metro",
+        dragover: "dragover.metro",
+        dragleave: "dragleave.metro",
+        drop: 'drop.metro',
+        drag: 'drag.metro'
     },
 
     keyCode: {
@@ -184,7 +198,9 @@ var Metro = {
 
     media_sizes: {
         FS: 0,
+        XS: 360,
         SM: 576,
+        LD: 640,
         MD: 768,
         LG: 992,
         XL: 1200,
@@ -286,10 +302,6 @@ var Metro = {
 
         this.sheet = Utils.newCssSheet();
 
-        this.observe();
-
-        this.initHotkeys(hotkeys);
-        this.initWidgets(widgets);
 
         window.METRO_MEDIA = [];
         $.each(Metro.media_queries, function(key, query){
@@ -297,6 +309,11 @@ var Metro = {
                 METRO_MEDIA.push(Metro.media_mode[key]);
             }
         });
+
+        this.observe();
+
+        this.initHotkeys(hotkeys);
+        this.initWidgets(widgets);
 
         this.about(true);
 

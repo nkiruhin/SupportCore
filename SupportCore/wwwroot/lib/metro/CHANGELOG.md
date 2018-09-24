@@ -1,3 +1,51 @@
+### 4.2.22
++ [x] Appbar: remove classes `app-bar-expanded-*` and add attributes `data-expand`, `data-exapnd-point`
++ [x] Table: fix `hidden` class applying. issue #1194
++ [x] Table: add attribute `data-cls-cell-wrapper`
++ [x] Mif: set `line-height: 1` for `mif-*x` classes
++ [x] File: add mode `drop`
++ [x] Select: fix for the `long` captions
++ [x] Select: add attribute `data-cls-select-input`
++ [x] Media players: set context for events to `HTML element`
++ [x] Builder: add [Metro 4 Builder](https://builder.metroui.org.ua)
+
+### 4.2.21
++ [x] Docs: refactoring docs for form components
++ [x] Resizable: add attributes `data-min-width`, `data-max-width`, `data-min-height`, `data-max-height`, `data-can-resize`, issue #1100
++ [x] Input: add events `onClearClick`, `onRevealClick`
++ [x] Input: add methods `clear()`, `toDefault()` 
++ [x] Input: rename `data-cls-element` to `data-cls-component`
++ [x] Input: add attribute `data-cls-custom-button`
++ [x] Input: add attribute `data-history-divider` and methods `getHistory`, `setHistory`, `getHistoryIndex`, `setHistoryIndex`
++ [x] Input: add `search input` functionality
++ [x] Search: remove `search` plugin
++ [x] Tag input: add observing attribute `value`
++ [x] Tag input: fix method `val()`
++ [x] Spinner: add events `onArrowUp`, `onArrowDown`, `onArrowClick`
++ [x] Spinner: add events `onPlusClick`, `onMinusClick`, `onButtonClick`
++ [x] Select: add event `onItemSelect`
++ [x] Select: add method `reset()`, `getSelected()`
++ [x] Select: fix method `val(...)`
++ [x] Textarea: add methods `clear()`, `toDefault()`
++ [x] Textarea: fix `data-append` attribute
++ [x] Calendar picker: fix error when value attribute is empty, issue #1191
++ [x] Calendar picker: add attributes `data-dialog-mode`, `data-dialog-point`, `data-dialog-overlay`, `data-overlay-color`, `data-overlay-alpha`
++ [x] Calendar: add `compact` class
++ [x] Calendar: for wide mode now use attributes `data-wide` or `data-wide-point` 
++ [x] Extension: add method, if not exists, Array.from 
+
+### 4.2.20
++ [x] Table: fix default padding for `th` and `td`
++ [x] Select: fix custom classes apply for selected options for select with `multiple` option, issue #1184
++ [x] Input: add `history` option, issue #1162
++ [x] Spinner: new component, issue #1180
++ [x] AppBar: fix error creating `hamburger` when background-color is `rgba` or `transparent`, issue #1172
++ [x] Slider: add event `onChange`
++ [x] TreeView: change context for events
++ [x] Calendar: any input format with attribute `data-input-format`, issue #1186 
++ [x] Calendar picker: any input format with attribute `data-input-format`, issue #1186
++ [x] Date: add extension function `getWeek()` - return week number 
+
 ### 4.2.19
 + [x] Change contributing rules 
 + [x] Tabs: add method `open(tab_num | tab_el)`. Tab number counting from 1. Tab element - `li` HTML element or `$("li")` jquery wrapper

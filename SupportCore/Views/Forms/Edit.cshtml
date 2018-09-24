@@ -20,7 +20,7 @@
        data-ajax-method="POST"
        data-ajax-update="#cell-content"
        data-ajax-mode="update"
-       class="button secondary" data-role="button">К списку</a>
+       class="button secondary" data-role="button"><span class="mif-home"></span>  К списку</a>
     </div>
     }
     else
@@ -34,13 +34,13 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
         @Html.EditorForModel()
         <div class="pb-4-md">
-            <button type="submit" class="button primary">Сохранить</button>
+            <button type="submit" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
             <a asp-action="Index"
                data-ajax="true"
                data-ajax-method="POST"
                data-ajax-update="#cell-content"
                data-ajax-mode="update"
-               class="button secondary" data-role="button">К списку</a>
+               class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
         </div>
     </form>
     }

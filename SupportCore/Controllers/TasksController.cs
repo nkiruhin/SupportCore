@@ -41,6 +41,21 @@ namespace SupportCore.Controllers
             ViewBag.Edit = edit;
             return PartialView(ticket);
         }
+        public async Task<IActionResult> SimpleList(int? TicketId)
+        {
+            if (TicketId == null)
+            {
+                return NotFound();
+            }
+            var tasks = await _context.Tasks.AsNoTracking()
+                .Where(n => n.TicketId == TicketId)
+                .Include(s => s.Staff)
+                .Include(o => o.Organization)
+                .ToListAsync();         
+            return PartialView(tasks);
+        }
+ 
+
 
         // GET: Tasks/Details/5
         public async Task<IActionResult> Details(int? id)

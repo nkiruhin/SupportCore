@@ -7,15 +7,21 @@ var File = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onFileCreate, [this.element]);
+        Utils.exec(this.options.onFileCreate, [this.element], elem);
 
         return this;
     },
     options: {
-        copyInlineStyles: true,
+        mode: "input",
+        buttonTitle: "Choose file(s)",
+        dropTitle: "<strong>Choose a file</strong> or drop it here",
+        dropIcon: "<span class='default-icon-upload'></span>",
         prepend: "",
-        caption: "Choose file",
-        disabled: false,
+        clsComponent: "",
+        clsPrepend: "",
+        clsButton: "",
+        clsCaption: "",
+        copyInlineStyles: true,
         onSelect: Metro.noop,
         onFileCreate: Metro.noop
     },
@@ -43,9 +49,9 @@ var File = {
         var that = this, element = this.element, o = this.options;
         var prev = element.prev();
         var parent = element.parent();
-        var container = $("<div>").addClass("file " + element[0].className);
-        var caption = $("<span>").addClass("caption");
-        var button;
+        var container = $("<label>").addClass((o.mode === "input" ? " file " : " drop-zone ") + element[0].className).addClass(o.clsComponent);
+        var caption = $("<span>").addClass("caption").addClass(o.clsCaption);
+        var icon, button;
 
         if (prev.length === 0) {
             parent.prepend(container);
@@ -54,21 +60,28 @@ var File = {
         }
 
         element.appendTo(container);
-        caption.insertBefore(element);
 
-        button = $("<button>").addClass("button").attr("tabindex", -1).attr("type", "button").html(o.caption);
-        button.appendTo(container);
+        if (o.mode === "input") {
+            caption.insertBefore(element);
 
-        if (element.attr('dir') === 'rtl' ) {
-            container.addClass("rtl");
+            button = $("<button>").addClass("button").attr("tabindex", -1).attr("type", "button").html(o.buttonTitle);
+            button.appendTo(container);
+            button.addClass(o.clsButton);
+
+            if (element.attr('dir') === 'rtl' ) {
+                container.addClass("rtl");
+            }
+
+            if (o.prepend !== "") {
+                var prepend = $("<div>").html(o.prepend);
+                prepend.addClass("prepend").addClass(o.clsPrepend).appendTo(container);
+            }
+        } else {
+            icon = $(o.dropIcon).addClass("icon").appendTo(container);
+            caption.html(o.dropTitle).insertAfter(icon);
         }
 
         element[0].className = '';
-
-        if (o.prepend !== "") {
-            var prepend = Utils.isTag(o.prepend) ? $(o.prepend) : $("<span>"+o.prepend+"</span>");
-            prepend.addClass("prepend").addClass(o.clsPrepend).appendTo(container);
-        }
 
         if (o.copyInlineStyles === true) {
             for (var i = 0, l = element[0].style.length; i < l; i++) {
@@ -76,7 +89,7 @@ var File = {
             }
         }
 
-        if (o.disabled === true || element.is(":disabled")) {
+        if (element.is(":disabled")) {
             this.disable();
         } else {
             this.enable();
@@ -85,15 +98,17 @@ var File = {
 
     _createEvents: function(){
         var element = this.element, o = this.options;
-        var parent = element.parent();
-        var caption = parent.find(".caption");
-        parent.on(Metro.events.click, "button, .caption", function(){
+        var container = element.closest("label");
+        var caption = container.find(".caption");
+
+        container.on(Metro.events.click, "button", function(){
             element.trigger("click");
         });
+
         element.on(Metro.events.change, function(){
             var fi = this;
             var file_names = [];
-            var entry = "";
+            var entry;
             if (fi.files.length === 0) {
                 return ;
             }
@@ -102,13 +117,39 @@ var File = {
                 file_names.push(file.name);
             });
 
-            entry = file_names.join(", ");
+            if (o.mode === "input") {
 
-            caption.html(entry);
-            caption.attr('title', entry);
+                entry = file_names.join(", ");
+
+                caption.html(entry);
+                caption.attr('title', entry);
+            }
 
             Utils.exec(o.onSelect, [fi.files, element], element[0]);
         });
+
+        element.on(Metro.events.focus, function(){container.addClass("focused");});
+        element.on(Metro.events.blur, function(){container.removeClass("focused");});
+
+        if (o.mode !== "input") {
+            container.on('drag dragstart dragend dragover dragenter dragleave drop', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            container.on('dragenter dragover', function(){
+                container.addClass("drop-on");
+            });
+
+            container.on('dragleave', function(){
+                container.removeClass("drop-on");
+            });
+
+            container.on('drop', function(e){
+                element[0].files = e.originalEvent.dataTransfer.files;
+                container.removeClass("drop-on");
+            });
+        }
     },
 
     disable: function(){

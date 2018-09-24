@@ -70,13 +70,13 @@
                                data-ajax="true"
                                data-ajax-method="GET"
                                data-ajax-update="#cell-content"
-                               data-ajax-mode="update">Редактировать</a>}
+                               data-ajax-mode="update"><span class="mif-pencil"></span> Изменить</a>}
                         <a asp-action="Index" asp-controller="Tickets"
                            data-ajax="true"
                            data-ajax-method="GET"
                            data-ajax-update="#cell-content"
                            data-ajax-mode="update"
-                           class="button secondary" data-role="button">К списку</a>
+                           class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
                     </div>
                 </div>
                 <div class="cell-md-8">
@@ -175,6 +175,5 @@
             console.log("Save");
             openCustom('/TicketThreads/Create?Id=@Model.Id&Event=4', 'mif-user-plus');
             return false;
-            e.preventDefault();
         }
 </script>

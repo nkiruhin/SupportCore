@@ -8,6 +8,7 @@
     border: 1px solid @borderColor;
     overflow: hidden;
     user-select: none;
+    background-color: @white;
 }
 
 .calendar-header, .calendar-content, .calendar-footer {
@@ -128,6 +129,10 @@
                 top: 1px!important;
             }
         }
+
+        &.showed {
+            font-weight: bold;
+        }
     }
 
     .outside {
@@ -234,7 +239,56 @@
     & > * {
         margin: 0 2px;
         font-size: .75rem;
-        //width: 25%;
+    }
+}
+
+.calendar {
+    &.compact {
+        width: 240px;
+
+        .calendar-content {
+            width: 100%;
+        }
+
+        .calendar-header {
+            padding: .5rem;
+            line-height: 1.2;
+            .header-year {
+                font-size: .65rem;
+            }
+            .header-day {
+                font-size: 1rem;
+            }
+        }
+        .calendar-toolbar {
+            & > * {
+                padding: 0!important;
+                font-size: 14px;
+            }
+        }
+        .calendar-footer {
+            .button {
+                height: 24px;
+                line-height: 24px;
+                padding: 0 .25rem;
+            }
+        }
+        .week-days, .days {
+            padding: 0!important;
+        }
+        .day {
+            height: 30px;
+            line-height: 30px;
+            width: 30px;
+            margin: 0;
+            font-size: 12px;
+        }
+        .day + .day {
+            margin-left: 1px;
+        }
+        .months-list, .years-list {
+            font-size: .85rem;
+        }
     }
 }
 
@@ -242,6 +296,10 @@
     flex-flow: row nowrap;
     width: 560px;
     .clear();
+
+    &.calendar-picker {
+        width: 460px;
+    }
 
     .calendar-header, .calendar-footer {
         position: absolute;
@@ -279,19 +337,24 @@
     .calendar-content {
         margin: 0 96px 0 180px;
     }
-}
 
-.generate-calendar-media-options(@mediaBreakpointListMobileLength);
-.generate-calendar-media-options(@name, @i: 1) when (@i <= @mediaBreakpointListMobileLength) {
-    @m: extract(@mediaBreakpointListMobile, @i);
+    &.compact {
+        width: 454px!important;
 
-    @media screen and (min-width: @@m) {
-        .calendar {
-            &.calendar-wide-@{m} {
-                .wide-calendar();
-            }
+        &.calendar-picker {
+            width: 354px!important;
+        }
+
+        .calendar-header {
+            width: 120px;
+        }
+        .calendar-content {
+            margin: 0 96px 0 120px;
+            width: 234px;
         }
     }
+}
 
-    .generate-calendar-media-options(@name, @i + 1);
+.calendar-wide {
+    .wide-calendar();
 }

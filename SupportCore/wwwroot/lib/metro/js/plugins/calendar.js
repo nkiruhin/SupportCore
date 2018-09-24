@@ -30,6 +30,8 @@ var Calendar = {
     },
 
     options: {
+        wide: false,
+        widePoint: null,
         pickerMode: false,
         show: null,
         locale: METRO_LOCALE,
@@ -65,6 +67,8 @@ var Calendar = {
         weekDayClick: false,
         multiSelect: false,
         special: null,
+        format: METRO_DATE_FORMAT,
+        inputFormat: null,
         onCancel: Metro.noop,
         onToday: Metro.noop,
         onClear: Metro.noop,
@@ -95,49 +99,16 @@ var Calendar = {
 
         element.html("").addClass("calendar").addClass(o.clsCalendar);
 
-        if (o.preset !== null) {
-            if (Array.isArray(o.preset) === false) {
-                o.preset = o.preset.split(",").map(function(item){
-                    return item.trim();
-                });
-            }
-
-            $.each(o.preset, function(){
-                if (Utils.isDate(this) === false) {
-                    return ;
-                }
-                that.selected.push((new Date(this)).getTime());
-            });
+        if (Utils.isValue(o.preset)) {
+            this._dates2array(o.preset, 'selected');
         }
 
-        if (o.exclude !== null) {
-            if (Array.isArray(o.exclude) === false) {
-                o.exclude = o.exclude.split(",").map(function(item){
-                    return item.trim();
-                });
-            }
-
-            $.each(o.exclude, function(){
-                if (Utils.isDate(this) === false) {
-                    return ;
-                }
-                that.exclude.push((new Date(this)).getTime());
-            });
+        if (Utils.isValue(o.exclude)) {
+            this._dates2array(o.exclude, 'exclude');
         }
 
-        if (o.special !== null) {
-            if (Array.isArray(o.special) === false) {
-                o.special = o.special.split(",").map(function(item){
-                    return item.trim();
-                });
-            }
-
-            $.each(o.special, function(){
-                if (Utils.isDate(this) === false) {
-                    return ;
-                }
-                that.special.push((new Date(this)).getTime());
-            });
+        if (Utils.isValue(o.special)) {
+            this._dates2array(o.special, 'special');
         }
 
         if (o.buttons !== false) {
@@ -148,16 +119,17 @@ var Calendar = {
             }
         }
 
-        if (o.minDate !== null && Utils.isDate(o.minDate)) {
-            this.min = (new Date(o.minDate)).addHours(this.offset);
+        if (o.minDate !== null && Utils.isDate(o.minDate, o.inputFormat)) {
+            this.min = Utils.isValue(o.inputFormat) ? o.minDate.toDate(o.inputFormat) : (new Date(o.minDate));
         }
 
-        if (o.maxDate !== null && Utils.isDate(o.maxDate)) {
-            this.max = (new Date(o.maxDate)).addHours(this.offset);
+        if (o.maxDate !== null && Utils.isDate(o.maxDate, o.inputFormat)) {
+            this.max = Utils.isValue(o.inputFormat) ? o.maxDate.toDate(o.inputFormat) : (new Date(o.maxDate));
         }
 
-        if (o.show !== null && Utils.isDate(o.show)) {
-            this.show = (new Date(o.show)).addHours(this.offset);
+        if (o.show !== null && Utils.isDate(o.show, o.inputFormat)) {
+            this.show = Utils.isValue(o.inputFormat) ? o.show.toDate(o.inputFormat) : (new Date(o.show));
+
             this.current = {
                 year: this.show.getFullYear(),
                 month: this.show.getMonth(),
@@ -167,28 +139,53 @@ var Calendar = {
 
         this.locale = Metro.locales[o.locale] !== undefined ? Metro.locales[o.locale] : Metro.locales["en-US"];
 
-        this._build();
-    },
-
-    _build: function(){
-        var element = this.element;
-
         this._drawCalendar();
         this._bindEvents();
 
-        if (this.options.ripple === true) {
+        if (o.wide === true) {
+            element.addClass("calendar-wide");
+        } else {
+            if (!Utils.isNull(o.widePoint) && Utils.mediaExist(o.widePoint)) {
+                element.addClass("calendar-wide");
+            }
+        }
+
+
+        if (o.ripple === true && Utils.isFunc(element.ripple) !== false) {
             element.ripple({
                 rippleTarget: ".button, .prev-month, .next-month, .prev-year, .next-year, .day",
                 rippleColor: this.options.rippleColor
             });
         }
 
-
         Utils.exec(this.options.onCalendarCreate, [this.element]);
+    },
+
+    _dates2array: function(val, category){
+        var that = this, o = this.options;
+
+        $.each(Utils.strToArray(val), function(){
+            var _d = Utils.isValue(o.inputFormat) ? this.toDate(o.inputFormat) : new Date(this);
+            if (Utils.isDate(_d) === false) {
+                return ;
+            }
+            _d.setHours(0,0,0,0);
+            that[category].push(_d.getTime());
+        });
     },
 
     _bindEvents: function(){
         var that = this, element = this.element, o = this.options;
+
+        $(window).on(Metro.events.resize, function(){
+            if (o.wide !== true) {
+                if (!Utils.isNull(o.widePoint) && Utils.mediaExist(o.widePoint)) {
+                    element.addClass("calendar-wide");
+                } else {
+                    element.removeClass("calendar-wide");
+                }
+            }
+        });
 
         element.on(Metro.events.click, ".prev-month, .next-month, .prev-year, .next-year", function(e){
             var new_date, el = $(this);
@@ -238,14 +235,6 @@ var Calendar = {
         });
 
         element.on(Metro.events.click, ".button.today", function(e){
-            // that.today = new Date();
-            // that.current = {
-            //     year: that.today.getFullYear(),
-            //     month: that.today.getMonth(),
-            //     day: that.today.getDate()
-            // };
-            // that._drawHeader();
-            // that._drawContent();
             that.toDay();
             Utils.exec(o.onToday, [that.today, element]);
 
@@ -580,6 +569,10 @@ var Calendar = {
             d = $("<div>").addClass("day").html(first.getDate()).appendTo(days_row);
 
             d.data('day', first.getTime());
+
+            if (this.show.format("%d-%m-%Y") === first.format("%d-%m-%Y")) {
+                d.addClass("showed");
+            }
 
             if (
                 this.today.getFullYear() === first.getFullYear() &&

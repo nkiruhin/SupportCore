@@ -204,6 +204,20 @@ select.input-validation-error {
     margin: 0 auto !important;
 }
 
+.trumbowyg-button-pane {
+    /*width: 100%;
+    min-height: 36px;
+    background: #ecf0f1;
+    border-bottom: 1px solid #d7e0e2;
+    margin: 0;
+    padding: 0 5px;*/
+    position: unset !important;
+    /*list-style-type: none;
+    line-height: 10px;
+    backface-visibility: hidden;
+    z-index: 11;*/
+}
+
 .trumbowyg-editor {
     min-height: 160px !important;
     /*height: 200px !important;

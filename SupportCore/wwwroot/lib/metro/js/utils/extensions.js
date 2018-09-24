@@ -52,6 +52,19 @@ Array.prototype.unique = function () {
     return a;
 };
 
+if (typeof Array.from !== "function") {
+    Array.prototype.from = function() {
+        var i, a = [];
+        if (Utils.isNull(this.length)) {
+            throw new Error("Value is not iterable");
+        }
+        for(i = 0; i < this.length; i++) {
+            a.push(this[i]);
+        }
+        return a;
+    }
+}
+
 /**
  * Number.prototype.format(n, x, s, c)
  *
@@ -77,29 +90,66 @@ String.prototype.contains = function() {
 
 String.prototype.toDate = function(format)
 {
-    var normalized      = this.replace(/[^a-zA-Z0-9]/g, '-');
-    var normalizedFormat= format.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-');
-    var formatItems     = normalizedFormat.split('-');
-    var dateItems       = normalized.split('-');
+    var normalized, normalizedFormat, formatItems, dateItems;
+    var monthIndex, dayIndex, yearIndex, hourIndex, minutesIndex, secondsIndex;
+    var today, year, month, day, hour, minute, second;
 
-    var monthIndex  = formatItems.indexOf("mm");
-    var dayIndex    = formatItems.indexOf("dd");
-    var yearIndex   = formatItems.indexOf("yyyy");
-    var hourIndex     = formatItems.indexOf("hh");
-    var minutesIndex  = formatItems.indexOf("ii");
-    var secondsIndex  = formatItems.indexOf("ss");
+    if (!Utils.isValue(format)) {
+        format = "yyyy-mm-dd";
+    }
 
-    var today = new Date();
+    normalized      = this.replace(/[^a-zA-Z0-9%]/g, '-');
+    normalizedFormat= format.toLowerCase().replace(/[^a-zA-Z0-9%]/g, '-');
+    formatItems     = normalizedFormat.split('-');
+    dateItems       = normalized.split('-');
 
-    var year  = yearIndex>-1  ? dateItems[yearIndex]    : today.getFullYear();
-    var month = monthIndex>-1 ? dateItems[monthIndex]-1 : today.getMonth()-1;
-    var day   = dayIndex>-1   ? dateItems[dayIndex]     : today.getDate();
+    monthIndex  = formatItems.indexOf("mm") > -1 ? formatItems.indexOf("mm") : formatItems.indexOf("%m");
+    dayIndex    = formatItems.indexOf("dd") > -1 ? formatItems.indexOf("dd") : formatItems.indexOf("%d");
+    yearIndex   = formatItems.indexOf("yyyy") > -1 ? formatItems.indexOf("yyyy") : formatItems.indexOf("yy") > -1 ? formatItems.indexOf("yy") : formatItems.indexOf("%y");
+    hourIndex     = formatItems.indexOf("hh") > -1 ? formatItems.indexOf("hh") : formatItems.indexOf("%h");
+    minutesIndex  = formatItems.indexOf("ii") > -1 ? formatItems.indexOf("ii") : formatItems.indexOf("mi") > -1 ? formatItems.indexOf("mi") : formatItems.indexOf("%i");
+    secondsIndex  = formatItems.indexOf("ss") > -1 ? formatItems.indexOf("ss") : formatItems.indexOf("%s");
 
-    var hour    = hourIndex>-1      ? dateItems[hourIndex]    : today.getHours();
-    var minute  = minutesIndex>-1   ? dateItems[minutesIndex] : today.getMinutes();
-    var second  = secondsIndex>-1   ? dateItems[secondsIndex] : today.getSeconds();
+    today = new Date();
+
+    year  = yearIndex >-1 ? dateItems[yearIndex] : today.getFullYear();
+    month = monthIndex >-1 ? dateItems[monthIndex]-1 : today.getMonth()-1;
+    day   = dayIndex >-1 ? dateItems[dayIndex] : today.getDate();
+
+    hour    = hourIndex >-1 ? dateItems[hourIndex] : today.getHours();
+    minute  = minutesIndex>-1 ? dateItems[minutesIndex] : today.getMinutes();
+    second  = secondsIndex>-1 ? dateItems[secondsIndex] : today.getSeconds();
 
     return new Date(year,month,day,hour,minute,second);
+};
+
+Date.prototype.getWeek = function (dowOffset) {
+    var nYear, nday, newYear, day, daynum, weeknum;
+
+    dowOffset = !Utils.isValue(dowOffset) ? METRO_WEEK_START : typeof dowOffset === 'number' ? parseInt(dowOffset) : 0;
+    newYear = new Date(this.getFullYear(),0,1);
+    day = newYear.getDay() - dowOffset;
+    day = (day >= 0 ? day : day + 7);
+    daynum = Math.floor((this.getTime() - newYear.getTime() -
+        (this.getTimezoneOffset()-newYear.getTimezoneOffset())*60000)/86400000) + 1;
+
+    if(day < 4) {
+        weeknum = Math.floor((daynum+day-1)/7) + 1;
+        if(weeknum > 52) {
+            nYear = new Date(this.getFullYear() + 1,0,1);
+            nday = nYear.getDay() - dowOffset;
+            nday = nday >= 0 ? nday : nday + 7;
+            weeknum = nday < 4 ? 1 : 53;
+        }
+    }
+    else {
+        weeknum = Math.floor((daynum+day-1)/7);
+    }
+    return weeknum;
+};
+
+Date.prototype.getYear = function(){
+    return this.getFullYear().toString().substr(-2);
 };
 
 Date.prototype.format = function(format, locale){
@@ -139,7 +189,7 @@ Date.prototype.format = function(format, locale){
             '%c': date.toUTCString(),
             '%C': Math.floor(nYear/100),
             '%d': zeroPad(nDate, 2),
-            // 'dd': zeroPad(nDate, 2),
+            'dd': zeroPad(nDate, 2),
             '%e': nDate,
             '%F': date.toISOString().slice(0,10),
             '%G': getThursday().getFullYear(),

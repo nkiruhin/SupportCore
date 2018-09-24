@@ -1,4 +1,4 @@
 ﻿@model Boolean
-<input asp-for="@Model" data-role="checkbox">
+<input asp-for="@Model" data-role="checkbox" data-caption="@ViewData.ModelMetadata.DisplayName" />
 <span asp-validation-for="@Model"></span>
 
