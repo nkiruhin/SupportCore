@@ -23,7 +23,7 @@ It's an independent project with its ongoing development made possible entirely 
 <br>
 <hr>
  
-## Current Version 4.2.22
+## Current Version 4.2.24
 
 ### Status
 [![Build Status](https://travis-ci.org/olton/Metro-UI-CSS.svg?branch=master)](https://travis-ci.org/olton/Metro-UI-CSS)
@@ -60,6 +60,7 @@ It's an independent project with its ongoing development made possible entirely 
 - scrolStop by Ross Allen [ssorallen](https://github.com/ssorallen)
 - function b64toBlob by [Jeremy Banks](http://stackoverflow.com/users/1114/jeremy-banks)
 - Date.getWeek by [Nick Baicoianu](http://www.epoch-calendar.com)
+- Swipe component based on [Matt Bryson](https://github.com/mattbryson/TouchSwipe-Jquery-Plugin)  TouchSwipe plugin
 - All who brought something good 
 
 ### Browser Compatibility

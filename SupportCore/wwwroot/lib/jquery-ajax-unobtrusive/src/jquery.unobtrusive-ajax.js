@@ -1,5 +1,6 @@
 // Unobtrusive Ajax support library for jQuery
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // @version <placeholder>
 // 
 // Microsoft grants you the right to use these script files for the sole
@@ -115,6 +116,30 @@
             options.type = "POST";
             options.data.push({ name: "X-HTTP-Method-Override", value: method });
         }
+
+        // change here:
+        // Check for a Form POST with enctype=multipart/form-data
+        // add the input file that were not previously included in the serializeArray()
+        // set processData and contentType to false
+        var $element = $(element);
+        if ($element.is("form") && $element.attr("enctype") == "multipart/form-data") {
+            var formdata = new FormData();
+            $.each(options.data, function (i, v) {
+                formdata.append(v.name, v.value);
+            });
+            $("input[type=file]", $element).each(function () {
+                var file = this;
+                $.each(file.files, function (n, v) {
+                    formdata.append(file.name, v);
+                });
+            });
+            $.extend(options, {
+                processData: false,
+                contentType: false,
+                data: formdata
+            });
+        }
+        // end change
 
         $.ajax(options);
     }

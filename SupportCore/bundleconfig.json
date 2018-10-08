@@ -26,5 +26,17 @@
     "inputFiles": [
       "wwwroot/css/select2.css"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/jquery-validation-unobtrusive/src/jquery.validate.unobtrusive.min.js",
+    "inputFiles": [
+      "wwwroot/lib/jquery-validation-unobtrusive/src/jquery.validate.unobtrusive.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/jquery-ajax-unobtrusive/src/jquery.unobtrusive-ajax.min.js",
+    "inputFiles": [
+      "wwwroot/lib/jquery-ajax-unobtrusive/src/jquery.unobtrusive-ajax.js"
+    ]
   }
 ]

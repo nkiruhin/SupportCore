@@ -1,3 +1,50 @@
+### 4.2.24
++ [x] Time picker: fix method `val` for issue #1221
++ [x] Calendar: fix method `setToday` for issue #1215
++ [x] ListView: fix method `_createNode` for `structure` option, issue #1220 
++ [x] ListView: fix methods `insertBefore`, `insertAfter`
++ [x] Tabs: change `expand` behavior
++ [x] Tabs: fix expand/collapse behavior
++ [x] Select: add attribute `data-cls-option-active`
++ [x] Countdown: fix performance and minor bugs
++ [x] Countdown: fix deferred start setup
++ [x] Countdown: add methods `resume()`, `reset()`
++ [x] Notify: fix firing method `onClose`  
++ [x] Notify: add methods `onNotifyCreate`, `onAppend`
++ [x] Input: fix custom search button click
++ [x] Calendar picker: add attribute `data-null-value`. If this attribute false and value empty, used current date
++ [x] Calendar picker: fix for null value, issue #1217
++ [x] Accordion: add attribute `data-material='true'`
++ [x] Switch: add attribute `data-material='true'`
++ [x] Mif: add new icons 50+
++ [x] Bottom navigation: add new CSS component  
++ [x] Bottom sheet: add new component
++ [x] Items list: add new CSS component  
++ [x] Feed list: add new CSS component  
++ [x] Group list: add new CSS component  
++ [x] Head bar: add new CSS component  
++ [x] Material tabs: add new component
++ [x] Material input: add new component
++ [x] Chips: add new CSS component
++ [x] Swipe: add new JS component
+
+### 4.2.23
++ [x] Select: fix native `onchange` event triggering, issue #1198
++ [x] Calendar: add attributes `data-prev-month-icon`, `data-next-month-icon`, `data-prev-year-icon`, `data-next-year-icon`
++ [x] Calendar: fix rendering for ie, issue #1202
++ [x] Calendar picker: add `data-prepend` attribute, issue #1201
++ [x] Calendar picker: fix close when clicked dropdown button issue #1210
++ [x] Calendar picker: fix disabled white text is unreadable, issue #1208
++ [x] Calendar picker: fix init null value, issue #1206
++ [x] Resizeable: fix resize, issue #1205
++ [x] Table: add attribute `data-filters-operator="and|or"`
++ [x] Table: fix init filters, defined in attribute `data-filters`
++ [x] Table: rename `filterMinLength` to `searchMinLength`
++ [x] Table: rename `filterThreshold` to `searchThreshold`
++ [x] Table: add attribute `data-search-fields`, issue #1195
++ [x] Table: add attributes `data-cls-row`, `data-cls-even-row`, `data-cls-odd-row`
++ [x] Table component: full rewrite docs 
+
 ### 4.2.22
 + [x] Appbar: remove classes `app-bar-expanded-*` and add attributes `data-expand`, `data-exapnd-point`
 + [x] Table: fix `hidden` class applying. issue #1194

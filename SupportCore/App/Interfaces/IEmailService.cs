@@ -14,6 +14,7 @@ using MailKit.Net.Imap;
 using SupportCore.Models;
 using MailKit.Search;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace SupportCore.App.Interfaces
 {
@@ -22,13 +23,22 @@ namespace SupportCore.App.Interfaces
         Task SendEmailAsync(string email, string subject, string message,List<CoAuthor> coAuthors=null);
         Task<List<Requests>> GetEmailsAsync(Context _context);
         Task<Requests> ReadEmailAsync(uint uid, Context _context);
+        Task<AttachFile> GetAttach(uint id, string FileName);
         void MakeReadAsync(uint uid);
     }
+
+        public class AttachFile
+        {
+            public byte[] Stream { set; get; }
+            public string ContentType { set; get; }
+        }
+
+
     public class EmailService : IEmailService
     {
         private readonly EmailConfig ec;
-
-       public EmailService(IOptions<EmailConfig> emailConfig)
+        
+        public EmailService(IOptions<EmailConfig> emailConfig)
         {
             this.ec = emailConfig.Value;
         }
@@ -88,9 +98,12 @@ namespace SupportCore.App.Interfaces
                     var messages = await client.Inbox.FetchAsync(uids, MessageSummaryItems.Envelope | MessageSummaryItems.UniqueId);
                     for(int m=0;m<messages.Count();m++)
                     {
-                       
+
+                        
                         var Email = messages[m].Envelope.From.Mailboxes.FirstOrDefault().Address.ToString();
-                              string PersonId = null;
+                       
+                        
+                             string PersonId = null;
                               var person = await _context.Person.AsNoTracking().FirstOrDefaultAsync(e => e.Email == Email);
                               if (person != null)
                               {
@@ -101,32 +114,12 @@ namespace SupportCore.App.Interfaces
                         {
                             Id = messages[m].UniqueId.Id.ToString(),
                             Email=Email,
-                            Subject=messages[m].NormalizedSubject,
+                            Subject=messages[m].NormalizedSubject ?? "<i>Без темы</i>",
                             DateCreate=messages[m].Date.DateTime,
                             From = 1,
                             PersonId = PersonId
                         });
-                              //    var message = await client.Inbox.GetMessageAsync(uid);
-                              //    var Email = message.From.Mailboxes.FirstOrDefault().Address.ToString();
-                              //    string PersonId = null;
-                              //    var person = await _context.Person.SingleOrDefaultAsync(e => e.Email == Email);
-                              //    if (person != null)
-                              //    {
-                              //        Email = person.Name;
-                              //        PersonId = person.Id;
-                              //    }
-                              //    //email.Subject = message.Subject;
-                              //    ////email.Text = message.HtmlBody;
-                              //    //email.DateCreate = message.Date.Date;
-                              //    emails.Add(new Requests
-                              //    {
-                              //        Id = uid.ToString(),
-                              //        Email = Email,
-                              //        Subject = message.Subject,
-                              //        DateCreate = message.Date.DateTime,
-                              //        From = 1,
-                              //        PersonId = PersonId
-                              //    });
+                           
                     }
                     await client.DisconnectAsync(true).ConfigureAwait(false);
                     return emails;
@@ -145,7 +138,20 @@ namespace SupportCore.App.Interfaces
                 await emailClient.ConnectAsync(ec.ImapServerAddress, Convert.ToInt32(ec.ImapServerPort), SecureSocketOptions.Auto).ConfigureAwait(false);
                 await emailClient.AuthenticateAsync(new NetworkCredential(ec.UserId, ec.UserPassword));
                 await emailClient.Inbox.OpenAsync(MailKit.FolderAccess.ReadOnly);
-                var message = await emailClient.Inbox.GetMessageAsync(new MailKit.UniqueId(uid));              
+                var message = await emailClient.Inbox.GetMessageAsync(new MailKit.UniqueId(uid));
+                string attach_list="";
+                var attachments = message.Attachments;
+                if (attachments.Count() > 0)
+                {
+                    attach_list = "<p> Вложения: ";
+                    string span_attach = "<span class=\"mif-attachment\"></span>";
+                    string url;
+                    foreach (MimeEntity attach in attachments)
+                    {
+                        url = span_attach+"<a target='_blank' href='Requests\\Attach\\"+uid.ToString()+"?FileName="+attach.ContentDisposition.FileName + "'>"+attach.ContentDisposition.FileName+"</a>";
+                        attach_list = attach_list+url+" ";
+                    }
+                }
                 var Email = message.From.Mailboxes.FirstOrDefault().Address.ToString();
                 string PersonId = null;
                 var person = await _context.Person.AsNoTracking().FirstOrDefaultAsync(e => e.Email == Email);
@@ -154,19 +160,17 @@ namespace SupportCore.App.Interfaces
                     Email = person.Name;
                     PersonId = person.Id;
                 }
-                //email.Subject = message.Subject;
-                ////email.Text = message.HtmlBody;
-                //email.DateCreate = message.Date.Date;
-
+        
+               
                 Requests email = new Requests
                 {
                     Id = uid.ToString(),
                     Email = Email,
-                    Subject = message.Subject,
+                    Subject = message.Subject??"Без темы",
                     DateCreate = message.Date.DateTime,
                     From = 1,
                     PersonId = PersonId,
-                    Text = message.HtmlBody
+                    Text = attach_list+message.HtmlBody ?? message.TextBody 
                 };
                 await emailClient.DisconnectAsync(true).ConfigureAwait(false);
                 return email;
@@ -186,6 +190,33 @@ namespace SupportCore.App.Interfaces
                 var Email = message.From.Mailboxes.FirstOrDefault().Address.ToString();
                 await emailClient.DisconnectAsync(true).ConfigureAwait(false);
             }
+        }
+
+        public async Task<AttachFile> GetAttach(uint id, string FileName)
+        {
+
+            using (var emailClient = new ImapClient())
+            {
+                //emailClient.AuthenticationMechanisms.Remove("XOAUTH2");
+                await emailClient.ConnectAsync(ec.ImapServerAddress, Convert.ToInt32(ec.ImapServerPort), SecureSocketOptions.Auto).ConfigureAwait(false);
+                await emailClient.AuthenticateAsync(new NetworkCredential(ec.UserId, ec.UserPassword));
+                await emailClient.Inbox.OpenAsync(MailKit.FolderAccess.ReadOnly);
+                var message = await emailClient.Inbox.GetMessageAsync(new MailKit.UniqueId(id));
+                var attach = message.Attachments.SingleOrDefault(f => f.ContentDisposition?.FileName == FileName);
+                using (var memory = new MemoryStream())
+                {
+                    if (attach is MimePart)
+                        ((MimePart)attach).Content.DecodeTo(memory);
+                    else
+                        ((MessagePart)attach).Message.WriteTo(memory);
+
+                    var bytes = memory.ToArray();
+                    await emailClient.DisconnectAsync(true).ConfigureAwait(false);
+                    return new AttachFile { Stream = bytes,ContentType=attach.ContentType.MimeType };
+                }               
+            }
+              //  var stream = new FileStream(path, FileMode.Open) ;
+            throw new NotImplementedException();
         }
     }
 }

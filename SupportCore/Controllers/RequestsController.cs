@@ -133,6 +133,16 @@ namespace SupportCore.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: Requests/Attach/uid Make read message inbox!
+        public async Task<IActionResult> Attach(uint id,string FileName)
+        {
+            //_emailService.MakeReadAsync(id);
+            
+            var stream=await _emailService.GetAttach(id, FileName);
+            return File(stream.Stream, stream.ContentType);
+            //return RedirectToAction(nameof(Index));
+        }
+
         private bool RequestsExists(string id)
         {
             return _context.Requests.Any(e => e.Id == id);

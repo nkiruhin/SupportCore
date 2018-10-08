@@ -119,14 +119,14 @@
 <script>
     $(function () {
         var configuration = {
-            uri: '400@ks.local',
-            wsServers: ['wss://192.168.123.10:7443'],
+            uri: '400@192.168.123.10',
+            wsServers: ['ws://192.168.123.10:8080'],
             authorizationUser: '400',
             password: '400',
             register: true,
-            //log: {
-            //    level: 3
-            //},
+            log: {
+                level: 0
+            },
             //traceSip: true,
         }
         phone = new SIP.UA(configuration);

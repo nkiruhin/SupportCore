@@ -207,7 +207,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,DateCreate,DateClose,Title,Body,Number,Status,Type")] Task task)
+        public async Task<IActionResult> Edit(int id, Tasks task)
         {
             if (id != task.Id)
             {
@@ -216,23 +216,20 @@ namespace SupportCore.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                Tasks taskforUpdate = _context.Tasks.SingleOrDefault(n => n.Id == id);
+                if(await TryUpdateModelAsync<Tasks>(taskforUpdate, "",
+                    t => t.Body, t => t.StaffId, t => t.OrganizationId, t => t.Number, t => t.Title))
                 {
-                    _context.Update(task);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TaskExists(task.Id))
+                    try
                     {
-                        return NotFound();
+                        await _context.SaveChangesAsync();
                     }
-                    else
+                    catch (DbUpdateConcurrencyException)
                     {
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index), new { taskforUpdate.TicketId });
             }
             return View(task);
         }

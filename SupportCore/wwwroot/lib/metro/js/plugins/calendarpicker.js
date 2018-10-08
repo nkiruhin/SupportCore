@@ -20,6 +20,10 @@ var CalendarPicker = {
 
     options: {
 
+        nullValue: true,
+
+        prepend: "",
+
         calendarWide: false,
         calendarWidePoint: null,
 
@@ -106,16 +110,14 @@ var CalendarPicker = {
         }
 
         if (!Utils.isValue(curr)) {
-            this.value = (new Date()).format("%Y/%m/%d");
+            //this.value = new Date();
         } else {
-            this.value = Utils.isValue(o.inputFormat) === false ? curr : (curr.toDate(o.inputFormat)).format("%Y/%m/%d");
+            this.value = Utils.isValue(o.inputFormat) === false ? new Date(curr) : curr.toDate(o.inputFormat);
         }
 
-        if (Utils.isDate(this.value)) {
-            this.value_date = new Date(this.value);
-            this.value_date.setHours(0,0,0,0);
-            element.val(this.value_date.format(o.format));
-        }
+        if (Utils.isValue(this.value)) this.value.setHours(0,0,0,0);
+
+        element.val(!Utils.isValue(curr) && o.nullValue === true ? "" : this.value.format(o.format));
 
         if (prev.length === 0) {
             parent.prepend(container);
@@ -141,7 +143,7 @@ var CalendarPicker = {
             buttons: false,
             headerFormat: o.headerFormat,
 
-            clsCalendar: o.clsCalendar + " calendar-picker",
+            clsCalendar: o.clsCalendar,
             clsCalendarHeader: o.clsCalendarHeader,
             clsCalendarContent: o.clsCalendarContent,
             clsCalendarFooter: "d-none",
@@ -163,23 +165,21 @@ var CalendarPicker = {
             showFooter: false,
             onDayClick: function(sel, day, el){
                 var date = new Date(sel[0]);
+                date.setHours(0,0,0,0);
 
                 that._removeOverlay();
 
-                that.value = date.format(Metro.utils.isValue(o.inputFormat) ? o.inputFormat : "%Y/%m/%d");
-                that.value_date = date;
+                that.value = date;
                 element.val(date.format(o.format, o.locale));
                 element.trigger("change");
                 cal.removeClass("open open-up");
                 cal.hide();
-                Utils.exec(o.onChange, [that.value, that.value_date, element], element[0]);
+                Utils.exec(o.onChange, [that.value], element[0]);
                 Utils.exec(o.onDayClick, [sel, day, el], element[0]);
             },
             onMonthChange: o.onMonthChange,
             onYearChange: o.onYearChange
         });
-
-        cal.hide();
 
         this.calendar = cal;
 
@@ -191,6 +191,10 @@ var CalendarPicker = {
         calendarButton = $("<button>").addClass("button").attr("tabindex", -1).attr("type", "button").html(o.calendarButtonIcon);
         calendarButton.appendTo(buttons);
 
+        if (o.prepend !== "") {
+            var prepend = $("<div>").html(o.prepend);
+            prepend.addClass("prepend").addClass(o.clsPrepend).appendTo(container);
+        }
 
         if (element.attr('dir') === 'rtl' ) {
             container.addClass("rtl");
@@ -229,6 +233,13 @@ var CalendarPicker = {
                 container.addClass("dialog-mode");
             }
         }
+
+        if (element.is(":disabled")) {
+            this.disable();
+        } else {
+            this.enable();
+        }
+
     },
 
     _createEvents: function(){
@@ -236,6 +247,7 @@ var CalendarPicker = {
         var container = element.parent();
         var clear = container.find(".input-clear-button");
         var cal = this.calendar;
+        var cal_plugin = cal.data('calendar');
 
         $(window).on(Metro.events.resize, function(){
             if (o.dialogMode !== true) {
@@ -249,45 +261,40 @@ var CalendarPicker = {
 
         if (clear.length > 0) clear.on(Metro.events.click, function(e){
             element.val("").trigger('change').blur();
-            that.value = (new Date()).format("%Y/%m/%d");
-            that.value_date = new Date(this.value);
-            that.value_date.setHours(0,0,0,0);
+            that.value = null;
             e.preventDefault();
             e.stopPropagation();
         });
 
         container.on(Metro.events.click, "button, input", function(e){
-            if (Utils.isDate(that.value, o.inputFormat) && (cal.hasClass("open") === false && cal.hasClass("open-up") === false)) {
-                cal.css({
-                    visibility: "hidden",
-                    display: "block"
-                });
-                cal.data('calendar').setPreset(that.value);
-                cal.data('calendar').setShow(that.value);
-                cal.data('calendar').setToday(that.value);
-                cal.css({
-                    visibility: "visible",
-                    display: "none"
-                });
-            }
+
+            var value = Utils.isValue(that.value) ? that.value : new Date();
+
+            value.setHours(0,0,0,0);
+
             if (cal.hasClass("open") === false && cal.hasClass("open-up") === false) {
+
+                $(".calendar-picker .calendar").removeClass("open open-up").hide();
+
+                cal_plugin.setPreset([value]);
+                cal_plugin.setShow(value);
+                cal_plugin.setToday(value);
+
                 if (container.hasClass("dialog-mode")) {
                     that.overlay.appendTo($('body'));
                 }
-                $(".calendar-picker .calendar").removeClass("open open-up").hide();
                 cal.addClass("open");
                 if (Utils.isOutsider(cal) === false) {
                     cal.addClass("open-up");
                 }
-                cal.show();
-                Utils.exec(o.onCalendarShow, [element, cal]);
+                Utils.exec(o.onCalendarShow, [element, cal], cal);
+
             } else {
 
                 that._removeOverlay();
-
                 cal.removeClass("open open-up");
-                cal.hide();
-                Utils.exec(o.onCalendarHide, [element, cal]);
+                Utils.exec(o.onCalendarHide, [element, cal], cal);
+
             }
             e.preventDefault();
             e.stopPropagation();
@@ -296,7 +303,7 @@ var CalendarPicker = {
         element.on(Metro.events.blur, function(){container.removeClass("focused");});
         element.on(Metro.events.focus, function(){container.addClass("focused");});
         element.on(Metro.events.change, function(){
-            Utils.exec(o.onChange, [that.value_date, that.value, element], element[0]);
+            Utils.exec(o.onChange, [that.value], element[0]);
         });
     },
 
@@ -324,21 +331,15 @@ var CalendarPicker = {
     val: function(v){
         var element = this.element, o = this.options;
 
-        if (v === undefined) {
-            return this.value_date;
+        if (Utils.isNull(v)) {
+            return this.value;
         }
 
-        if (Utils.isDate(v) === true) {
-            this.value_date = new Date(v);
-            this.value = this.value_date.format(o.format);
-            element.val(this.value_date.format(o.format));
+        if (Utils.isDate(v, o.inputFormat) === true) {
+            this.value = typeof v === 'string' ? v.toDate(o.inputFormat) : v;
+            element.val(this.value.format(o.format));
             element.trigger("change");
         }
-    },
-
-    changeValue: function(){
-        var element = this.element;
-        this.val(element.attr("value"));
     },
 
     disable: function(){
@@ -386,44 +387,42 @@ var CalendarPicker = {
         }
     },
 
-    changeAttrLocale: function(){
-        var element = this.element;
-        this.i18n(element.attr("data-locale"));
-    },
-
-    changeAttrSpecial: function(){
-        var element = this.element;
-        var cal = this.calendar.data("calendar");
-        cal.setSpecial(element.attr("data-special"));
-    },
-
-    changeAttrExclude: function(){
-        var element = this.element;
-        var cal = this.calendar.data("calendar");
-        cal.setExclude(element.attr("data-exclude"));
-    },
-
-    changeAttrMinDate: function(){
-        var element = this.element;
-        var cal = this.calendar.data("calendar");
-        cal.setMinDate(element.attr("data-min-date"));
-    },
-
-    changeAttrMaxDate: function(){
-        var element = this.element;
-        var cal = this.calendar.data("calendar");
-        cal.setMaxDate(element.attr("data-max-date"));
-    },
-
     changeAttribute: function(attributeName){
+        var that = this, element = this.element, o = this.options;
+        var cal = this.calendar.data("calendar");
+
+        var changeAttrLocale = function(){
+            that.i18n(element.attr("data-locale"));
+        };
+
+        var changeAttrSpecial = function(){
+            cal.setSpecial(element.attr("data-special"));
+        };
+
+        var changeAttrExclude = function(){
+            cal.setExclude(element.attr("data-exclude"));
+        };
+
+        var changeAttrMinDate = function(){
+            cal.setMinDate(element.attr("data-min-date"));
+        };
+
+        var changeAttrMaxDate = function(){
+            cal.setMaxDate(element.attr("data-max-date"));
+        };
+
+        var changeAttrValue = function(){
+            that.val(element.attr("value"));
+        };
+
         switch (attributeName) {
-            case "value": this.changeValue(); break;
+            case "value": changeAttrValue(); break;
             case 'disabled': this.toggleState(); break;
-            case 'data-locale': this.changeAttrLocale(); break;
-            case 'data-special': this.changeAttrSpecial(); break;
-            case 'data-exclude': this.changeAttrExclude(); break;
-            case 'data-min-date': this.changeAttrMinDate(); break;
-            case 'data-max-date': this.changeAttrMaxDate(); break;
+            case 'data-locale': changeAttrLocale(); break;
+            case 'data-special': changeAttrSpecial(); break;
+            case 'data-exclude': changeAttrExclude(); break;
+            case 'data-min-date': changeAttrMinDate(); break;
+            case 'data-max-date': changeAttrMaxDate(); break;
         }
     }
 };
@@ -435,5 +434,5 @@ $(document).on(Metro.events.click, ".overlay.for-calendar-picker",function(){
 });
 
 $(document).on(Metro.events.click, function(){
-    $(".calendar-picker .calendar").removeClass("open open-up").hide();
+    $(".calendar-picker .calendar").removeClass("open open-up");
 });
