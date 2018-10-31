@@ -278,6 +278,22 @@ var Utils = {
         return el.getBoundingClientRect();
     },
 
+    getCursorPosition: function(el, e){
+        var a = Utils.rect(el);
+        return {
+            x: Utils.pageXY(e).x - a.left - window.pageXOffset,
+            y: Utils.pageXY(e).y - a.top - window.pageYOffset
+        };
+    },
+
+    getCursorPositionX: function(el, e){
+        return Utils.getCursorPosition(el, e).x;
+    },
+
+    getCursorPositionY: function(el, e){
+        return Utils.getCursorPosition(el, e).y;
+    },
+
     objectLength: function(obj){
         return Object.keys(obj).length;
     },
@@ -632,7 +648,9 @@ var Utils = {
             var result;
 
             switch (type) {
+                case "int":
                 case "integer": result = parseInt(s); break;
+                case "number":
                 case "float": result = parseFloat(s); break;
                 case "date": result = !Utils.isValue(format) ? new Date(s) : s.toDate(format); break;
                 default: result = s.trim();
@@ -800,6 +818,41 @@ var Utils = {
         } else if (document.selection) {  // IE?
             document.selection.empty();
         }
+    },
+
+    isLocalhost: function(){
+        return (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "")
+    },
+
+    iframeBubbleMouseMove: function(iframe){
+        if (Utils.isJQueryObject(iframe)) {
+            iframe = iframe[0];
+        }
+        var existingOnMouseMove = iframe.contentWindow.onmousemove;
+        iframe.contentWindow.onmousemove = function(e){
+            if(existingOnMouseMove) existingOnMouseMove(e);
+            var evt = document.createEvent("MouseEvents");
+            var boundingClientRect = iframe.getBoundingClientRect();
+            evt.initMouseEvent(
+                "mousemove",
+                true,
+                false,
+                window,
+                e.detail,
+                e.screenX,
+                e.screenY,
+                e.clientX + boundingClientRect.left,
+                e.clientY + boundingClientRect.top,
+                e.ctrlKey,
+                e.altKey,
+                e.shiftKey,
+                e.metaKey,
+                e.button,
+                null
+            );
+
+            iframe.dispatchEvent(evt);
+        };
     }
 };
 

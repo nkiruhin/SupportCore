@@ -11,6 +11,46 @@
 //    // }
 
 //});
+var sipClientStart = function (configuration) {
+    phone = new SIP.UA(configuration);
+    phone.start();
+    phone.on('disconnected', function (e) {
+        console.log("Ошибка подключения")
+        $('.registred').toggleClass('mif-phonelink-off')
+        phone.stop();
+    });
+    phone.on('registrationFailed', function (e) {
+        console.log("Ошибка регистрации")
+        configuration.uri = null;
+        configuration.password = null;
+        $('.registred').toggleClass('mif-phonelink-off')
+        phone.stop();
+    });
+    phone.on('registered', function (e) {
+        $('.registred').toggleClass('mif-phonelink')
+    });
+    phone.on('invite', function (session) {
+        console.log('incoming');
+        console.log(session.remoteIdentity.displayName);
+        console.log(session.remoteIdentity.uri.user);
+        var display_name = session.remoteIdentity.displayName || session.remoteIdentity.uri.user;
+        var url = '@Url.Action("GetPersonForPhone", "Person")/' + display_name;
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log(this.responseText);
+                var notify = Metro.notify;
+                notify.create(this.responseText, 'Звонок в ' + new Date().toLocaleTimeString('ru-RU'), {
+                    keepOpen: true,
+                    width: 'auto',
+                });
+            }
+        };
+        // 2. Конфигурируем его: GET-запрос на URL 'phones.json'
+        xhr.open('GET', url, true);
+        xhr.send();
+    });
+};
 var signalRStart = function () {
     console.log("signalr client start")
     const connection = new signalR.HubConnectionBuilder()
@@ -136,7 +176,7 @@ function edit(element) {
 //CustomDialogWin
 function openCustomWin(href, icon, title, modal) {
     $.get(href, function (html) {
-        Metro.window.create({
+            Metro.window.create({
             title: title,
             overlay: true,
             shadow: true,

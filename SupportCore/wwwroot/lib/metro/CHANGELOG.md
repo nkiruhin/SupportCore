@@ -1,3 +1,25 @@
+### 4.2.26
++ [x] Image compare: fix for touch devices
++ [x] Image magnifier: fix for touch devices
++ [x] Window: fix _setPosition method
++ [x] Buttons: fix size for dropdown-button, split-button and info-button
++ [x] Utils: add function `iframeBubbleMouseMove(iframe)`
++ [x] Input: add class `.input-large`
++ [x] Splitter: new component
++ [x] Popovers: fix minor bugs (forum issue)
+
+### 4.2.25
++ [x] Sidebar: remove scroll-y from sidebar, add scroll-y to sidebar-menu
++ [x] Countdown: refactoring structure, add animation effects: slide, fade, zoom
++ [x] Hero: minor upd styles for background image
++ [x] Html container: new component, include HTML snippets in HTML element
++ [x] Utils: add function `isLocalhost()`
++ [x] Docs: upd for using `htmlcontainer` component
++ [x] Window: fix gradually disappear for children when window is hiding, issue #1222
++ [x] Utils: add methods `getCursorPosition(...)`, `getCursorPositionX(...)`, `getCursorPositionY(...)` 
++ [x] Image compare: new component
++ [x] Image magnifier: new component
+
 ### 4.2.24
 + [x] Time picker: fix method `val` for issue #1221
 + [x] Calendar: fix method `setToday` for issue #1215

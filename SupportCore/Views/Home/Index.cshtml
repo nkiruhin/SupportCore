@@ -3,24 +3,22 @@
     ViewData["Title"] = "Главная";
 }
 
-
-
     @await Html.PartialAsync("AppMenu")
 
-    <div class="pt-13 bg-light h-auto">
-        <div data-role="navview"  data-expanded="md" class="compacted">
-            <div class="navview-pane bg-darkCyan fg-white">
-                @await Html.PartialAsync("SideBar")
-            </div>
-            <div class="navview-content">
+<div class="pt-13 bg-light h-auto">
+    <div data-role="navview" data-expanded="md" class="compacted">
+        <div class="navview-pane bg-darkCyan fg-white">
+            @await Html.PartialAsync("SideBar")
+        </div>
+        <div class="navview-content">
             <div class="p-6" id="reqPreloader" style="display:none">
                 <h6 class="text-center-md">Идет получение данных о сообщениях...</h6>
                 <div data-role="activity" data-type="metro" data-style="dark"></div>
             </div>
-                <div class="p-8" style="min-height: 742px" id="cell-content">
-                    @await Html.PartialAsync("../Tickets/Index")
-                </div>
+            <div class="p-8 mhp-md" id="cell-content">
+                @await Html.PartialAsync("../Tickets/Index")
             </div>
         </div>
     </div>
+</div>
 

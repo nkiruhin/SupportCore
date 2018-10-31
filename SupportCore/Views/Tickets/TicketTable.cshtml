@@ -134,7 +134,7 @@
             },
             {
                 "render": function (data, type, full, meta) {
-                    menu_button = "<div class='dropdown-button'><button class='button small dropdown-toggle secondary outline'>Действия</button><ul class='d-menu context' data-role='dropdown'>";
+                    menu_button = "<div class='dropdown-button h-25'><button class='button small dropdown-toggle secondary outline'>Действия</button><ul class='d-menu context' data-role='dropdown'>";
                     if (full.status !== 2) {
                         edit = '<li><a href=@Url.Action("Edit","Tickets")/' + full.id + ' data-ajax="true" data-ajax-method="GET" data-ajax-update="#cell-content" data-ajax-mode="update" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a></li>';
                     } else {

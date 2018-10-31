@@ -20,7 +20,9 @@
     </div>
     <hr class="thin bg-grayLighter" />
     @await Component.InvokeAsync("Template", new { Event = ViewBag.Event })
-    <textarea asp-for="Body" id="Body" style="width:54em" />
+    <div style="max-width:741px">
+        <textarea asp-for="Body" id="Body" />
+    </div>
     <span asp-validation-for="Body"></span>
     <input asp-for="TicketId" hidden />
     <input asp-for="Type" hidden />
@@ -72,8 +74,6 @@
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function () {
             if (this.readyState == 4 && this.status == 200) {
-                console.log(this.responseText)
-
                 if (this.responseText == 'empty') {
                     $('#Body').trumbowyg(this.responseText)
                 } else {

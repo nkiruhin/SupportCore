@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CustomConfigurationProvider;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -46,6 +47,14 @@ namespace SupportCore
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.SetBasePath(Directory.GetCurrentDirectory());
+                    var connectionString = config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
+                    config.AddEntityFrameworkConfig(options =>
+                                options.UseSqlServer(connectionString.GetConnectionString("DefaultConnection")));
+                    //config.AddCommandLine(args);
+                })
                 .UseStartup<Startup>();
     }
 }

@@ -7,30 +7,30 @@
     </a>
 </div>
 }
-<table class="w-100 dataTable table-border compact cell-border striped">
+<table class="dataTable table-border compact cell-border striped">
     <thead class="bg-darkCyan fg-white">
         <tr>
-            <th class="text-left-md p-1-md" >
-                <label asp-for="@Model.Tasks.FirstOrDefault().DateCreate"></label>
-            </th>
-            <th class="text-left-md" >
-                <label asp-for="@Model.Tasks.FirstOrDefault().DateClose"></label>
+            <th class="text-left-md p-1-md">
+                @Html.DisplayNameFor(model => model.Tasks[0].DateCreate)
             </th>
             <th class="text-left-md">
-                <label>Номер</label>
+                @Html.DisplayNameFor(model => model.Tasks[0].DateClose)
+            </th>
+            <th class="text-left-md">
+                Номер
             </th>
             <th class="text-left-md" style="width:50%">
-                <label asp-for="@Model.Tasks.FirstOrDefault().Title"></label>
+                @Html.DisplayNameFor(model => model.Tasks[0].Title)
             </th>
 
             <th class="text-left-md">
-                <label asp-for="@Model.Tasks.FirstOrDefault().Status"></label>
+                @Html.DisplayNameFor(model => model.Tasks[0].Status)
             </th>
             <th class="text-left-md">
-                <label asp-for="@Model.Tasks.FirstOrDefault().Organization"></label>
+                @Html.DisplayNameFor(model => model.Tasks[0].Organization)
             </th>
             <th class="text-left-md">
-                <label asp-for="@Model.Tasks.FirstOrDefault().Staff"></label>
+                @Html.DisplayNameFor(model => model.Tasks[0].Staff)
             </th>
             <th></th>
         </tr>
@@ -106,7 +106,7 @@
 
                 </td>
                 <td width="7%">
-                    <div class="dropdown-button">
+                    <div class="dropdown-button h-25">
                         <button class="button small dropdown-toggle secondary outline">Действия</button>
                         <ul class="d-menu context" data-role="dropdown">
                             @if (item.Status == 0)

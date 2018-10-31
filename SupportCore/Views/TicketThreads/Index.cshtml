@@ -1,9 +1,11 @@
 ﻿@model IEnumerable<SupportCore.Models.TicketThread>
 
 @if(ViewBag.Edit!=null){
-    <a class="button primary" href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.FirstOrDefault().TicketId?Type=1&Event=0','mif-plus','Комментарий',true)">
-    <span class="mif-plus"></span>  Добавить...
+<div class="pb-3">
+    <a class="button primary" data-role="button" href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.FirstOrDefault().TicketId?Type=1&Event=0','mif-plus','Комментарий',true)">
+        <span class="mif-plus"></span>  Добавить...
     </a>
+</div>
 }
 
 

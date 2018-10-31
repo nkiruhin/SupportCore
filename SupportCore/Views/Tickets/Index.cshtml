@@ -11,7 +11,7 @@
     <span class="mif-plus"></span> Добавить...
 </a>
 <button class="button warning" onclick="ReloadTable()"><span class="mif-loop2"></span> Обновить</button>
-<button class="button place-right" title="Фильтры" onclick="openCustomWin('/Tickets/Filter','mif-filter','Фильтр..',true)"><span class="mif-filter"></span></button>
+<button class="button place-right" title="Фильтры" onclick="openCustomWin('/Tickets/Filter?isWin=1','mif-filter','Фильтр..',true)"><span class="mif-filter"></span></button>
 <hr class="thin bg-grayLighter">
 
 @await Html.PartialAsync("../Tickets/TicketTable", Model)

@@ -170,7 +170,7 @@ namespace SupportCore.App.Interfaces
                     DateCreate = message.Date.DateTime,
                     From = 1,
                     PersonId = PersonId,
-                    Text = attach_list+message.HtmlBody ?? message.TextBody 
+                    Text = attach_list + (message.HtmlBody ?? message.TextBody) 
                 };
                 await emailClient.DisconnectAsync(true).ConfigureAwait(false);
                 return email;

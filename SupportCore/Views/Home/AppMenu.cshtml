@@ -118,56 +118,22 @@
 </div>
 <script>
     $(function () {
-        var configuration = {
-            uri: '400@192.168.123.10',
-            wsServers: ['ws://192.168.123.10:8080'],
-            authorizationUser: '400',
-            password: '400',
-            register: true,
-            log: {
-                level: 0
-            },
-            //traceSip: true,
-        }
-        phone = new SIP.UA(configuration);
-        phone.start();
-        phone.on('disconnected', function (e) {
-            console.log("Ошибка подключения")
-            $('.registred').toggleClass('mif-phonelink-off')
-            phone.stop();
-        });
-        phone.on('registrationFailed', function (e) {
-            console.log("Ошибка регистрации")
-            configuration.uri = null;
-            configuration.password = null;
-            $('.registred').toggleClass('mif-phonelink-off')
-            phone.stop();
-        });
-        phone.on('registered', function (e) {
-            $('.registred').toggleClass('mif-phonelink')
-        })
-        phone.on('invite', function (session) {
-            console.log('incoming');
-            console.log(session.remoteIdentity.displayName);
-            console.log(session.remoteIdentity.uri.user);
-            var display_name = session.remoteIdentity.displayName || session.remoteIdentity.uri.user;
-            var url = '@Url.Action("GetPersonForPhone", "Person")/' + display_name;
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    console.log(this.responseText);            
-                    var notify = Metro.notify;
-                    notify.create(this.responseText, 'Звонок в ' + new Date().toLocaleTimeString('ru-RU'), {
-                        keepOpen: true,
-                        width: 'auto',
-                    });
-                }
-            };
-            // 2. Конфигурируем его: GET-запрос на URL 'phones.json'
-            xhr.open('GET', url, true);
-            xhr.send();
-        });
+        var url = '@Url.Action("GetSipSettings")'
+        $.getJSON(url, function (data) {
+            var configuration = {
+                uri: data.uri,
+                wsServers: ['ws://' + data.wsServer],
+                authorizationUser: data.sipUser,
+                password: data.sipPassword,
+                register: true,
+                log: {
+                    level: 0
+                },
+                //traceSip: true,
+            }
+            sipClientStart(configuration)
+        });      
+        //Signalr client
+        signalRStart()
     })
-    //Signalr client
-    signalRStart()
 </script>

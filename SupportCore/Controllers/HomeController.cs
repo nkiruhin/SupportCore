@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using SupportCore.App.Classes;
 
 namespace SupportCore.Controllers
 {
@@ -17,10 +19,12 @@ namespace SupportCore.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly Context _context;
-        public HomeController(Context context, UserManager<User> userManager)
+        private readonly SipConfig _sipSettings;
+        public HomeController(Context context, UserManager<User> userManager, IOptionsSnapshot<SipConfig> sipSettings)
         {
             _userManager = userManager;
             _context = context;
+            _sipSettings = sipSettings.Value;
         }
         public IActionResult Index()
         {
@@ -58,6 +62,10 @@ namespace SupportCore.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        public JsonResult GetSipSettings()
+        {
+            return Json(_sipSettings);
         }
     }
 }

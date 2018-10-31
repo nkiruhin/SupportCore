@@ -22,28 +22,33 @@ namespace SupportCore
 {
     public class Startup
     {
+        //public Startup(IConfiguration configuration)
+        //{
+        //    var builder = new ConfigurationBuilder()
+        //     .SetBasePath(Directory.GetCurrentDirectory())
+        //     .AddJsonFile("appsettings.json");
+        //    var connectionStringConfig = builder.Build();
+
+        //    var config = new ConfigurationBuilder()
+        //        .SetBasePath(Directory.GetCurrentDirectory())
+        //        // Add "appsettings.json" to bootstrap EF config.
+        //        .AddJsonFile("appsettings.json")
+        //        // Add the EF configuration provider, which will override any
+        //        // config made with the JSON provider.
+        //        .AddEntityFrameworkConfig(options =>
+        //            options.UseSqlServer(connectionStringConfig.GetConnectionString(
+        //                "DefaultConnection"))
+        //        )
+        //        .Build();
+        //    //Configuration = configuration;
+        //    Configuration = config;
+        //}
         public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-             .SetBasePath(Directory.GetCurrentDirectory())
-             .AddJsonFile("appsettings.json");
-            var connectionStringConfig = builder.Build();
-
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                // Add "appsettings.json" to bootstrap EF config.
-                .AddJsonFile("appsettings.json")
-                // Add the EF configuration provider, which will override any
-                // config made with the JSON provider.
-                .AddEntityFrameworkConfig(options =>
-                    options.UseSqlServer(connectionStringConfig.GetConnectionString(
-                        "DefaultConnection"))
-                )
-                .Build();
-            //Configuration = configuration;
-            Configuration = config;
+            Configuration = configuration;
         }
 
+        
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -92,6 +97,7 @@ namespace SupportCore
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
             services.Configure<EmailConfig>(Configuration.GetSection("Email"));
             services.Configure<AppSetting>(Configuration.GetSection("AppSetting"));
+            services.Configure<SipConfig>(Configuration);
             services.Configure<EmailConfig>(Configuration);
             services.AddTransient<IEmailService, EmailService>();
             services.AddSignalR();

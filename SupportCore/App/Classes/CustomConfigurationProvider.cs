@@ -24,7 +24,8 @@ namespace CustomConfigurationProvider
 
             using (var dbContext = new Context(builder.Options))
             {
-                dbContext.Database.Migrate();
+                dbContext.Database.EnsureCreated();
+                //dbContext.Database.Migrate();
                 //if (!dbContext.Configuration.Any())
                 //{
                 //    dbContext.Configuration.Add(new Configuration { Name = "Signature", Value = "С Уважением служба технической поддержки" });

@@ -5,14 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using SupportCore.Models;
+using SupportCore.App.Classes;
 
 namespace SupportCore.Controllers
 {
     public class ConfigurationsController : Controller
     {
         private readonly Context _context;
-
         public ConfigurationsController(Context context)
         {
             _context = context;
@@ -85,34 +86,16 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Name,Value,Section")] Configuration configuration)
+        public async Task<IActionResult> Edit()
         {
-            if (id != configuration.Name)
+            foreach(var par in HttpContext.Request.Form)
             {
-                return NotFound();
+                String Name = par.Key; String Value = par.Value;
+                var p = await _context.Configuration.SingleOrDefaultAsync(n => n.Name == Name);
+                if(p!=null&&p?.Value!=Value) p.Value = Value;
             }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(configuration);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ConfigurationExists(configuration.Name))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(configuration);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Configurations/Delete/5

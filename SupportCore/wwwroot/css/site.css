@@ -32,6 +32,21 @@
     html {
         font-size: 20px;
     }
+    
+}
+
+@media screen and (device-width: 1600px) {
+    
+    .mhp-md {
+        min-height: 737px !important;
+    }
+   
+}
+
+@media screen and (device-width: 1920px) {
+   .mhp-md {
+        min-height: 917px !important;
+    }
 }
 
 label {

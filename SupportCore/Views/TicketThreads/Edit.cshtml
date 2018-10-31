@@ -12,8 +12,10 @@
         <div data-role="activity" data-type="metro" data-style="dark"></div>
     </div>
     <hr class="thin bg-grayLighter" />
-    <textarea asp-for="Body" id="Body" style="width:54em">@Model.Body</textarea>
-    <span asp-validation-for="Body"></span>
+    <div style="max-width:741px">
+        <textarea asp-for="Body" id="Body">@Model.Body</textarea>
+        <span asp-validation-for="Body"></span>
+    </div>
     <input asp-for="Id" hidden />
     <input asp-for="TicketId" hidden />
 </form>

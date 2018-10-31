@@ -5,6 +5,11 @@ var Window = {
         this.element = $(elem);
         this.win = null;
         this.overlay = null;
+        this.position = {
+            top: 0,
+            left: 0
+        };
+        this.hidden = false;
 
         this._setOptionsFromDOM();
         this._create();
@@ -17,6 +22,7 @@ var Window = {
     dependencies: ['draggable', 'resizeable'],
 
     options: {
+        hidden: false,
         width: "auto",
         height: "auto",
         btnClose: true,
@@ -61,7 +67,7 @@ var Window = {
     },
 
     _setOptionsFromDOM: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
 
         $.each(element.data(), function(key, value){
             if (key in o) {
@@ -77,8 +83,7 @@ var Window = {
     _create: function(){
         var that = this, element = this.element, o = this.options;
         var win, overlay;
-        var prev = element.prev();
-        var parent = element.parent();
+        var parent = o.dragArea === "parent" ? element.parent() : $(o.dragArea);
 
         if (o.modal === true) {
             o.btnMax = false;
@@ -91,21 +96,57 @@ var Window = {
         }
 
         win = this._window(o);
+        win.addClass("no-visible");
 
-        if (prev.length === 0) {
-            parent.prepend(win);
-        } else {
-            win.insertAfter(prev);
-        }
+        parent.append(win);
+
         if (o.overlay === true) {
             overlay = this._overlay();
             overlay.appendTo(win.parent());
             this.overlay = overlay;
         }
 
-        Utils.exec(o.onShow, [win]);
-
         this.win = win;
+
+        setTimeout(function(){
+            that._setPosition();
+
+            if (o.hidden !== true) {
+                that.win.removeClass("no-visible");
+            }
+            Utils.exec(o.onShow, [win], win[0]);
+        }, 100);
+    },
+
+    _setPosition: function(){
+        var o = this.options;
+        var win = this.win;
+        var parent = o.dragArea === "parent" ? win.parent() : $(o.dragArea);
+        var top_center = parent.height() / 2 - win[0].offsetHeight / 2;
+        var left_center = parent.width() / 2 - win[0].offsetWidth / 2;
+        var top, left, right, bottom;
+
+        if (o.place !== 'auto') {
+
+            switch (o.place.toLowerCase()) {
+                case "top-left": top = 0; left = 0; right = "auto"; bottom = "auto"; break;
+                case "top-center": top = 0; left = left_center; right = "auto"; bottom = "auto"; break;
+                case "top-right": top = 0; right = 0; left = "auto"; bottom = "auto"; break;
+                case "right-center": top = top_center; right = 0; left = "auto"; bottom = "auto"; break;
+                case "bottom-right": bottom = 0; right = 0; left = "auto"; top = "auto"; break;
+                case "bottom-center": bottom = 0; left = left_center; right = "auto"; top = "auto"; break;
+                case "bottom-left": bottom = 0; left = 0; right = "auto"; top = "auto"; break;
+                case "left-center": top = top_center; left = 0; right = "auto"; bottom = "auto"; break;
+                default: top = top_center; left = left_center; bottom = "auto"; right = "auto";
+            }
+
+            win.css({
+                top: top,
+                left: left,
+                bottom: bottom,
+                right: right
+            });
+        }
     },
 
     _window: function(o){
@@ -227,11 +268,6 @@ var Window = {
             })
         }
 
-
-        if (o.place !== 'auto') {
-            win.addClass("pos-" + o.place);
-        }
-
         win.addClass(o.clsWindow);
         caption.addClass(o.clsCaption);
         content.addClass(o.clsContent);
@@ -240,7 +276,7 @@ var Window = {
     },
 
     _overlay: function(){
-        var that = this, win = this.win,  element = this.element, o = this.options;
+        var o = this.options;
 
         var overlay = $("<div>");
         overlay.addClass("overlay");
@@ -257,7 +293,7 @@ var Window = {
     },
 
     maximized: function(e){
-        var that = this, win = this.win,  element = this.element, o = this.options;
+        var win = this.win,  o = this.options;
         var target = $(e.currentTarget);
         win.toggleClass("maximized");
         if (target.hasClass("window-caption")) {
@@ -267,13 +303,13 @@ var Window = {
         }
     },
 
-    minimized: function(e){
-        var that = this, win = this.win,  element = this.element, o = this.options;
+    minimized: function(){
+        var win = this.win,  element = this.element, o = this.options;
         win.toggleClass("minimized");
         Utils.exec(o.onMinClick, [win], element[0]);
     },
 
-    close: function(e){
+    close: function(){
         var that = this, win = this.win,  element = this.element, o = this.options;
         var timer = null;
 
@@ -306,13 +342,18 @@ var Window = {
     },
 
     hide: function(){
-        this.win.addClass("no-visible");
+        this.win.css({
+            display: "none"
+        });
     },
     show: function(){
         this.win.removeClass("no-visible");
+        this.win.css({
+            display: "flex"
+        });
     },
     toggle: function(){
-        if (this.win.hasClass("no-visible")) {
+        if (this.win.css("display") === "none" || this.win.hasClass("no-visible")) {
             this.show();
         } else {
             this.hide();
@@ -329,7 +370,7 @@ var Window = {
     },
 
     toggleButtons: function(a) {
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var win = this.win;
         var btnClose = win.find(".btn-close");
         var btnMin = win.find(".btn-min");
         var btnMax = win.find(".btn-max");
@@ -346,7 +387,7 @@ var Window = {
     },
 
     changeSize: function(a){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         if (a === "data-width") {
             win.css("width", element.data("width"));
         }
@@ -356,7 +397,7 @@ var Window = {
     },
 
     changeClass: function(a){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win, o = this.options;
         if (a === "data-cls-window") {
             win[0].className = "window " + (o.resizable ? " resizeable " : " ") + element.attr("data-cls-window");
         }
@@ -369,7 +410,7 @@ var Window = {
     },
 
     toggleShadow: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         var flag = JSON.parse(element.attr("data-shadow"));
         if (flag === true) {
             win.addClass("win-shadow");
@@ -379,7 +420,7 @@ var Window = {
     },
 
     setContent: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         var content = element.attr("data-content");
         var result;
 
@@ -395,29 +436,27 @@ var Window = {
     },
 
     setTitle: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         var title = element.attr("data-title");
         win.find(".window-caption .title").html(title);
     },
 
     setIcon: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         var icon = element.attr("data-icon");
         win.find(".window-caption .icon").html(icon);
     },
 
     getIcon: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
-        return win.find(".window-caption .icon").html();
+        return this.win.find(".window-caption .icon").html();
     },
 
     getTitle: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
-        return win.find(".window-caption .title").html();
+        return this.win.find(".window-caption .title").html();
     },
 
     toggleDraggable: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         var flag = JSON.parse(element.attr("data-draggable"));
         var drag = win.data("draggable");
         if (flag === true) {
@@ -428,7 +467,7 @@ var Window = {
     },
 
     toggleResizable: function(){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         var flag = JSON.parse(element.attr("data-resizable"));
         var resize = win.data("resizable");
         if (flag === true) {
@@ -441,7 +480,7 @@ var Window = {
     },
 
     changeTopLeft: function(a){
-        var that = this, element = this.element, win = this.win, o = this.options;
+        var element = this.element, win = this.win;
         var pos;
         if (a === "data-top") {
             pos = parseInt(element.attr("data-top"));
@@ -459,8 +498,8 @@ var Window = {
         }
     },
 
-    changePlace: function (a) {
-        var that = this, element = this.element, win = this.win, o = this.options;
+    changePlace: function () {
+        var element = this.element, win = this.win;
         var place = element.attr("data-place");
         win.addClass(place);
     },

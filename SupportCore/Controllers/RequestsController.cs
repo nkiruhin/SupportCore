@@ -139,7 +139,7 @@ namespace SupportCore.Controllers
             //_emailService.MakeReadAsync(id);
             
             var stream=await _emailService.GetAttach(id, FileName);
-            return File(stream.Stream, stream.ContentType);
+            return File(stream.Stream, stream.ContentType,FileName);
             //return RedirectToAction(nameof(Index));
         }
 

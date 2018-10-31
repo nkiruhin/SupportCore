@@ -1,5 +1,5 @@
 ﻿@model SupportCore.Models.Filter
-<div class="p-6">
+<div class="p-6" @ViewBag.isWin>
     <h4>Фильтр</h4>
     <hr class="thin bg-grayLighter" />
     <form asp-action="Filter" asp-route-id="@Model?.Id"
@@ -8,6 +8,7 @@
           data-ajax-update="#cell-content"
           data-ajax-success="closeWin()">
         @*data-ajax-success="Filtred"*@
+        
         <div class="grid">
             <div class="row">
                 <div class="cell-md-6">

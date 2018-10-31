@@ -35,12 +35,11 @@
 
     <title>Countdown - Metro 4 :: Popular HTML, CSS and JS library</title>
 </head>
-<body>
-    <div class="container-fluid">
+<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<div class="container-fluid">
 
-        <div class="row flex-xl-nowrap">
-            <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav">
-            </div>
+    <div class="row flex-xl-nowrap">
+        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-load="initDocSearchEngine()"></div>
 
             <div class="d-none d-block-xl cell-xl-2 order-2 border-left bd-light toc-wrapper">
                 <h5>Table of contents</h5>
@@ -255,16 +254,32 @@
                     With this attributes you can define classes to customize visual style for <code>countdown</code>.
                 </p>
                 <div class="example text-center">
-                    <div id="countdown_customize" data-role="countdown" data-start="false" data-days="1" data-seconds="10" data-cls-days="bg-orange fg-white" data-cls-hours="bg-red fg-white" data-cls-minutes="bg-green fg-white" data-cls-seconds="bg-blue fg-white" data-cls-zero="bg-light fg-lightGray"></div>
+                    <div id="countdown_customize"
+                         data-role="countdown"
+                         data-start="false"
+                         data-days="1"
+                         data-seconds="10"
+                         data-cls-part="no-divider"
+                         data-cls-days="bg-orange fg-white"
+                         data-cls-hours="bg-red fg-white"
+                         data-cls-minutes="bg-green fg-white"
+                         data-cls-seconds="bg-blue fg-white"
+                         data-cls-zero="bg-light fg-lightGray"
+                    ></div>
                     <button class="button mt-2" onclick="$('#countdown_customize').data('countdown').start()">Start</button>
                 </div>
                 <pre><code class="html">
                     &lt;div data-role="countdown"
+                         data-start="false"
                          data-days="1"
-                         data-cls-zero="bg-light fg-lightGray"
+                         data-seconds="10"
+                         data-cls-part="no-divider"
+                         data-cls-days="bg-orange fg-white"
                          data-cls-hours="bg-red fg-white"
                          data-cls-minutes="bg-green fg-white"
-                         data-cls-seconds="bg-blue fg-white"&gt;&lt;/div&gt;
+                         data-cls-seconds="bg-blue fg-white"
+                         data-cls-zero="bg-light fg-lightGray"
+                    &gt;&lt;/div&gt;
                 </code></pre>
 
                 <h3 id="_countdown_events">Events</h3>

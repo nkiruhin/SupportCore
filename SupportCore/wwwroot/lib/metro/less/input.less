@@ -40,6 +40,7 @@
         background-color: transparent;
         color: @dark;
         height: 34px;
+        min-width: 34px;
         &:focus {
             box-shadow: none;
         }
@@ -60,4 +61,54 @@
     .append {order: 4}
     input {order: 2;}
     .button-group {order: 3;}
+}
+
+.input {
+    .autocomplete-list {
+        margin: 0;
+        padding: 0;
+        list-style: none inside;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        overflow-y: auto;
+        background-color: @white;
+        height: auto;
+        border: 1px solid @borderColor;
+
+        .item {
+            display: block;
+            position: relative;
+            padding: 4px 8px;
+            cursor: pointer;
+
+            &:hover {
+                background-color: @hoverBackground;
+            }
+        }
+
+        .item + .item {
+            border-top: 1px solid @borderColor;
+        }
+    }
+}
+
+.input {
+    &.input-large {
+        height: 50px;
+
+        input {
+            height: 48px;
+            font-size: 1.3rem;
+            padding: 0 10px;
+            line-height: 48px;
+        }
+
+        .button {
+            height: 48px;
+            min-width: 48px;
+        }
+    }
 }

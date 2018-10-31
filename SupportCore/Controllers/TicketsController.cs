@@ -384,7 +384,7 @@ namespace SupportCore.Controllers
         }
 
         // GET: Tickets/Filter/
-        public IActionResult Filter()
+        public IActionResult Filter(int? isWin)
         {
             var UserId = _userManager.GetUserId(HttpContext.User);
             var filter = _context.Filters.AsNoTracking().SingleOrDefault(f => f.UserId == UserId);
@@ -392,6 +392,7 @@ namespace SupportCore.Controllers
             ViewBag.PersonName = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == filter.PersonId)?.Name;
             ViewBag.StaffName = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == filter.StaffId)?.Name;
             }
+            if (isWin == 1) ViewBag.isWin = "style=max-width:1000px";
             ViewData["StatusId"] = new Event().StatusList();
             ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name");
             ViewData["SourceId"] = new SourceList().List;
@@ -571,7 +572,7 @@ namespace SupportCore.Controllers
             var fileforDownload = await _context.Files.AsNoTracking().SingleOrDefaultAsync(f => f.Id == id);
             var path = Path.Combine(_appSetting.Value.UploadDirectory, fileforDownload.FileName);
             var stream = new FileStream(path, FileMode.Open);
-            return File(stream, fileforDownload.ContentType);
+            return File(stream, fileforDownload.ContentType, fileforDownload.FileName);
         }
         public async Task<IActionResult> getDescription(int? TicketId)
         {

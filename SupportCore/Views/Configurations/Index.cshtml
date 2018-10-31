@@ -4,18 +4,43 @@
     <div data-role="activity" data-type="metro" data-style="dark"></div>
 </div>
 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-<form asp-for="Edit">
+<form asp-action="Edit" 
+    data-ajax="true"
+    data-ajax-method="POST"
+    data-ajax-update="#cell-content"
+    data-ajax-mode="update">
     <div class="p-3-md">
         <button type="submit" class="button primary">Сохранить</button>
     </div>
-    <ul data-expand="md" data-role="tabs">
+    <ul data-expand="true" data-role="tabs">
         <li class="active"><a href="#system">СИСТЕМНЫЕ</a></li>
         <li><a href="#email">ПОЧТА</a></li>
         <li><a href="#telephone">ТЕЛЕФОНИЯ</a></li>
         <li><a href="#integration">ИНТЕГРАЦИЯ</a></li>
     </ul>
     <div class="border bd-default no-border-top p-2">
-        <div id="system"></div>
+        <div id="system">
+            <div class="row">
+                @foreach (Configuration item in Model.Where(n => n.Section == "appsettings"))
+                {
+                    switch (item.Type)
+                    {
+                        case "html":
+                            <div class="cell-md-12">
+                                <label>@item.Title</label>
+                                <textarea name="@item.Name" class="@item.Type">@item.Value</textarea>
+                            </div>
+                            break;
+                        default:
+                            <div class="cell-md-6">
+                                <label>@item.Title</label>
+                                <input type="@item.Type" data-role="input" name="@item.Name" value="@item.Value" data-clear-button-icon="<span class='mif-cancel'></span>"/>
+                            </div>
+                            break;
+                    }
+                }
+            </div>
+        </div>
         <div id="email">
             <div class="row">
                 @foreach (Configuration item in Model.Where(n => n.Section == "email"))
@@ -31,14 +56,35 @@
                         default:
                             <div class="cell-md-6">
                                 <label>@item.Title</label>
-                                <input type="@item.Type" data-role="input" name="@item.Name" value="@item.Value" />
+                                <input type="@item.Type" data-role="input" name="@item.Name" value="@item.Value" data-clear-button-icon="<span class='mif-cancel'></span>" />
                             </div>
                             break;
                     }
                 }
             </div>
         </div>
-        <div id="telephone"></div>
+        <div id="telephone">
+            <div class="row">
+                @foreach (Configuration item in Model.Where(n => n.Section == "telephone"))
+                {
+                    switch (item.Type)
+                    {
+                        case "html":
+                            <div class="cell-md-12">
+                                <label>@item.Title</label>
+                                <textarea name="@item.Name" class="@item.Type">@item.Value</textarea>
+                            </div>
+                            break;
+                        default:
+                            <div class="cell-md-6">
+                                <label>@item.Title</label>
+                                <input type="@item.Type" data-role="input" name="@item.Name" value="@item.Value" data-clear-button-icon="<span class='mif-cancel'></span>" />
+                            </div>
+                            break;
+                    }
+                }
+            </div>
+        </div>
         <div id="integration"></div>
     </div>
 </form>
