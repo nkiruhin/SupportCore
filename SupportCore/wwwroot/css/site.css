@@ -20,11 +20,39 @@
         line-height: unset !important;
         height: 30px !important;
     }
+    .select .select-input {
+        height: 28px;
+    }
     div.input {
         height: 32px !important;
     }
     .input .button{
         height:30px !important;
+    }
+    input[type=text],
+    input[type=password],
+    input[type=tel],
+    input[type=datetime-local],
+    input[type=email],
+    input[type=file],
+    input[type=month],
+    input[type=number],
+    input[type=search],
+    input[type=time],
+    input[type=url],
+    input[type=week],
+    input[type=file],
+    select,
+    textarea,
+    .file,
+    .input,
+    .textarea,
+    .select,
+    .tag-input,
+    .spinner {
+        height: 30px;
+        line-height: 30px;
+
     }
 }
 
@@ -82,8 +110,11 @@ fieldset {
     color: rgba(0, 0, 0, 0.8) !important;
 }
 /*Overload select 2*/
-.select2-container {
+/*.select2-container {
     width:100% !important;
+}*/
+.select2 {
+    width: 100% !important;
 }
 /*for select whith button*/ 
 .wbutton {
@@ -111,6 +142,13 @@ dl.horizontal dt {
 /*.window{
     display:none !important;
 }*/
+/* Reload metro windows button*/
+.window-caption .buttons .btn-min,
+.window-caption .buttons .btn-max,
+.window-caption .buttons .btn-close,
+.window-caption .buttons .btn-custom {
+    margin: 0;
+}
 input[type="date"], input[type="time"], input[type="datetime-local"], input[type="month"] {
     position: relative;
     border: 1px #d9d9d9 solid;

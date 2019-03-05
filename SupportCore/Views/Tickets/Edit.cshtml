@@ -28,7 +28,9 @@
 <ul data-expand="true" data-role="tabs">
     <li class="active"><a href="#main">ГЛАВНАЯ</a></li>
     <li><a href="#history">ИСТОРИЯ ЗАЯВКИ (<b id="count">@Model.TicketThreads.Count</b>)</a></li>
-    <li><a href="#info">ДОПОЛНИТЕЛЬНО</a></li>
+    @if (!User.IsInRole("Пользователь")) {
+        <li><a href="#info">ДОПОЛНИТЕЛЬНО</a></li>
+    }
 </ul>
 
 <div class="border bd-default no-border-top p-2">
@@ -53,21 +55,21 @@
                     break;
             }
 
-                    <ul class="d-menu context" data-role="dropdown">
-                        @if (Model.StatusId != 1)
-                        {
-                            <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=1','mif-pencil','Открытие',true)">Открыта</a></li>}
-                        @if (Model.StatusId != 2)
-                        {
-                            @*<li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=2','mif-pencil','Закрытие',true)">Закрыта</a></li>}*@
-                            <li><a href="#" onclick="closed('@Model.Id')">Закрыта</a></li> }
-                        @if (Model.StatusId != 3)
-                        {
-                            <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=3','mif-pencil','Отложить',true)">Отложена</a></li>}
-                        @if (Model.StatusId != 5)
-                        {
-                            <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=5','mif-pencil','Выполнение',true)">Выполнена</a></li>}
-                    </ul>
+            <ul class="d-menu context" data-role="dropdown">
+                @if (Model.StatusId != 1)
+                {
+                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=1','mif-pencil','Открытие',true)">Открыта</a></li>}
+                @if (Model.StatusId != 2)
+                {
+                    @*<li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=2','mif-pencil','Закрытие',true)">Закрыта</a></li>}*@
+                    <li><a href="#" onclick="closed('@Model.Id')">Закрыта</a></li>}
+                @if (Model.StatusId != 3)
+                {
+                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=3','mif-pencil','Отложить',true)">Отложена</a></li>}
+                @if (Model.StatusId != 5)
+                {
+                    <li><a href="#" onclick="openCustomWin('/TicketThreads/Create/@Model.Id?Type=1&amp;Event=5','mif-pencil','Выполнение',true)">Выполнена</a></li>}
+            </ul>
         </div>
         <hr />
 
@@ -80,7 +82,7 @@
                                 data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = false }, "http")">
                             <option value="@Model.PersonId" selected="selected">@Model.Person?.Name</option>
                         </select><div class="inbutton"><a href="#" class="button" onclick="openCustomWin('/Person/CreateDialog', 'mif-user-plus', 'Пользователь..', true)"><span class="mif-user-plus"></span></a></div>
-                        
+
                     </div>
                     <div class="form-group m-0">
                         <label asp-for="CategoryId"></label>
@@ -104,11 +106,11 @@
                     </div>
                     <div class="form-group m-0">
                         <label asp-for="DueDate" class="control-label"></label>
-                
+
                         <input asp-for="DueDate"
                                data-role="calendarpicker"
                                data-cls-calendar="compact"
-                               data-min-date="@DateTime.Now.ToString("yyyy-MM-dd")" />                               
+                               data-min-date="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     </div>
                     <div class="pt-8-md">
                         <button type="submit" class="button primary" onclick="return Save();"><span class="mif-floppy-disk"></span> Сохранить</button>
@@ -127,7 +129,7 @@
                     </div>
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     @await Component.InvokeAsync("Form", new { FormId = 0, TicketId = Model.Id, Edit = true })
-                    
+
                 </div>
             </div>
             <div id="CustomForm">
@@ -141,45 +143,45 @@
     <div id="history">
         @await Html.PartialAsync("../TicketThreads/Index", Model.TicketThreads.OrderByDescending(i => i.DateCreate))
     </div>
-    <div id="info">
-        @{string[] coauthors = Model.CoAuthors.Select(n => n.PersonId).ToArray<string>();}
-        <form asp-action="AddCoAuthors"
-              data-ajax="true"
-              data-ajax-method="POST"
-              data-ajax-update="#history"
-              data-ajax-loading ="#editPreloader"
-              data-ajax-failure ="onError(xhr.responseText)"
-              data-ajax-mode="update">
-            <div class="form-group">
-                <label asp-for="CoAuthors"></label>
-                <select asp-for="@coauthors" id="CoAuthors"
-                        asp-items="@{new SelectList(Model.CoAuthors,"PersonId","Person.Name")}"
-                        data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = false }, "http")"></select>
-            </div>
-            <div class="form-group pb-4-md">
-                <input asp-for="Id" hidden />
-                <input asp-for="Name" hidden />
-                <button type="submit" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
+    @if (!User.IsInRole("Пользователь")) { 
+        <div id="info">
+            @{string[] coauthors = Model.CoAuthors.Select(n => n.PersonId).ToArray<string>();}
+            <form asp-action="AddCoAuthors"
+                  data-ajax="true"
+                  data-ajax-method="POST"
+                  data-ajax-update="#history"
+                  data-ajax-loading="#editPreloader"
+                  data-ajax-failure="onError(xhr.responseText)"
+                  data-ajax-mode="update">
+                <div class="form-group">
+                    <label asp-for="CoAuthors"></label>
+                    <select asp-for="@coauthors" id="CoAuthors"
+                            asp-items="@{new SelectList(Model.CoAuthors,"PersonId","Person.Name")}"
+                            data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = false }, "http")"></select>
+                </div>
+                <div class="form-group pb-4-md">
+                    <input asp-for="Id" hidden />
+                    <input asp-for="Name" hidden />
+                    <button type="submit" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
                 </div>
             </form>
             <div id="Tasks">
-                 @await Html.PartialAsync("../Tasks/Index", Model)
+                @await Html.PartialAsync("../Tasks/Index", Model)
             </div>
-    </div>
+        </div>
+     }
 </div>
 <script>
     $(document).ready(function () {
         var form = $.validator.unobtrusive.parse('#EditTicket');
     });
-    var personSelect = $('#PersonId').select2({
-        placeholder: 'Выберите пользователя',
-        language: 'ru'
-    });
-    personSelect.data('select2').$container.addClass("wbutton");
-    $('#StaffId').select2({
-        placeholder: 'Выберите сотрудника',
-        language: 'ru'
-    });
+    @if (!User.IsInRole("Пользователь")) {
+        @:enableSelect();
+    }
+     @if (User.IsInRole("Пользователь"))
+     {
+       @:disInput();
+     }
     $('#CoAuthors').select2({
         placeholder: 'Добавьте соавторов',
         language: 'ru'

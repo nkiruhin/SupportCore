@@ -7,46 +7,55 @@
 <h2 class="text-light">Редактирование <span class="mif-pencil place-right"></span></h2>
 <h4>Пользователь @Model.Name</h4>
 <hr />
+@{  string dis = "";
+    if (User.IsInRole("Пользователь")) { dis = "disabled"; }
+}
 
-<form asp-action="Edit" id="Edit"
-      data-ajax="true"
-      data-ajax-method="POST"
-      data-ajax-update="#cell-content"
-      data-ajax-mode="update">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <div class="pb-4-md">
-        <button type="submit" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
-        <a asp-action="Index"
-           data-ajax="true"
-           data-ajax-method="GET"
-           data-ajax-update="#cell-content"
-           data-ajax-mode="update"
-           class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
-    </div>
-    @Html.EditorForModel()
-    <div class="form-group">
-        <label asp-for="OrganizationId"></label>
-        <select @if (Model.IsStaff) { @: disabled
-                }
-                class="jselect2 full-size"
-                name="OrganizationId"
-                data-ajax-url="@Url.Action("List","Organizations",null,"http")">
-
-            @if (Model.Organization != null)
-            {
-                <option value="@Model.OrganizationId" selected="selected">@Model.Organization.Name</option>
+    <form asp-action="Edit" id="Edit"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#cell-content"
+          data-ajax-mode="update">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="pb-4-md">
+            <button type="submit"
+                    class="button primary">
+                <span class="mif-floppy-disk"></span> Сохранить
+            </button>
+            @if (!User.IsInRole("Пользователь")) { 
+            <a asp-action="Index"
+               data-ajax="true"
+               data-ajax-method="GET"
+               data-ajax-update="#cell-content"
+               data-ajax-mode="update"
+               class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
             }
-        </select>
-        @if (!User.IsInRole("Пользователь") && (Model.IsStaff == true))
-        {
-            <div class="form-group">
-                <label asp-for="ApiKey"></label>
-                <input asp-for="ApiKey" />
-                <blockquote><em>Ключ доступа к API можно получить в настройках учетной записи redmine</em></blockquote>
-            </div>
-        }
-    </div>
-</form>
+        </div>
+             @Html.EditorForModel()       
+        <div class="form-group" @dis>
+            <label asp-for="OrganizationId"></label>
+            <select @if (Model.IsStaff||User.IsInRole("Пользователь")) { @: disabled
+                    }
+                    class="jselect2 full-size"
+                    name="OrganizationId"
+                    data-ajax-url="@Url.Action("List","Organizations",null,"http")">
+
+                @if (Model.Organization != null)
+                {
+                    <option value="@Model.OrganizationId" selected="selected">@Model.Organization.Name</option>
+                }
+            </select>
+            @if (!User.IsInRole("Пользователь") && (Model.IsStaff == true))
+            {
+                <div class="form-group">
+                    <label asp-for="ApiKey"></label>
+                    <input asp-for="ApiKey" />
+                    <blockquote><em>Ключ доступа к API можно получить в настройках учетной записи redmine</em></blockquote>
+                </div>
+            }
+        </div>
+    </form>
+
 <div data-role="accordion" data-show-active="false" class="pt-4-md">
     <div class="frame">
         <div class="heading  bg-darkCyan fg-white"><span class="mif-phone"></span>&nbsp;Телефоны</div>
@@ -58,7 +67,7 @@
                   data-ajax-update="#Phones"
                   data-ajax-begin="$('#PhoneNumber').val('')"
                   data-ajax-mode="update">
-                <input id="PhoneNumber"type="tel" name="PhoneNumber" data-val="true" data-val-maxlength="Телефонный номер не должен превышать 10 цифр" data-val-maxlength-max="11" data-val-required="Поле обязательно" />
+                <input id="PhoneNumber" type="tel" name="PhoneNumber" data-val="true" data-val-maxlength="Телефонный номер не должен превышать 10 цифр" data-val-maxlength-max="11" data-val-required="Поле обязательно" />
                 <button class="button"><span class="mif-plus"></span></button>
             </form>
             <span class="field-validation-valid" data-valmsg-for="PhoneNumber" data-valmsg-replace="true"></span>
@@ -74,26 +83,29 @@
                 @await Component.InvokeAsync("Account", new { id = Model.Id, AccountId = Model.AccountID })
             </div>
         </div>
-        </div>
     </div>
-    <script>
-        $(document).ready(function () {
-            $.validator.unobtrusive.parse('#Edit');
-            $.validator.unobtrusive.parse('#AddPhone');
-        });
-        $('.jselect2').select2({
-            placeholder: 'Выберите организацию из списка',
-            language: 'ru'
-        });
-        $('.check-box').on('click', function () {
-            if (this.checked) {
-                $('.jselect2').prop("disabled", true)
-                    .val(null).trigger('change');
-            } else { $('.jselect2').prop("disabled", false) }
+</div>
+<script>
+    $(document).ready(function () {
+        $.validator.unobtrusive.parse('#Edit');
+        $.validator.unobtrusive.parse('#AddPhone');
+    });
+    $('.jselect2').select2({
+        placeholder: 'Выберите организацию из списка',
+        language: 'ru'
+    });
+    $('.check-box').on('click', function () {
+        if (this.checked) {
+            $('.jselect2').prop("disabled", true)
+                .val(null).trigger('change');
+        } else { $('.jselect2').prop("disabled", false) }
 
-        });
-        function EditAccount(AccountId) {
-            console.log(AccountId);
-        }
-    </script>
+    });
+    $('.jselect2').on('select2:select', function (e) {
+        orgEmail();
+    });
+    function EditAccount(AccountId) {
+        console.log(AccountId);
+    }
+</script>
 

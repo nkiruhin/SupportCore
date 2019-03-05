@@ -46,6 +46,7 @@ namespace SupportCore.Models
         public string PersonId { set; get; }
         [ScaffoldColumn(false)]
         public Person Person { set; get; }
+        public bool IsInform { set; get; }
         public List<File> Files { set; get; }
     }
 }

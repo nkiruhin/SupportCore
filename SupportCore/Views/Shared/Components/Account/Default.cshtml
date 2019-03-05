@@ -1,56 +1,62 @@
 ﻿@model SupportCore.ViewModels.AccountView
-    @if (!String.IsNullOrEmpty(Model.AccountId)) {
-<form asp-controller="Account" asp-action="Edit" id="EditAccount"
-      data-ajax="true"
-      data-ajax-method="POST"
-      data-ajax-update="#Account"
-      data-ajax-mode="update">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input asp-for="AccountId" />
-    <input asp-for="PersonId" />
+@if (!String.IsNullOrEmpty(Model.AccountId))
+{
+    <form asp-controller="Account" asp-action="Edit" id="EditAccount"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#Account"
+          data-ajax-mode="update">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input asp-for="AccountId" />
+        <input asp-for="PersonId" />
 
 
-    <h6><label asp-for="UserName"></label><em> @Model.UserName</em></h6>
-    <hr class="thin bg-grayLighter">
-    <div class="row">
-        <div class="cell-md-6">
-            <label>Новый пароль</label>
-            <input asp-for="Password" data-role="input">
+        <h6><label asp-for="UserName"></label><em> @Model.UserName</em></h6>
+        <hr class="thin bg-grayLighter">
+        <div class="row">
+            <div class="cell-md-6">
+                <label>Новый пароль</label>
+                <input asp-for="Password" data-role="input">
+                <span asp-validation-for="Password"></span>
+            </div>
+            <div class="cell-md-6">
+                <label asp-for="RoleList" class="control-label"></label>
+                @if (User.IsInRole("Администратор"))
+                {
+                    <select asp-for="RoleName" asp-items="Model.RoleList">
+                        <option>Выберите роль</option>
+                    </select>
+                }
+                else
+                {
+                    <input asp-for="RoleName" disabled />
+
+                }
+            </div>
+
         </div>
-        <div class="cell-md-6">
-            <label asp-for="RoleList" class="control-label"></label>
-            @if (User.IsInRole("Администратор"))
-            {
-                <select asp-for="RoleName" asp-items="Model.RoleList">
-                    <option>Выберите роль</option>
-                </select>
-            }
-            else
-            {
-                <input asp-for="RoleName" disabled />
-
-            }
-        </div>
-
-    </div>
-</form>
-<form asp-controller="Account" asp-action="Delete" id="DeleteAccount" 
-      asp-route-AccountId="@Model.AccountId"
-      asp-route-PersonId="@Model.PersonId"
-      data-ajax="true"
-      data-ajax-method="POST"
-      data-ajax-update="#cell-content"
-      data-ajax-mode="update">  
-</form>
-<button type="submit" form="EditAccount" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
-<button type="submit" form="DeleteAccount" class="button alert"><span class="mif-bin"></span> Удалить</button>
- }
-    else
-    {
-        <a  asp-controller="Account" asp-action="Register" asp-route-id="@Model.PersonId" 
-           data-ajax="true"
-           data-ajax-method="GET"
-           data-ajax-update="#cell-content"
-           data-ajax-mode="update"
-           class="button primary" data-role="button"><span class="mif-plus"></span>  Создать..</a>
-    }
+    </form>
+    <form asp-controller="Account" asp-action="Delete" id="DeleteAccount"
+          asp-route-AccountId="@Model.AccountId"
+          asp-route-PersonId="@Model.PersonId"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#cell-content"
+          data-ajax-mode="update"></form>
+    <button type="submit" form="EditAccount" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
+    <button type="submit" form="DeleteAccount" class="button alert"><span class="mif-bin"></span> Удалить</button>
+}
+else
+{
+    <a asp-controller="Account" asp-action="Register" asp-route-id="@Model.PersonId"
+       data-ajax="true"
+       data-ajax-method="GET"
+       data-ajax-update="#cell-content"
+       data-ajax-mode="update"
+       class="button primary" data-role="button"><span class="mif-plus"></span>Создать..</a>
+}
+    <script>
+        $(document).ready(function () {
+            var form = $.validator.unobtrusive.parse('#EditAccount');
+        });
+    </script>

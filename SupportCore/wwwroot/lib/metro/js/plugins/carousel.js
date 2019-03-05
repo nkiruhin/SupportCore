@@ -31,7 +31,9 @@ var Carousel = {
 
         controls: true,
         bullets: true,
-        bulletStyle: "square", // square, circle, rect, diamond
+        bulletsStyle: "square", // square, circle, rect, diamond
+        bulletsSize: "default", // default, mini, small, large
+
         controlsOnMouse: false,
         controlsOutside: false,
         bulletsPosition: "default", // default, left, right
@@ -59,6 +61,8 @@ var Carousel = {
         onMouseLeave: Metro.noop,
         onNextClick: Metro.noop,
         onPrevClick: Metro.noop,
+        onSlideShow: Metro.noop,
+        onSlideHide: Metro.noop,
         onCarouselCreate: Metro.noop
     },
 
@@ -117,6 +121,8 @@ var Carousel = {
 
         if (o.autoStart === true) {
             this._start();
+        } else {
+            Utils.exec(o.onSlideShow, [this.slides[this.currentIndex][0], undefined], this.slides[this.currentIndex][0]);
         }
 
         Utils.exec(this.options.onCarouselCreate, [this.element]);
@@ -139,7 +145,7 @@ var Carousel = {
             var t = o.direction === 'left' ? 'next' : 'prior';
             that._slideTo(t, true);
         }, period);
-        Utils.exec(o.onStart, [element]);
+        Utils.exec(o.onStart, [element], element[0]);
     },
 
     _stop: function(){
@@ -247,7 +253,7 @@ var Carousel = {
             return ;
         }
 
-        bullets = $('<div>').addClass("carousel-bullets").addClass("bullet-style-"+o.bulletStyle).addClass(o.clsBullets);
+        bullets = $('<div>').addClass("carousel-bullets").addClass(o.bulletsSize+"-size").addClass("bullet-style-"+o.bulletsStyle).addClass(o.clsBullets);
         if (o.bulletsPosition === 'default' || o.bulletsPosition === 'center') {
             bullets.addClass("flex-justify-center");
         } else if (o.bulletsPosition === 'left') {
@@ -425,6 +431,14 @@ var Carousel = {
             case 'fade': Animation['fade'](current, next, duration, effectFunc); break;
             default: Animation['switch'](current, next);
         }
+
+        setTimeout(function(){
+            Utils.exec(o.onSlideShow, [next[0], current[0]], next[0]);
+        }, duration);
+
+        setTimeout(function(){
+            Utils.exec(o.onSlideHide, [current[0], next[0]], current[0]);
+        }, duration);
 
         if (interval === true) {
 

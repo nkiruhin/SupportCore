@@ -61,13 +61,19 @@ var TagInput = {
         element[0].className = "";
 
         element.addClass("original-input");
-        input = $("<input type='text'>").addClass("input-wrapper");
+        input = $("<input type='text'>").addClass("input-wrapper").attr("size", 1);
         input.appendTo(container);
 
         if (Utils.isValue(values)) {
             $.each(Utils.strToArray(values, o.tagSeparator), function(){
                 that._addTag(this);
             })
+        }
+
+        if (element.is(":disabled")) {
+            this.disable();
+        } else {
+            this.enable();
         }
     },
 
@@ -84,6 +90,10 @@ var TagInput = {
             container.removeClass("focused");
         });
 
+        input.on(Metro.events.inputchange, function(){
+            input.attr("size", Math.ceil(input.val().length / 2) + 2);
+        });
+
         input.on(Metro.events.keyup, function(e){
             var val = input.val().trim();
 
@@ -95,6 +105,7 @@ var TagInput = {
 
             input.val("");
             that._addTag(val.replace(",", ""));
+            input.attr("size", 1);
 
             if (e.keyCode === Metro.keyCode.ENTER) {
                 e.preventDefault();
@@ -205,6 +216,24 @@ var TagInput = {
         container.find(".tag").remove();
     },
 
+    disable: function(){
+        this.element.data("disabled", true);
+        this.element.parent().addClass("disabled");
+    },
+
+    enable: function(){
+        this.element.data("disabled", false);
+        this.element.parent().removeClass("disabled");
+    },
+
+    toggleState: function(){
+        if (this.elem.disabled) {
+            this.disable();
+        } else {
+            this.enable();
+        }
+    },
+
     changeAttribute: function(attributeName){
         var that = this, element = this.element, o = this.options;
 
@@ -219,6 +248,7 @@ var TagInput = {
 
         switch (attributeName) {
             case "value": changeValue(); break;
+            case "disabled": this.toggleState(); break;
         }
     },
 

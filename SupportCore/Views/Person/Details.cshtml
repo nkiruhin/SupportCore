@@ -10,15 +10,17 @@
        data-ajax-update="#cell-content"
        data-ajax-mode="update"
        asp-route-id="@Model.Id"
-       class="button primary"><span class="mif-pencil"></span>  Изменить</a>
-
-    <a asp-action="Index"
-       data-ajax="true"
-       data-ajax-method="GET"
-       data-ajax-update="#cell-content"
-       data-ajax-mode="update"
-       class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
-</div>
+       class="button primary"><span class="mif-pencil"></span> Изменить</a>
+    @if (!User.IsInRole("Пользователь"))
+    {
+        <a asp-action="Index"
+           data-ajax="true"
+           data-ajax-method="GET"
+           data-ajax-update="#cell-content"
+           data-ajax-mode="update"
+           class="button secondary" data-role="button"><span class="mif-home"></span> К списку</a>
+    }
+    </div>
 
 <ul data-expand="true" data-role="tabs">
     <li class="active"><a href="#main">ГЛАВНАЯ</a></li>
@@ -60,7 +62,7 @@
                    data-ajax-mode="update"
                    class="button primary" data-role="button"><span class="mif-plus"></span> Добавить...</a>
             </div>
-            @await Html.PartialAsync("../Tickets/TicketTable", new Filter { PersonId = Model.Id, StatusId = 1, UserId = "all" })
+            @await Html.PartialAsync("../Tickets/TicketTable", new Filter { PersonId = Model.Id, StatusId = 1, UserId = "all",isInform=true })
         </div>
     }
         <div id="statistic">

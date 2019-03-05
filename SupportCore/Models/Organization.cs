@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SupportCore.Models
 {
@@ -28,6 +29,18 @@ namespace SupportCore.Models
         public string Telephone { set; get; }
         [Display(Name = "Подрядчик")]
         public bool isProvider { set; get; }
+        [Display(Name = "SLA")]
+        [ScaffoldColumn(false)]
+        public SLA SLA { set; get; }
+        [Display(Name = "SLA")]
+        public int? SLAId { set; get; }
+        //[Display(Name = "Ответственный сотрудник")]
+        //
+        [Display(Name = "Ответственный сотрудник")]
+        public string CuratorId { set; get; }
+        [ScaffoldColumn(false)]
+        [ForeignKey("CuratorId")]
+        public Person Curator { set; get; }
         [ScaffoldColumn(false)]
         public DateTime CreateTime { set; get; }
         [ScaffoldColumn(false)]
@@ -38,6 +51,7 @@ namespace SupportCore.Models
         public DateTime DeleteTime { set; get; }
         //principal entity 
         [ScaffoldColumn(false)]
+        [NotMapped]
         public List<Person> Persons { set; get; }
     }
 }

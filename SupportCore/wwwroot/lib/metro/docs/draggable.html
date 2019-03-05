@@ -35,7 +35,7 @@
 
     <title>Draggable - Metro 4 :: Popular HTML, CSS and JS library</title>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -110,6 +110,8 @@
                     &lt;div data-role="draggable" data-drag-area="body"&gt;&lt;/div&gt;
                 </code></pre>
 
+                <!-- ads-html -->
+
                 <h3 id="_draggable_events">Events</h3>
                 <p>
                     You can define next events with draggable element:
@@ -147,7 +149,7 @@
                             <p>X: <span id="-pos-x">0</span></p>
                             <p>Y: <span id="-pos-y">0</span></p>
                         </div>
-                        <div class="cell-md-10 -drag-area">
+                        <div class="cell-md-10 -drag-area" style="height: 200px;">
                             <div style="width: 50px; height: 50px;" class="bg-cyan" data-role="draggable" data-on-drag-move="demoDragMoveEvent"></div>
                         </div>
                         <script>

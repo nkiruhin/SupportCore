@@ -15,7 +15,7 @@ namespace SupportCore.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.1.0-rc1-32029")
+                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -84,6 +84,48 @@ namespace SupportCore.Migrations
                     b.HasKey("Name");
 
                     b.ToTable("Configuration");
+
+                    b.HasData(
+                        new
+                        {
+                            Name = "Signature",
+                            Section = "email",
+                            Title = "Подпись",
+                            Type = "html",
+                            Value = "С Уважением служба технической поддержки"
+                        },
+                        new
+                        {
+                            Name = "FromAddress",
+                            Section = "email",
+                            Title = "Адресс отправителя",
+                            Type = "text",
+                            Value = ""
+                        },
+                        new
+                        {
+                            Name = "FromName",
+                            Section = "email",
+                            Title = "От кого",
+                            Type = "text",
+                            Value = ""
+                        },
+                        new
+                        {
+                            Name = "UserId",
+                            Section = "email",
+                            Title = "Имя пользователя",
+                            Type = "text",
+                            Value = ""
+                        },
+                        new
+                        {
+                            Name = "UserPassword",
+                            Section = "email",
+                            Title = "Пароль",
+                            Type = "password",
+                            Value = ""
+                        });
                 });
 
             modelBuilder.Entity("SupportCore.Models.Field", b =>
@@ -255,6 +297,8 @@ namespace SupportCore.Migrations
 
                     b.Property<DateTime>("CreateTime");
 
+                    b.Property<string>("CuratorId");
+
                     b.Property<DateTime>("DeleteTime");
 
                     b.Property<DateTime>("EditTime");
@@ -266,6 +310,8 @@ namespace SupportCore.Migrations
                         .IsRequired()
                         .HasMaxLength(128);
 
+                    b.Property<int?>("SLAId");
+
                     b.Property<string>("Telephone")
                         .IsRequired();
 
@@ -274,6 +320,12 @@ namespace SupportCore.Migrations
                     b.Property<bool>("isProvider");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CuratorId")
+                        .IsUnique()
+                        .HasFilter("[CuratorId] IS NOT NULL");
+
+                    b.HasIndex("SLAId");
 
                     b.ToTable("Organizations");
                 });
@@ -357,6 +409,51 @@ namespace SupportCore.Migrations
                     b.HasIndex("PersonId");
 
                     b.ToTable("Requests");
+                });
+
+            modelBuilder.Entity("SupportCore.Models.SLA", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int?>("CategoryId");
+
+                    b.Property<int?>("DeadTime");
+
+                    b.Property<int?>("FieldId");
+
+                    b.Property<string>("FieldValue");
+
+                    b.Property<int>("IsDefault")
+                        .ValueGeneratedOnAdd()
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("Name");
+
+                    b.Property<int?>("ParentId");
+
+                    b.Property<int>("ResponseTime");
+
+                    b.Property<int>("Type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("FieldId");
+
+                    b.ToTable("SLAs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsDefault = 1,
+                            Name = "Базовый SLA",
+                            ResponseTime = 48,
+                            Type = 0
+                        });
                 });
 
             modelBuilder.Entity("SupportCore.Models.Tasks", b =>
@@ -488,6 +585,8 @@ namespace SupportCore.Migrations
 
                     b.Property<DateTime>("DateUpdate");
 
+                    b.Property<bool>("IsInform");
+
                     b.Property<string>("PersonId");
 
                     b.Property<string>("Poster");
@@ -561,10 +660,21 @@ namespace SupportCore.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("SupportCore.Models.Organization", b =>
+                {
+                    b.HasOne("SupportCore.Models.Person", "Curator")
+                        .WithOne()
+                        .HasForeignKey("SupportCore.Models.Organization", "CuratorId");
+
+                    b.HasOne("SupportCore.Models.SLA", "SLA")
+                        .WithMany()
+                        .HasForeignKey("SLAId");
+                });
+
             modelBuilder.Entity("SupportCore.Models.Person", b =>
                 {
                     b.HasOne("SupportCore.Models.Organization", "Organization")
-                        .WithMany("Persons")
+                        .WithMany()
                         .HasForeignKey("OrganizationId");
                 });
 
@@ -580,6 +690,17 @@ namespace SupportCore.Migrations
                     b.HasOne("SupportCore.Models.Person", "Person")
                         .WithMany()
                         .HasForeignKey("PersonId");
+                });
+
+            modelBuilder.Entity("SupportCore.Models.SLA", b =>
+                {
+                    b.HasOne("SupportCore.Models.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
+
+                    b.HasOne("SupportCore.Models.Field", "Field")
+                        .WithMany()
+                        .HasForeignKey("FieldId");
                 });
 
             modelBuilder.Entity("SupportCore.Models.Tasks", b =>

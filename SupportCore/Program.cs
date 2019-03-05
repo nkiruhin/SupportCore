@@ -53,6 +53,7 @@ namespace SupportCore
                     var connectionString = config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true).Build();
                     config.AddEntityFrameworkConfig(options =>
                                 options.UseSqlServer(connectionString.GetConnectionString("DefaultConnection")));
+                    //hostingContext.Configuration = config.Build();
                     //config.AddCommandLine(args);
                 })
                 .UseStartup<Startup>();

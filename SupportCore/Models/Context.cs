@@ -25,6 +25,7 @@ namespace SupportCore.Models
         public DbSet<Tasks> Tasks { get; set; }
         public DbSet<Filter> Filters { get; set; }
         public DbSet<File> Files { get; set; }
+        public DbSet<SLA> SLAs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Configuration>().HasData(
@@ -34,6 +35,9 @@ namespace SupportCore.Models
              new { Name = "UserId", Value = "", Section = "email", Title = "Имя пользователя", Type = "text" },
              new { Name = "UserPassword", Value = "", Section = "email", Title = "Пароль", Type = "password" }
              );
+            modelBuilder.Entity<SLA>().HasData(
+            new { Id=1, Name = "Базовый SLA", IsDefault = 1, ResponseTime = 48, Type = 0}
+            );
             modelBuilder.Entity<Form>()
                 .HasIndex(b => b.Type);
             modelBuilder.Entity<Form>()
@@ -46,6 +50,13 @@ namespace SupportCore.Models
                 .HasIndex(b => b.Name);
             modelBuilder.Entity<Filter>()
                .HasIndex(b => b.UserId);
+            modelBuilder.Entity<SLA>()
+               .Property(b => b.IsDefault)
+               .HasDefaultValue(0);
+            modelBuilder.Entity<Organization>()
+               .HasOne(o => o.Curator)
+               .WithOne()
+               .HasForeignKey<Organization>(p => p.CuratorId);
         }
     }
 }

@@ -15,6 +15,12 @@ namespace SupportCore.App.Classes
             string[] ExceptCon = _connections.GetConnections(user).Cast<string>().ToArray();
             await Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage",user,message);
         }
+        public async Task SendMessageGroup(string user, string message,string group)
+        {
+            string[] ExceptCon = _connections.GetConnections(user).Cast<string>().ToArray();
+            await Clients.Groups(group).SendAsync("ReceiveMessage", user, message);
+            //await Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", user, message);
+        }
         public async Task SendMessage(string user, string message)
         {
             await Clients.Others.SendAsync("ReceiveMessage", user, message);
@@ -22,9 +28,11 @@ namespace SupportCore.App.Classes
         public override async Task OnConnectedAsync()
         {
             string UserId = Context.UserIdentifier??"Server";
+            string GroupName = "Staff";
+            if (Context.User.IsInRole("Пользователь"))  GroupName = "Users";
             //Signalcon.Add(new SignalRcon { UserId=UserId, ConnectionId=Context.ConnectionId });
             _connections.Add(UserId, Context.ConnectionId);
-            //await Groups.AddToGroupAsync(Context.ConnectionId,GroupName);
+            await Groups.AddToGroupAsync(Context.ConnectionId,GroupName);
             await base.OnConnectedAsync();
         }
 

@@ -35,7 +35,7 @@
 
     <title>Gravatar - Metro 4 :: Popular HTML, CSS and JS library</title>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -106,6 +106,8 @@
                     You may request images anywhere from <strong>1px up to 2048px</strong>, however note that many users have lower resolution images, so requesting larger sizes may result in pixelation/low-quality images.
                 </p>
 
+                <!-- ads-html -->
+
                 <h3 id="_gravatar_default">Gravatar defaults</h3>
                 <p>
                     What happens when an email address has no matching Gravatar image?
@@ -123,21 +125,21 @@
                     <li><strong>blank</strong>: a transparent PNG image (border added to HTML below for demonstration purposes)</li>
                 </ul>
                 <div class="example">
-                    <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="404">
                     <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="mm">
                     <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="identicon">
                     <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="monsterid">
                     <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="wavatar">
                     <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="retro">
+                    <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="robohash">
                     <img class="d-inline" data-role="gravatar" data-email="a@b.com" data-default="blank">
                 </div>
                 <pre class=""><code>
-                    &lt;img data-role="gravatar" data-email="a@b.com" data-default="404"&gt;
                     &lt;img data-role="gravatar" data-email="a@b.com" data-default="mm"&gt;
                     &lt;img data-role="gravatar" data-email="a@b.com" data-default="identicon"&gt;
                     &lt;img data-role="gravatar" data-email="a@b.com" data-default="monsterid"&gt;
                     &lt;img data-role="gravatar" data-email="a@b.com" data-default="wavatar"&gt;
                     &lt;img data-role="gravatar" data-email="a@b.com" data-default="retro"&gt;
+                    &lt;img data-role="gravatar" data-email="a@b.com" data-default="robohash"&gt;
                     &lt;img data-role="gravatar" data-email="a@b.com" data-default="blank"&gt;
                 </code></pre>
 

@@ -23,13 +23,20 @@
       id="TicketCreate" name="TicketCreate">
     <div class="row">
         <div class="cell-4">
-            <label asp-for="PersonId"></label>
+            
             <div>
+                <label asp-for="PersonId"></label>
+              
                 <select asp-for="PersonId"
                         data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = false },"http")">
                     <option value="@Model.PersonId" selected="selected">@ViewBag.PersonName</option>
                 </select><div class="inbutton"><a href="#" class="button" onclick="openCustomWin('/Person/CreateDialog', 'mif-user-plus', 'Пользователь..', true)"><span class="mif-user-plus"></span></a></div>
                 <span asp-validation-for="PersonId"></span>
+            
+                @if (User.IsInRole("Пользователь"))
+                {
+                    <input asp-for="PersonId" hidden />
+                }
             </div>
             <div class="form-group m-0">
                 <label asp-for="CategoryId"></label>
@@ -37,8 +44,8 @@
                     <option value="" disabled selected style='display:none;'>Укажите категорию</option>
                     <option value=""></option>
                 </select>
-
                 <span asp-validation-for="CategoryId"></span>
+               
             </div>
             <div class="form-group m-0">
                 <label asp-for="StaffId"></label>
@@ -47,6 +54,11 @@
                     <option value="@Model.StaffId" selected="selected">@ViewBag.StaffName</option>
                 </select>
                 <span asp-validation-for="StaffId"></span>
+
+                @if (User.IsInRole("Пользователь"))
+                {
+                    <input asp-for="StaffId" hidden />
+                }
             </div>
             <div class="form-group m-0">
                 <label asp-for="SourceId" class="control-label"></label>
@@ -55,14 +67,18 @@
                     <option value=""></option>
                 </select>
                 <span asp-validation-for="SourceId"></span>
+                @if (User.IsInRole("Пользователь"))
+                {
+                    <input asp-for="SourceId" hidden />
+                }
             </div>
             <div class="form-group m-0">
                 <label asp-for="DueDate" class="control-label"></label>
                 @*<input asp-for="DueDate" min="@DateTime.Now.ToString("yyyy-MM-dd")" />*@
-                <input asp-for="DueDate"                 
-                    data-role="calendarpicker" 
-                    data-cls-calendar="compact"
-                    data-min-date="@DateTime.Now.ToString("yyyy-MM-dd")"
+                <input  asp-for="DueDate" 
+                        data-role="calendarpicker"
+                        data-cls-calendar="compact"
+                        data-min-date="@DateTime.Now.ToString("yyyy-MM-dd")"
                 />
                 <span asp-validation-for="DueDate"></span>
             </div>
@@ -101,27 +117,24 @@
     $(document).ready(function () {
         $.validator.unobtrusive.parse('#TicketCreate');
         ticketCreate('@Url.Action("Create")');
-        Metro.init();
     })
-    var personSelect = $('#PersonId').select2({
-        placeholder: 'Выберите пользователя',
-        language: 'ru'
-        });
-    personSelect.data('select2').$container.addClass("wbutton");
-    $('#StaffId').select2({
-        placeholder: 'Выберите сотрудника',
-        language: 'ru'
-    });
+    @if (!User.IsInRole("Пользователь")) {
+        @:enableSelect();
+    }
+     @if (User.IsInRole("Пользователь"))
+     {
+       @:disInput();
+     }
     $('#CategoryId').on('change', function () {
-            if (!this.value) {
+         if (!this.value) {
                 $('#CustomForm').empty();
                 $.validator.unobtrusive.parse('#TicketCreate');
-                return null;
-            }
-        url = '@Url.Action("GetCustomForm")' + '?CategoryId=' + this.value;
+             return null;
+         }
+         url = '@Url.Action("GetCustomForm")' + '?CategoryId=' + this.value;
             $('#CustomForm').load(url);
             $("#TicketCreate").removeData("validator").removeData("unobtrusiveValidation");
             $.validator.unobtrusive.parse('#TicketCreate');
-    })
+     })
 </script>
 

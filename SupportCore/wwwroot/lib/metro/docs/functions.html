@@ -35,7 +35,7 @@
 
     <title>Functions - Metro 4 :: Popular HTML, CSS and JS library</title>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -214,6 +214,10 @@
                     <tr>
                         <td><code>arrayDeleteByKey(arr, key)</code></td>
                         <td>Delete key from array and return it</td>
+                    </tr>
+                    <tr>
+                        <td><code>arrayDeleteByMultipleKeys(arr, keys_array)</code></td>
+                        <td>Delete key from array and return new array</td>
                     </tr>
                     <tr>
                         <td><code>nvl(data, other)</code></td>
@@ -426,6 +430,10 @@
                     <tr>
                         <td><code>getCursorPositionY(element, event)</code></td>
                         <td>Return mouse or pointer position y</td>
+                    </tr>
+                    <tr>
+                        <td><code>formData(form)</code></td>
+                        <td>Return named inputs as obj as pairs <code>name: value</code></td>
                     </tr>
                     </tbody>
                 </table>

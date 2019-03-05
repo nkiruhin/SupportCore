@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.EntityFrameworkCore;
 using SupportCore.Models;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace SupportCore.Components
         }
         public async Task<IViewComponentResult> InvokeAsync(int Event)
         {
+            if (HttpContext.User.IsInRole("Пользователь")) { return Content(string.Empty); }
             var templates = _context.Templates.Where(n => n.EventType == Event);
             var def =await templates.SingleOrDefaultAsync(n => n.IsDefault);
             ViewData["Templates"] = new SelectList(templates, "Id", "Name",def?.Id);

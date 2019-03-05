@@ -72,6 +72,7 @@ namespace SupportCore.Models
                       new SelectListItem{ Value="1",Text="Телефон" },
                       new SelectListItem{ Value="2",Text="Электронная почта" },
                       new SelectListItem{ Value="3",Text="Письменное обращение" },
+                      new SelectListItem{ Value="4",Text="Личный кабинет" },
                 //    new SelectListItem{ Value="phone",Text="Номер телефона" },
                 //    new SelectListItem{ Value="bool",Text="Флажок" },
                 //    new SelectListItem{ Value="choices",Text="Варианты" },

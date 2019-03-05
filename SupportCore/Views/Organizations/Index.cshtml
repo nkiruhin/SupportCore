@@ -1,7 +1,7 @@
 ﻿@model List<SupportCore.Models.Organization>
 
 @{
-    ViewData["Title"] = "Index";
+    Layout = null;
 }
 
 @*Panel with button*@
@@ -18,67 +18,67 @@
 </a>
 <hr class="thin bg-grayLighter">
 
-    <table class="dataTable table-border compact cell-border striped" data-auto-width="false" id="table">
-        <thead class="bg-darkCyan fg-white">
+<table class="dataTable table-border compact cell-border striped" data-auto-width="false" id="table">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            @*<th style="width: 20px">
+                </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Telephone)
+            </th>
+            <th style="width:7%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int item = 0; item < Model.Count; item++)
+        {
             <tr>
-                @*<th style="width: 20px">
-                    </th>*@
-                <th>
-                    @Html.DisplayNameFor(model => model[0].Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model[0].Email)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model[0].Telephone)
-                </th>
-                <th style="width:7%"></th>
+                <td>
+                    @Model[item].Name
+                </td>
+                <td>
+                    @Model[item].Email
+                </td>
+                <td>
+                    @Model[item].Telephone
+                </td>
+                <td>
+                    <div class="dropdown-button h-25">
+                        <button class="button small dropdown-toggle secondary outline">Действия   </button>
+                        <ul class="d-menu context" data-role="dropdown">
+                            <li>
+                                <a asp-action="Edit"
+                                   data-ajax="true"
+                                   data-ajax-method="GET"
+                                   data-ajax-update="#cell-content"
+                                   data-ajax-mode="update"
+                                   asp-route-id="@Model[item].Id" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a>
+                            </li>
+                            <li>
+                                <a asp-action="Details"
+                                   data-ajax="true"
+                                   data-ajax-method="GET"
+                                   data-ajax-update="#cell-content"
+                                   data-ajax-mode="update"
+                                   asp-route-id="@Model[item].Id" title="Просмотреть"><span class="mif-zoom-in icon"></span>Просмотреть</a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   title="Удалить" onclick="openCustomDialog('/Organizations/Delete/@Model[item].Id','Удалить',end)"><span class="mif-bin icon"></span>Удалить</a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @for (int item = 0; item < Model.Count; item++)
-            {
-                <tr>
-                    <td>
-                        @Model[item].Name
-                    </td>
-                    <td>
-                        @Model[item].Email
-                    </td>
-                    <td>
-                        @Model[item].Telephone
-                    </td>
-                    <td>
-                        <div class="dropdown-button h-25">
-                            <button class="button small dropdown-toggle secondary outline">Действия   </button>
-                            <ul class="d-menu context" data-role="dropdown">
-                                <li>
-                                    <a asp-action="Edit"
-                                       data-ajax="true"
-                                       data-ajax-method="GET"
-                                       data-ajax-update="#cell-content"
-                                       data-ajax-mode="update"
-                                       asp-route-id="@Model[item].Id" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a>
-                                </li>
-                                <li>
-                                    <a asp-action="Details"
-                                       data-ajax="true"
-                                       data-ajax-method="GET"
-                                       data-ajax-update="#cell-content"
-                                       data-ajax-mode="update"
-                                       asp-route-id="@Model[item].Id" title="Просмотреть"><span class="mif-zoom-in icon"></span>Просмотреть</a>
-                                </li>
-                                <li>
-                                    <a href="#"
-                                       title="Удалить" onclick="openCustomDialog('/Organizations/Delete/@Model[item].Id','Удалить',end)"><span class="mif-bin icon"></span>Удалить</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+        }
+    </tbody>
+</table>
 <script>
     $(function () {
         FormsTable = SimpleTableReady();

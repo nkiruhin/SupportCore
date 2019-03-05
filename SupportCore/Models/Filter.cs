@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,5 +44,9 @@ namespace SupportCore.Models
         public int CategoryId { set; get; }
         [DisplayName("Приоритет")]
         public string Priority { set; get; }
+        [ScaffoldColumn(false)]//  hidden ticket for Users 
+        [NotMapped]
+        [DisplayName("Информирование")]
+        public bool isInform { set; get; }
     }
 }

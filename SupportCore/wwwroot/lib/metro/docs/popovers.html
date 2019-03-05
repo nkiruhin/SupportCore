@@ -35,7 +35,7 @@
 
     <title>Popovers - Metro 4 :: Popular HTML, CSS and JS library</title>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -124,12 +124,11 @@
                     You can change this attribute at runtime.
                 </p>
                 <div class="example d-flex flex-justify-center">
-                    <button class="button" data-role="popover" data-hide-on-leave="true" data-popover-hide="0" data-popover-text="<iframe width='560' height='315' src='https://www.youtube.com/embed/ssutK1Gei4A?rel=0&amp;controls=0&amp;showinfo=0&amp;autoplay=1' frameborder='0' allowfullscreen></iframe>">Hover Me</button>
+                    <button class="button" data-role="popover" data-popover-hide="0" data-popover-text="<iframe width='560' height='315' src='https://www.youtube.com/embed/ssutK1Gei4A?rel=0&amp;controls=0&amp;showinfo=0&amp;autoplay=1' frameborder='0' allowfullscreen></iframe>">Hover Me</button>
                 </div>
                 <pre><code class="html">
                     &lt;button class="button"
                             data-role="popover"
-                            data-hide-on-leave="true"
                             data-popover-hide="0"
                             data-popover-text="
                                 &lt;iframe width='560'
@@ -171,6 +170,8 @@
                         data-popover-position="bottom"&gt;Bottom&lt;/button&gt;
                 </code></pre>
 
+                <!-- ads-html -->
+
                 <h3 id="_popover_hiding">Hiding</h3>
                 <p>
                     Attribute <code>data-popover-hide</code> is responsible for closing popovers.
@@ -179,7 +180,8 @@
                 </p>
                 <div class="example d-flex flex-justify-center">
                     <button class="button m-1" data-role="popover" data-popover-text="This popover closed after 5 secs!" data-popover-position="top" data-popover-hide="5000">Hover me</button>
-                    <button class="button m-1" data-role="popover" data-popover-text="Click Me to close!" data-popover-position="top" data-popover-hide="0">Hover me</button>
+                    <button class="button m-1" data-role="popover" data-popover-text="Click Me to close!" data-popover-position="top" data-close-button="false" data-popover-hide="0">Hover me</button>
+                    <button class="button m-1" data-role="popover" data-popover-text="Click close button to close!" data-popover-position="top" data-popover-hide="0">Hover me</button>
                 </div>
                 <pre><code class="html">
                     &lt;button class="button m-1" data-role="popover"
@@ -190,6 +192,15 @@
 
                     &lt;button class="button m-1" data-role="popover"
                         data-popover-text="Click Me to close!"
+                        data-popover-position="top"
+                        data-popover-hide="0"
+                        data-close-button="false"
+                    &gt;
+                        Hover me
+                    &lt;/button&gt;
+
+                    &lt;button class="button m-1" data-role="popover"
+                        data-popover-text="Click close button to close!"
                         data-popover-position="top" data-popover-hide="0"&gt;
                         Hover me
                     &lt;/button&gt;

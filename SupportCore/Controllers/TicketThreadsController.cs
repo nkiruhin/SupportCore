@@ -31,8 +31,14 @@ namespace SupportCore.Controllers
         // GET: TicketThreads
         public async Task<IActionResult> Index(int Id)
         {
-            var context = _context.TicketThreads.AsNoTracking().Where(n=>n.TicketId==Id).OrderByDescending(n=>n.DateCreate);
-            return PartialView(await context.ToListAsync());
+            List<TicketThread> ticketThreads = new List<TicketThread>();
+            if (HttpContext.User.IsInRole("Пользователь"))
+            {
+                ticketThreads = await _context.TicketThreads.AsNoTracking().Where(n => n.TicketId == Id&&n.IsInform).OrderByDescending(n => n.DateCreate).ToListAsync();
+            }else { 
+                ticketThreads = await _context.TicketThreads.AsNoTracking().Where(n=>n.TicketId==Id).OrderByDescending(n=>n.DateCreate).ToListAsync();
+            }
+            return PartialView(ticketThreads);
         }
 
         // GET: TicketThreads/Details/5
@@ -78,6 +84,8 @@ namespace SupportCore.Controllers
         public async Task<IActionResult> Create([Bind("Type,Body,TicketId")] TicketThread ticketThread,int Event,bool isInform,bool table)
         {
             var events = new Event();
+            bool isUser = false;
+            if (HttpContext.User.IsInRole("Пользователь")) isUser = true;
             ticketThread.Title = events.GetEvent(Event);
             if (ModelState.IsValid)
             {
@@ -94,16 +102,19 @@ namespace SupportCore.Controllers
                 if (Event == 2) { ticket.Closed = DateTime.Now; }
                 ticketThread.PersonId = Person.Id;
                 ticketThread.Poster = Person.Name;
+                ticketThread.IsInform = isInform;
                 _context.TicketThreads.Add(ticketThread);
                 await _context.SaveChangesAsync();
+                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
+                //await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString("g"), $"Заявка #{ticketThread.TicketId}: {ticketThread.Title}");
+                await _contextHub.Clients.GroupExcept("Staff", ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString("g"), $"<a href=\"/Tickets/Edit/{ticketThread.TicketId}\" data-ajax=\"true\" data-ajax-method=\"GET\" data-ajax-update=\"#cell-content\" data-ajax-mode=\"update\" title=\"Перейти\"> Заявка #{ticketThread.TicketId}</a>: {ticketThread.Title}", isUser);
                 if (isInform)
                 {
                     ticketThread.Title = $"Изменения в заявке #{ticket.Id} {ticketThread.Title}";
                     await _emailService.SendEmailAsync(ticket.Person.Email, ticketThread.Title, ticketThread.Body,ticket.CoAuthors);
                 }
                 //new SignalRclient("http://"+HttpContext.Request.Host.ToUriComponent()).SendEventAsync(_userManager.GetUserId(HttpContext.User),ticketThread);
-                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
-                await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString("g"), $"Заявка #{ticketThread.TicketId}: {ticketThread.Title}");
+                
                 if (table||Event == 4) return Ok("OK");
                 if(Event==2) return RedirectToAction("Index","Tickets"); //If Event = close load ticket list
                 return RedirectToAction("Edit","Tickets",new { Id = ticketThread.TicketId });

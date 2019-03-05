@@ -1,6 +1,6 @@
 var ValidatorFuncs = {
     required: function(val){
-        return Utils.isValue(val.trim());
+        return Utils.isValue(val) ? val.trim() : false;
     },
     length: function(val, len){
         if (!Utils.isValue(len) || isNaN(len) || len <= 0) {
@@ -53,8 +53,12 @@ var ValidatorFuncs = {
     url: function(val){
         return /^(?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(val);
     },
-    date: function(val){
-        return (new Date(val) !== "Invalid Date" && !isNaN(new Date(val)));
+    date: function(val, format, locale){
+        if (Utils.isNull(format)) {
+            return String(new Date(val)).toLowerCase() !== "invalid date";
+        } else {
+            return String(val.toDate(format, locale)).toLowerCase() !== "invalid date";
+        }
     },
     number: function(val){
         return !isNaN(val);
@@ -72,12 +76,12 @@ var ValidatorFuncs = {
         return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(val);
     },
     color: function(val){
+        if (!Utils.isValue(val)) return false;
         return Colors.color(val, Colors.PALETTES.STANDARD) !== false;
     },
     pattern: function(val, pat){
-        if (!Utils.isValue(pat)) {
-            return false;
-        }
+        if (!Utils.isValue(val)) return false;
+        if (!Utils.isValue(pat)) return false;
         var reg = new RegExp(pat);
         return reg.test(val);
     },
@@ -88,9 +92,13 @@ var ValidatorFuncs = {
         return val !== not_this;
     },
     notequals: function(val, val2){
+        if (Utils.isNull(val)) return false;
+        if (Utils.isNull(val2)) return false;
         return val.trim() !== val2.trim();
     },
     equals: function(val, val2){
+        if (Utils.isNull(val)) return false;
+        if (Utils.isNull(val2)) return false;
         return val.trim() === val2.trim();
     },
     custom: function(val, func){
@@ -198,7 +206,7 @@ var ValidatorFuncs = {
             $.each(funcs, function(){
                 if (this_result === false) return;
                 var rule = this.split("=");
-                var f, a;
+                var f, a, b;
 
                 f = rule[0]; rule.shift();
                 a = rule.join("=");
@@ -207,14 +215,19 @@ var ValidatorFuncs = {
                     a = input[0].form.elements[a].value;
                 }
 
+                if (f === 'date') {
+                    a = input.attr("data-value-format");
+                    b = input.attr("data-value-locale");
+                }
+
                 if (Utils.isFunc(ValidatorFuncs[f]) === false)  {
                     this_result = true;
                 } else {
                     if (required_mode === true || f === "required") {
-                        this_result = ValidatorFuncs[f](input.val(), a);
+                        this_result = ValidatorFuncs[f](input.val(), a, b);
                     } else {
                         if (input.val().trim() !== "") {
-                            this_result = ValidatorFuncs[f](input.val(), a);
+                            this_result = ValidatorFuncs[f](input.val(), a, b);
                         } else {
                             this_result = true;
                         }
@@ -265,7 +278,6 @@ var Validator = {
         this.element = $(elem);
         this._onsubmit = null;
         this._onreset = null;
-        this._action = null;
         this.result = [];
 
         this._setOptionsFromDOM();
@@ -281,6 +293,7 @@ var Validator = {
         interactiveCheck: false,
         clearInvalid: 0,
         requiredMode: true,
+        useRequiredClass: true,
         onBeforeSubmit: Metro.noop_true,
         onSubmit: Metro.noop,
         onError: Metro.noop,
@@ -308,17 +321,15 @@ var Validator = {
         var that = this, element = this.element, o = this.options;
         var inputs = element.find("[data-validate]");
 
-        this._action = element[0].action;
-
         element
-            .attr("novalidate", 'novalidate')
-            .attr("action", "javascript:");
+            .attr("novalidate", 'novalidate');
+            //.attr("action", "javascript:");
 
         $.each(inputs, function(){
             var input = $(this);
             var funcs = input.data("validate");
             var required = funcs.indexOf("required") > -1;
-            if (required) {
+            if (required && o.useRequiredClass === true) {
                 if (ValidatorFuncs.is_control(input)) {
                     input.parent().addClass("required");
                 } else {
@@ -370,6 +381,7 @@ var Validator = {
             val: 0,
             log: []
         };
+        var formData = Utils.formData(element);
 
         $.each(inputs, function(){
             ValidatorFuncs.validate(this, result, o.onValidate, o.onError, o.requiredMode);
@@ -377,18 +389,16 @@ var Validator = {
 
         submit.removeAttr("disabled").removeClass("disabled");
 
-        element[0].action = this._action;
-
-        result.val += Utils.exec(o.onBeforeSubmit, [element], this.elem) === false ? 1 : 0;
+        result.val += Utils.exec(o.onBeforeSubmit, [element, formData], this.elem) === false ? 1 : 0;
 
         if (result.val === 0) {
-            Utils.exec(o.onValidateForm, [element], form);
+            Utils.exec(o.onValidateForm, [element, formData], form);
             setTimeout(function(){
-                Utils.exec(o.onSubmit, [element], form);
+                Utils.exec(o.onSubmit, [element, formData], form);
                 if (that._onsubmit !==  null) Utils.exec(that._onsubmit, null, form);
             }, o.submitTimeout);
         } else {
-            Utils.exec(o.onErrorForm, [result.log, element], form);
+            Utils.exec(o.onErrorForm, [result.log, element, formData], form);
             if (o.clearInvalid > 0) {
                 setTimeout(function(){
                     $.each(inputs, function(){

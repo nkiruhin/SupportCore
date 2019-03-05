@@ -1,0 +1,46 @@
+﻿@model SupportCore.Models.SLA
+
+@{
+    Layout = null;
+}
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2 class="text-light">Редактирование <span class="mif-pencil place-right"></span></h2>
+<h4>SLA</h4>
+<hr />
+
+<form asp-action="Edit"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-update="#cell-content"
+      data-ajax-mode="update">
+     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row">
+        <div class="cell-md-8">
+            <label asp-for="Name"></label>
+            <input asp-for="Name">
+        </div>
+        <div class="cell-md-2">
+            <label asp-for="ResponseTime"></label>
+            <input asp-for="ResponseTime">
+        </div>
+        <div class="cell-md-2">
+            <label asp-for="DeadTime"></label>
+            <input asp-for="DeadTime">
+        </div>
+    </div>
+    <div class="pb-4-md pt-4-md">
+        <button type="submit" class="button primary"><span class="mif-floppy-disk"></span> Сохранить</button>
+        <a asp-action="Index"
+           data-ajax="true"
+           data-ajax-method="POST"
+           data-ajax-update="#cell-content"
+           data-ajax-mode="update"
+           class="button secondary" data-role="button"><span class="mif-home"></span>К списку</a>
+    </div>
+</form>
+@{await Html.RenderPartialAsync("IndexRules", new SLA { ParentId = Model.Id });}

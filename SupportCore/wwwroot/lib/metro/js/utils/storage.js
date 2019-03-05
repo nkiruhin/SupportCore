@@ -1,18 +1,10 @@
-var Storage = {
-    key: "METRO:APP",
+var Storage = function(type){
+    return new Storage.init(type);
+};
 
-    init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
-
-        return this;
-    },
-
-    nvl: function(data, other){
-        return data === undefined || data === null ? other : data;
-    },
-
+Storage.prototype = {
     setKey: function(key){
-        this.key = key;
+        this.key = key
     },
 
     getKey: function(){
@@ -20,20 +12,20 @@ var Storage = {
     },
 
     setItem: function(key, value){
-        window.localStorage.setItem(this.key + ":" + key, JSON.stringify(value));
+        this.storage.setItem(this.key + ":" + key, JSON.stringify(value));
     },
 
     getItem: function(key, default_value, reviver){
         var result, value;
 
-        value = this.nvl(window.localStorage.getItem(this.key + ":" + key), default_value);
+        value = this.storage.getItem(this.key + ":" + key);
 
         try {
             result = JSON.parse(value, reviver);
         } catch (e) {
             result = null;
         }
-        return result;
+        return Utils.nvl(result, default_value);
     },
 
     getItemPart: function(key, sub_key, default_value, reviver){
@@ -48,7 +40,7 @@ var Storage = {
     },
 
     delItem: function(key){
-        window.localStorage.removeItem(this.key + ":" + key)
+        this.storage.removeItem(this.key + ":" + key)
     },
 
     size: function(unit){
@@ -66,8 +58,19 @@ var Storage = {
             }
             default: divider = 1;
         }
-        return JSON.stringify(window.localStorage).length / divider;
+        return JSON.stringify(this.storage).length / divider;
     }
 };
 
-Metro['storage'] = Storage.init();
+Storage.init = function(type){
+
+    this.key = "";
+    this.storage = type ? type : window.localStorage;
+
+    return this;
+};
+
+Storage.init.prototype = Storage.prototype;
+
+Metro['storage'] = Storage(window.localStorage);
+Metro['session'] = Storage(window.sessionStorage);

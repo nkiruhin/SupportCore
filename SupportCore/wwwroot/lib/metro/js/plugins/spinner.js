@@ -96,6 +96,7 @@ var Spinner = {
     _createEvents: function(){
         var that = this, element = this.element, o = this.options;
         var spinner = element.closest(".spinner");
+        var spinner_buttons = spinner.find(".spinner-button");
 
         var spinnerButtonClick = function(plus, threshold){
             var curr = element.val();
@@ -123,12 +124,20 @@ var Spinner = {
             }, threshold);
         };
 
-        spinner.on(Metro.events.start, ".spinner-button", function(){
+        spinner.on(Metro.events.click, function(e){
+            $(".focused").removeClass("focused");
+            spinner.addClass("focused");
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        spinner_buttons.on(Metro.events.start, function(e){
+            e.preventDefault();
             that.repeat_timer = true;
             spinnerButtonClick($(this).hasClass("spinner-button-plus"), o.repeatThreshold);
         });
 
-        spinner.on(Metro.events.stop, ".spinner-button", function(){
+        spinner_buttons.on(Metro.events.stop, function(){
             that.repeat_timer = false;
         });
 
@@ -195,13 +204,12 @@ var Spinner = {
     },
 
     toggleState: function(){
-        if (this.element.data("disabled") === false) {
+        if (this.elem.disabled) {
             this.disable();
         } else {
             this.enable();
         }
     },
-
 
     changeAttribute: function(attributeName){
         var that = this, element = this.element;
@@ -230,3 +238,8 @@ var Spinner = {
 };
 
 Metro.plugin('spinner', Spinner);
+
+$(document).on(Metro.events.click, function(){
+    $(".spinner").removeClass("focused");
+});
+

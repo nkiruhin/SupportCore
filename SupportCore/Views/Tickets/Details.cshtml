@@ -22,8 +22,11 @@
 <ul data-expand="true" data-role="tabs">
     <li class="active"><a href="#main">ГЛАВНАЯ</a></li>
     <li><a href="#history">ИСТОРИЯ ЗАЯВКИ (<b id="count">@Model.TicketThreads.Count</b>)</a></li>
-    <li><a href="#info">ДОПОЛНИТЕЛЬНО</a></li>
-</ul>
+    @if (!User.IsInRole("Пользователь"))
+    {
+        <li><a href="#info">ДОПОЛНИТЕЛЬНО</a></li>
+    }
+    </ul>
 <div class="border bd-default no-border-top p-2">
     <div id="main">
         <h5>Заявка № @Model.Id создана @Model.DateCreate</h5>
@@ -91,35 +94,38 @@
         @if (Model.Category.FormId != null)
         {
 
-                @await Component.InvokeAsync("Form", new { FormId = Model.Category.FormId, TicketId = Model.Id, Edit = false })
+            @await Component.InvokeAsync("Form", new { FormId = Model.Category.FormId, TicketId = Model.Id, Edit = false })
 
         }
     </div>
 
-<div id="history">
-    @await Html.PartialAsync("../TicketThreads/Index", Model.TicketThreads.OrderByDescending(i => i.DateCreate))
-</div>
-<div id="info">
-
-    <label asp-for="CoAuthors"></label>
-    @if (Model.CoAuthors.Count == 0)
+    <div id="history">
+        @await Html.PartialAsync("../TicketThreads/Index", Model.TicketThreads.OrderByDescending(i => i.DateCreate))
+    </div>
+    @if (!User.IsInRole("Пользователь"))
     {
-        <p><em>Нет соавторов</em></p>
+        <div id="info">
+
+            <label asp-for="CoAuthors"></label>
+            @if (Model.CoAuthors.Count == 0)
+            {
+                <p><em>Нет соавторов</em></p>
+            }
+            <ul>
+                @foreach (var coauthor in Model.CoAuthors)
+                {
+                    <li>@coauthor.Person.Name</li>
+                }
+            </ul>
+
+
+            <div id="Tasks">
+                @await Html.PartialAsync("../Tasks/Index", Model)
+            </div>
+
+        </div>
     }
-    <ul>
-        @foreach (var coauthor in Model.CoAuthors)
-        {
-            <li>@coauthor.Person.Name</li>
-        }
-    </ul>
-
-
-    <div id="Tasks">
-        @await Html.PartialAsync("../Tasks/Index", Model)
     </div>
-
-</div>
-</div>
 
 <script>
     $(function () {

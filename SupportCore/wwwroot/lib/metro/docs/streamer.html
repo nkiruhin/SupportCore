@@ -41,7 +41,7 @@
         }
     </style>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -81,7 +81,7 @@
                 </p>
 
                 <div class="example mt-3 p-0 no-border">
-                    <div id="streamer" class="streamer-expand-sm" data-role="streamer" data-source="data/streamer_data.json" data-start-from="09:00" data-slide-to-start="true"></div>
+                    <div id="streamer" class="streamer-expand-sm" data-role="streamer" data-source="data/streamer_data.json" data-start-from="09:00" data-slide-to-start="true" data-stream-select="true"></div>
                 </div>
 
                 <h3 id="_streamer_create">Create streamer</h3>
@@ -216,6 +216,8 @@
                     </tr>
                     </tbody>
                 </table>
+
+                <!-- ads-html -->
 
                 <h3 id="_streamer_data">Streamer data</h3>
                 <p>
@@ -484,12 +486,14 @@
                     <li><code>getStreamerData()</code> - get streamer internal data</li>
                 </ul>
 
+                <!-- ads-html -->
+
                 <h3 id="_streamer_responsive">Responsive</h3>
                 <p>
                     On default, streamer showing in collapsed mode:
                 </p>
                 <div class="example no-border p-0">
-                    <div data-role="streamer" data-source="data/streamer_data3.json" data-start-from="09:00"></div>
+                    <div data-role="streamer" data-source="data/streamer_data.json" data-start-from="09:00"></div>
                 </div>
                 <pre><code>
                     &lt;div data-role="streamer"
@@ -497,7 +501,7 @@
                         data-start-from="09:00"&gt;&lt;/div&gt;
                 </code></pre>
                 <div class="example no-border p-0">
-                    <div class="streamer-expand-sm" data-role="streamer" data-source="data/streamer_data3.json" data-start-from="09:00"></div>
+                    <div class="streamer-expand-sm" data-role="streamer" data-source="data/streamer_data.json" data-start-from="09:00"></div>
                 </div>
                 <pre><code>
                     &lt;div class="streamer-expand-sm"

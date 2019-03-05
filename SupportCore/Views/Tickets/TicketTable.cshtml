@@ -54,6 +54,8 @@
                             break;
                         case 3: source = '<span class="mif-file-text"></span>'
                             break;
+                        default: source = '<span class="mif-ie"></span>'
+                            break;
                     }
                     return source + '   ' + data;
                 }, "width": "4%"
@@ -70,7 +72,7 @@
                         default: tagPriority = '';
                             break;
                     }
-                    over = full.isOverdue === true ? ' <span title="Просрочено" class="mif-bell fg-red"></span>' : '';
+                    over = full.isOverdue === true ? ' <span title="Просрочено" class="mif-fire fg-red"></span>' : '';
                     coahors = full.isCoAthors === true ? ' <span title="Соавторы" class="mif-users"></span>' : '';
                     files = full.withFiles === true ? ' <span title="Файлы" class="mif-attachment"></span>' : '';
                     tasks = full.withTasks === true ? ' <span title="Задачи" class="mif-event-available" data-role="popover" data-on-popover-show="getTask" \
@@ -163,11 +165,11 @@
     }
         url = '@Url.Action("IndexJson", "Tickets", null, "http")' + '?StatusId=' + f;
         if (f !== null) { TicketTable.ajax.url(url); }
-        TicketTable.ajax.reload(null, false);
+        TicketTable.ajax.reload(null, true);
         getCounters();
     }
     function getTask(popover, element) {
-        var TicketId = element.data('ticketid');
+        var TicketId = $(this).data('ticketid');
         var xhr = new XMLHttpRequest();
         var url = '@Url.Action("SimpleList","Tasks")' + '?TicketId=' + TicketId;
         xhr.open("POST", url, true);
@@ -180,9 +182,9 @@
         };
         xhr.send();
     }
-     function getDescription(popover, element) {
-        var TicketId = element.data('ticketid');
-        var xhr = new XMLHttpRequest();
+    var getDescription = function (popover, element) {
+        var TicketId = $(this).data('ticketid');
+        var xhr = new XMLHttpRequest(); 
         var url = '@Url.Action("getDescription", "Tickets")' + '?TicketId=' + TicketId;
         xhr.open("POST", url, true);
         xhr.onreadystatechange = function () {

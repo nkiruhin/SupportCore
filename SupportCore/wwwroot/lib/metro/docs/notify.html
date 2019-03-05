@@ -35,7 +35,7 @@
 
     <title>Notify system - Metro 4 :: Popular HTML, CSS and JS library</title>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -121,7 +121,7 @@
                                 duration: 1000,
                                 animation: 'easeOutBounce'
                             });
-                            notify.create("This is a notify");
+                            notify.create("This is a notify", "", {});
                             notify.reset();
                         }
                     </script>
@@ -141,6 +141,8 @@
                         }
                     &lt;/script&gt;
                 </code></pre>
+
+                <!-- ads-html -->
 
                 <h3 id="_notify_options">Notify options</h3>
                 <p>

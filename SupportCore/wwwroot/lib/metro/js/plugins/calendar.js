@@ -16,6 +16,7 @@ var Calendar = {
         this.selected = [];
         this.exclude = [];
         this.special = [];
+        this.excludeDay = [];
         this.min = null;
         this.max = null;
         this.locale = null;
@@ -30,10 +31,13 @@ var Calendar = {
     },
 
     options: {
+        dayBorder: false,
+        excludeDay: null,
         prevMonthIcon: "<span class='default-icon-chevron-left'></span>",
         nextMonthIcon: "<span class='default-icon-chevron-right'></span>",
         prevYearIcon: "<span class='default-icon-chevron-left'></span>",
         nextYearIcon: "<span class='default-icon-chevron-right'></span>",
+        compact: false,
         wide: false,
         widePoint: null,
         pickerMode: false,
@@ -48,6 +52,7 @@ var Calendar = {
         showHeader: true,
         showFooter: true,
         showTimeField: true,
+        showWeekNumber: false,
         clsCalendar: "",
         clsCalendarHeader: "",
         clsCalendarContent: "",
@@ -69,6 +74,7 @@ var Calendar = {
         minDate: null,
         maxDate: null,
         weekDayClick: false,
+        weekNumberClick: false,
         multiSelect: false,
         special: null,
         format: METRO_DATE_FORMAT,
@@ -78,7 +84,9 @@ var Calendar = {
         onClear: Metro.noop,
         onDone: Metro.noop,
         onDayClick: Metro.noop,
+        onDayDraw: Metro.noop,
         onWeekDayClick: Metro.noop,
+        onWeekNumberClick: Metro.noop,
         onMonthChange: Metro.noop,
         onYearChange: Metro.noop,
         onCalendarCreate: Metro.noop
@@ -101,7 +109,15 @@ var Calendar = {
     _create: function(){
         var that = this, element = this.element, o = this.options;
 
-        element.html("").addClass("calendar").addClass(o.clsCalendar);
+        element.html("").addClass("calendar " + (o.compact === true ? "compact" : "")).addClass(o.clsCalendar);
+
+        if (o.dayBorder === true) {
+            element.addClass("day-border");
+        }
+
+        if (Utils.isValue(o.excludeDay)) {
+            this.excludeDay = (""+o.excludeDay).toArray(",", "int");
+        }
 
         if (Utils.isValue(o.preset)) {
             this._dates2array(o.preset, 'selected');
@@ -144,7 +160,7 @@ var Calendar = {
         this.locale = Metro.locales[o.locale] !== undefined ? Metro.locales[o.locale] : Metro.locales["en-US"];
 
         this._drawCalendar();
-        this._bindEvents();
+        this._createEvents();
 
         if (o.wide === true) {
             element.addClass("calendar-wide");
@@ -192,7 +208,7 @@ var Calendar = {
         });
     },
 
-    _bindEvents: function(){
+    _createEvents: function(){
         var that = this, element = this.element, o = this.options;
 
         $(window).on(Metro.events.resize, function(){
@@ -285,25 +301,61 @@ var Calendar = {
             e.stopPropagation();
         });
 
-        element.on(Metro.events.click, ".week-days .day", function(e){
-            if (o.weekDayClick === false || o.multiSelect === false) {
-                return ;
-            }
-            var day = $(this);
-            var index = day.index();
-            var days = o.outside === true ? element.find(".days-row .day:nth-child("+(index + 1)+")") : element.find(".days-row .day:not(.outside):nth-child("+(index + 1)+")");
-            $.each(days, function(){
-                var d = $(this);
-                var dd = d.data('day');
-                Utils.arrayDelete(that.selected, dd);
-                that.selected.push(dd);
-                d.addClass("selected").addClass(o.clsSelected);
-            });
-            Utils.exec(o.onWeekDayClick, [that.selected, day, element]);
+        if (o.weekDayClick === true) {
+            element.on(Metro.events.click, ".week-days .day", function (e) {
+                var day, index, days;
 
-            e.preventDefault();
-            e.stopPropagation();
-        });
+                day = $(this);
+                index = day.index();
+
+                if (o.multiSelect === true) {
+                    days = o.outside === true ? element.find(".days-row .day:nth-child(" + (index + 1) + ")") : element.find(".days-row .day:not(.outside):nth-child(" + (index + 1) + ")");
+                    $.each(days, function () {
+                        var d = $(this);
+                        var dd = d.data('day');
+
+                        if (d.hasClass("disabled") || d.hasClass("excluded")) return;
+
+                        if (!that.selected.contains(dd))
+                            that.selected.push(dd);
+                        d.addClass("selected").addClass(o.clsSelected);
+                    });
+                }
+
+                Utils.exec(o.onWeekDayClick, [that.selected, day], element[0]);
+
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        }
+
+        if (o.weekNumberClick) {
+            element.on(Metro.events.click, ".days-row .week-number", function (e) {
+                var weekNumElement, weekNumber, days;
+
+                weekNumElement = $(this);
+                weekNumber = weekNumElement.text();
+
+                if (o.multiSelect === true) {
+                    days = $(this).siblings(".day");
+                    $.each(days, function () {
+                        var d = $(this);
+                        var dd = d.data('day');
+
+                        if (d.hasClass("disabled") || d.hasClass("excluded")) return;
+
+                        if (!that.selected.contains(dd))
+                            that.selected.push(dd);
+                        d.addClass("selected").addClass(o.clsSelected);
+                    });
+                }
+
+                Utils.exec(o.onWeekNumberClick, [that.selected, weekNumber, weekNumElement], element[0]);
+
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        }
 
         element.on(Metro.events.click, ".days-row .day", function(e){
             var day = $(this);
@@ -323,26 +375,30 @@ var Calendar = {
                 return ;
             }
 
-            if (o.pickerMode === true) {
-                that.selected = [date];
-                that.today = new Date(date);
-                that.current.year = that.today.getFullYear();
-                that.current.month = that.today.getMonth();
-                that.current.day = that.today.getDate();
-                that._drawHeader();
-                that._drawContent();
-            } else {
-                if (index === -1) {
-                    if (o.multiSelect === false) {
-                        element.find(".days-row .day").removeClass("selected").removeClass(o.clsSelected);
-                        that.selected = [];
-                    }
-                    that.selected.push(date);
-                    day.addClass("selected").addClass(o.clsSelected);
+            if (!day.hasClass("disabled")) {
+
+                if (o.pickerMode === true) {
+                    that.selected = [date];
+                    that.today = new Date(date);
+                    that.current.year = that.today.getFullYear();
+                    that.current.month = that.today.getMonth();
+                    that.current.day = that.today.getDate();
+                    that._drawHeader();
+                    that._drawContent();
                 } else {
-                    day.removeClass("selected").removeClass(o.clsSelected);
-                    Utils.arrayDelete(that.selected, date);
+                    if (index === -1) {
+                        if (o.multiSelect === false) {
+                            element.find(".days-row .day").removeClass("selected").removeClass(o.clsSelected);
+                            that.selected = [];
+                        }
+                        that.selected.push(date);
+                        day.addClass("selected").addClass(o.clsSelected);
+                    } else {
+                        day.removeClass("selected").removeClass(o.clsSelected);
+                        Utils.arrayDelete(that.selected, date);
+                    }
                 }
+
             }
 
             Utils.exec(o.onDayClick, [that.selected, day, element]);
@@ -522,6 +578,13 @@ var Calendar = {
          * Week days
          */
         var week_days = $("<div>").addClass("week-days").appendTo(content);
+        var day_class = "day";
+
+        if (o.showWeekNumber === true) {
+            $("<span>").addClass("week-number").html("#").appendTo(week_days);
+            day_class += " and-week-number";
+        }
+
         for (i = 0; i < 7; i++) {
             if (o.weekStart === 0) {
                 j = i;
@@ -529,7 +592,7 @@ var Calendar = {
                 j = i + 1;
                 if (j === 7) j = 0;
             }
-            $("<span>").addClass("day").html(calendar_locale["days"][j + 7]).appendTo(week_days);
+            $("<span>").addClass(day_class).html(calendar_locale["days"][j + 7]).appendTo(week_days);
         }
 
         /**
@@ -548,9 +611,13 @@ var Calendar = {
             year = this.current.year;
         }
 
+        if (o.showWeekNumber === true) {
+            $("<div>").addClass("week-number").html((new Date(year, month, prev_month_days - first_day + 1)).getWeek(o.weekStart)).appendTo(days_row);
+        }
+
         for(i = 0; i < first_day; i++) {
             var v = prev_month_days - first_day + i + 1;
-            d = $("<div>").addClass("day outside").appendTo(days_row);
+            d = $("<div>").addClass(day_class+" outside").appendTo(days_row);
 
             s = new Date(year, month, v);
             s.setHours(0,0,0,0);
@@ -559,6 +626,14 @@ var Calendar = {
 
             if (o.outside === true) {
                 d.html(v);
+
+                if (this.excludeDay.length > 0) {
+                    if (this.excludeDay.indexOf(s.getDay()) > -1) {
+                        d.addClass("disabled excluded").addClass(o.clsExcluded);
+                    }
+                }
+
+                Utils.exec(o.onDayDraw, [s], d[0]);
             }
 
             counter++;
@@ -567,7 +642,7 @@ var Calendar = {
         first.setHours(0,0,0,0);
         while(first.getMonth() === this.current.month) {
 
-            d = $("<div>").addClass("day").html(first.getDate()).appendTo(days_row);
+            d = $("<div>").addClass(day_class).html(first.getDate()).appendTo(days_row);
 
             d.data('day', first.getTime());
 
@@ -597,6 +672,11 @@ var Calendar = {
                     d.addClass("disabled excluded").addClass(o.clsExcluded);
                 }
 
+                if (this.excludeDay.length > 0) {
+                    if (this.excludeDay.indexOf(first.getDay()) > -1) {
+                        d.addClass("disabled excluded").addClass(o.clsExcluded);
+                    }
+                }
             } else {
 
                 if (this.special.indexOf(first.getTime()) === -1) {
@@ -605,9 +685,14 @@ var Calendar = {
 
             }
 
+            Utils.exec(o.onDayDraw, [first], d[0]);
+
             counter++;
             if (counter % 7 === 0) {
                 days_row = $("<div>").addClass("days-row").appendTo(days);
+                if (o.showWeekNumber === true) {
+                    $("<div>").addClass("week-number").html((new Date(first.getFullYear(), first.getMonth(), first.getDate() + 1)).getWeek(o.weekStart)).appendTo(days_row);
+                }
             }
             first.setDate(first.getDate() + 1);
             first.setHours(0,0,0,0);
@@ -624,12 +709,20 @@ var Calendar = {
         }
 
         if (first_day > 0) for(i = 0; i < 7 - first_day; i++) {
-            d = $("<div>").addClass("day outside").appendTo(days_row);
+            d = $("<div>").addClass(day_class+" outside").appendTo(days_row);
             s = new Date(year, month, i + 1);
             s.setHours(0,0,0,0);
             d.data('day', s.getTime());
             if (o.outside === true) {
                 d.html(i + 1);
+
+                if (this.excludeDay.length > 0) {
+                    if (this.excludeDay.indexOf(s.getDay()) > -1) {
+                        d.addClass("disabled excluded").addClass(o.clsExcluded);
+                    }
+                }
+
+                Utils.exec(o.onDayDraw, [s], d[0]);
             }
         }
     },
@@ -643,7 +736,7 @@ var Calendar = {
             that._drawFooter();
             that._drawMonths();
             that._drawYears();
-        }, 1);
+        }, 0);
     },
 
     getPreset: function(){

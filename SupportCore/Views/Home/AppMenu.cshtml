@@ -8,111 +8,130 @@
 
         <ul class="app-bar-menu order-4 order-md-3">
             <li><a asp-controller="Home" class="fg-white-hover">Панель заявок</a></li>
-            <li>
+            @if (!User.IsInRole("Пользователь")) { 
+                <li>
 
-                <a class="app-bar-item dropdown-toggle marker-light fg-white-hover" href="#">Справочники</a>
-                @*Menu drop-down*@
-                <ul class="d-menu" data-role="dropdown">
+                    <a class="app-bar-item dropdown-toggle marker-light fg-white-hover" href="#">Справочники</a>
+                    @*Menu drop-down*@
+                    <ul class="d-menu" data-role="dropdown">
 
-                    <li>
-                        <a asp-controller="Organizations"
-                           data-ajax="true"
-                           data-ajax-method="GET"
-                           data-ajax-update="#cell-content"
-                           data-ajax-mode="update">
-                            <span class="mif-organization icon"></span>Организации
-                        </a>
-                    </li>
-
-                    <li class="divider"></li>
-
-                    <li>
-                        <a asp-controller="Person"
-                           data-ajax="true"
-                           data-ajax-method="GET"
-                           data-ajax-update="#cell-content"
-                           data-ajax-mode="update">
-                            <span class="mif-users icon"></span>Пользователи
-                        </a>
-                    </li>
-
-                    <li class="divider"></li>
-
-                    <li>
-                        <a asp-controller="Categories"
-                           data-ajax="true"
-                           data-ajax-method="GET"
-                           data-ajax-update="#cell-content"
-                           data-ajax-mode="update">
-                            <span class="mif-books icon"></span>Категории заявок
-                        </a>
-                    </li>
-
-                </ul>
-
-            </li>
-            @if (User.IsInRole("Администратор")) { 
-            <li>
-
-                <a class="app-bar-item dropdown-toggle marker-light fg-white-hover" href="#">Администрирование</a>
-                @*Menu drop-down*@
-                <ul class="d-menu" data-role="dropdown">
-
-                    <li>
-                        <a asp-controller="Configurations"
-                           data-ajax="true"
-                           data-ajax-method="GET"
-                           data-ajax-update="#cell-content"
-                           data-ajax-mode="update">
-                            <span class="mif-cogs icon"></span>Настройки системы
-                        </a>
-                    </li>
-
-                </ul>
-
-            </li>
-            }
-        </ul>
-        @*Rigth menu*@
-        <div class="app-bar-container ml-auto order-3 order-md-4">
-                <div class="app-bar-item"><span class="registred"></span></div>
-                <div class="app-bar-container">
-                    <a class="app-bar-item dropdown-toggle marker-light" href="#"><span class="mif-cog">  @ViewBag.UserName</span></a>
-                    <ul class="d-menu place-right" data-role="dropdown">
                         <li>
-                            <a asp-controller="Person" asp-action="Details" asp-route-id="@ViewBag.UserId"
+                            <a asp-controller="Organizations"
                                data-ajax="true"
                                data-ajax-method="GET"
                                data-ajax-update="#cell-content"
                                data-ajax-mode="update">
-                                <span class="mif-profile icon"></span>Профиль
+                                <span class="mif-organization icon"></span>Организации
                             </a>
                         </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a asp-controller="Account" asp-action="Logout">
-                                <span class="mif-exit icon"></span>    Выход
-                            </a>
-                        </li>
-                    </ul>
-                </div>
 
-                @*<div class="app-bar-container">
-                <a class="app-bar-item dropdown-toggle marker-light pl-1 pr-5" href="#">
-                    <img class="rounded" data-role="gravatar" data-email="sergey@pimenov.com.ua" data-size="25">
-                </a>
-                <ul class="v-menu place-right" data-role="dropdown">
-                    <li><a href="">Signed as <strong>olton</strong></a></li>
+                        <li class="divider"></li>
+
+                        <li>
+                            <a asp-controller="Person"
+                               data-ajax="true"
+                               data-ajax-method="GET"
+                               data-ajax-update="#cell-content"
+                               data-ajax-mode="update">
+                                <span class="mif-users icon"></span>Пользователи
+                            </a>
+                        </li>
+
+                        <li class="divider"></li>
+
+                        <li>
+                            <a asp-controller="Categories"
+                               data-ajax="true"
+                               data-ajax-method="GET"
+                               data-ajax-update="#cell-content"
+                               data-ajax-mode="update">
+                                <span class="mif-books icon"></span>Категории заявок
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>}
+            @if (User.IsInRole("Администратор"))
+            {
+                <li>
+
+                    <a class="app-bar-item dropdown-toggle marker-light fg-white-hover" href="#">Администрирование</a>
+                    @*Menu drop-down*@
+                    <ul class="d-menu" data-role="dropdown">
+
+                        <li>
+                            <a asp-controller="Configurations"
+                               data-ajax="true"
+                               data-ajax-method="GET"
+                               data-ajax-update="#cell-content"
+                               data-ajax-mode="update">
+                                <span class="mif-cog icon"></span>Настройки системы
+                            </a>
+                        </li>
+                        <li>
+                            <a asp-controller="SLAs"
+                               data-ajax="true"
+                               data-ajax-method="GET"
+                               data-ajax-update="#cell-content"
+                               data-ajax-mode="update">
+                                <span class="mif-cog icon"></span>Настройка SLA
+                            </a>
+                        </li>
+
+                    </ul>
+
+
+                </li>
+            }
+        </ul>
+        @*Rigth menu*@
+        <div class="app-bar-container ml-auto order-3 order-md-4">
+            <div class="app-bar-item"><span class="registred"></span></div>
+            <div class="app-bar-item">
+                <span class="eventAlarm" data-role="popover"
+                        data-popover-text="<button class='button info outline'>Все события..</button>"
+                        data-popover-position="bottom" data-popover-hide="0"
+                        data-popover-trigger="click"></span>
+                <span class="badge inside bg-red fg-white" id="eventCount">1</span>
+            </div>
+            <div class="app-bar-container">
+                <a class="app-bar-item dropdown-toggle marker-light" href="#"><span class="mif-cog">  @ViewBag.UserName</span></a>
+                <ul class="d-menu place-right" data-role="dropdown">
+                    <li>
+                        <a asp-controller="Person" asp-action="Details" asp-route-id="@ViewBag.UserId"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="mif-profile icon"></span>Профиль
+                        </a>
+                    </li>
                     <li class="divider"></li>
-                    <li><a href="">Your profile</a></li>
-                    <li><a href="">Your stars</a></li>
-                    <li><a href="">Your gists</a></li>
-                    <li class="divider"></li>
-                    <li><a href="">Help</a></li>
-                    <li><a href="">Settings</a></li>
-                    <li><a href="">Sign out</a></li>
+                    <li>
+                        <a asp-controller="Account" asp-action="Logout">
+                            <span class="mif-exit icon"></span>    Выход
+                        </a>
+                    </li>
                 </ul>
-            </div>*@
+            </div>
+
+            @*<div class="app-bar-container">
+            <a class="app-bar-item dropdown-toggle marker-light pl-1 pr-5" href="#">
+                <img class="rounded" data-role="gravatar" data-email="sergey@pimenov.com.ua" data-size="25">
+            </a>
+            <ul class="v-menu place-right" data-role="dropdown">
+                <li><a href="">Signed as <strong>olton</strong></a></li>
+                <li class="divider"></li>
+                <li><a href="">Your profile</a></li>
+                <li><a href="">Your stars</a></li>
+                <li><a href="">Your gists</a></li>
+                <li class="divider"></li>
+                <li><a href="">Help</a></li>
+                <li><a href="">Settings</a></li>
+                <li><a href="">Sign out</a></li>
+            </ul>
+        </div>*@
         </div>
     </header>
 </div>
@@ -136,4 +155,5 @@
         //Signalr client
         signalRStart()
     })
+  
 </script>

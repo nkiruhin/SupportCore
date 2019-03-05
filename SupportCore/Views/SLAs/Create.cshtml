@@ -1,0 +1,115 @@
+﻿@model SupportCore.Models.SLA
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h2 class="text-light">Новое <span class="mif-insert-template place-right"></span></h2>
+<h4>SLA</h4>
+<hr />
+<div data-role="stepper" data-steps="2" id="step"></div>
+<div id="SLASteps">
+    <form asp-action="Create"
+          id="Create"
+          data-ajax="true"
+          data-ajax-method="POST"
+          data-ajax-update="#SLASteps"
+          data-ajax-mode="update">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="row">
+            <div class="cell-md-8">
+                <label asp-for="Name"></label>
+                <input asp-for="Name">
+            </div>
+            <div class="cell-md-2">
+                <label asp-for="ResponseTime"></label>
+                <input asp-for="ResponseTime">
+            </div>
+            <div class="cell-md-2">
+                <label asp-for="DeadTime"></label>
+                <input asp-for="DeadTime">
+            </div>
+        </div>
+        <input type="hidden" name="step" value="1">
+        <div class="pt-4-md">
+            <button type="submit" class="button primary" onclick="$('#step').next()" id="create"><span class="mif-arrow-right"></span>  Далее...</button>
+            <a asp-action="Index"
+               data-ajax="true"
+               data-ajax-method="GET"
+               data-ajax-update="#cell-content"
+               data-ajax-mode="update"
+               class="button secondary" data-role="button"><span class="mif-arrow-left"></span>К списку</a>
+        </div>
+    </form>
+
+</div>
+@*@{
+        Layout = null;
+    }
+
+    <!DOCTYPE html>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Create</title>
+    </head>
+    <body>
+
+    <h4>SLA</h4>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Type" class="control-label"></label>
+                    <input asp-for="Type" class="form-control" />
+                    <span asp-validation-for="Type" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="DeadTime" class="control-label"></label>
+                    <input asp-for="DeadTime" class="form-control" />
+                    <span asp-validation-for="DeadTime" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ResponseTime" class="control-label"></label>
+                    <input asp-for="ResponseTime" class="form-control" />
+                    <span asp-validation-for="ResponseTime" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="ParentId" class="control-label"></label>
+                    <input asp-for="ParentId" class="form-control" />
+                    <span asp-validation-for="ParentId" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="FieldId" class="control-label"></label>
+                    <select asp-for="FieldId" class ="form-control" asp-items="ViewBag.FieldId"></select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="FieldValue" class="control-label"></label>
+                    <input asp-for="FieldValue" class="form-control" />
+                    <span asp-validation-for="FieldValue" class="text-danger"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="CategoryId" class="control-label"></label>
+                    <select asp-for="CategoryId" class ="form-control" asp-items="ViewBag.CategoryId"></select>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Create" class="btn btn-default" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <a asp-action="Index">Back to List</a>
+    </div>
+
+    </body>
+    </html>*@

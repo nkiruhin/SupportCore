@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using SupportCore.Models;
 using SupportCore.App.Classes;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SupportCore.Controllers
 {
+    [Authorize(Roles = "Администратор")]
     public class ConfigurationsController : Controller
     {
         private readonly Context _context;

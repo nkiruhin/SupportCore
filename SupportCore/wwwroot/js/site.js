@@ -27,7 +27,7 @@ var sipClientStart = function (configuration) {
         phone.stop();
     });
     phone.on('registered', function (e) {
-        $('.registred').toggleClass('mif-phonelink')
+        $('.registred').toggleClass('mif-phonelink');
     });
     phone.on('invite', function (session) {
         console.log('incoming');
@@ -37,7 +37,7 @@ var sipClientStart = function (configuration) {
         var url = '@Url.Action("GetPersonForPhone", "Person")/' + display_name;
         var xhr = new XMLHttpRequest();
         xhr.onreadystatechange = function () {
-            if (this.readyState == 4 && this.status == 200) {
+            if (this.readyState === 4 && this.status === 200) {
                 console.log(this.responseText);
                 var notify = Metro.notify;
                 notify.create(this.responseText, 'Звонок в ' + new Date().toLocaleTimeString('ru-RU'), {
@@ -52,13 +52,19 @@ var sipClientStart = function (configuration) {
     });
 };
 var signalRStart = function () {
-    console.log("signalr client start")
+    console.log("signalr client start");
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/hub")
         .build();
-    connection.on("ReceiveMessage", (user, date, message) => {
-        //console.log("Принято сообщение:" + message + "от "+user+"в "+date)
-        Metro.notify.create(message, 'Оповещение от ' + user + ' ' + date, { cls: "info", width: 300 });
+    connection.on("ReceiveMessage", (user, date, message, isuser) => {
+        //console.log("Принято сообщение:" + message + " от " + user + " в " + date + "isuser" + isuser);
+        if (!isuser) {
+            Metro.notify.create(message, 'Оповещение от ' + user + ' ' + date, { cls: "info", width: 300 });
+        } else {
+            //addEventCounter();
+            Metro.notify.create(message, 'Оповещение от ' + user + ' ' + date, { cls: "alert", width: 300 });
+            addEvent(message,user,date);
+        }
     });
     connection.start().catch(err => console.error(err.toString()));
 };
@@ -69,6 +75,7 @@ function TableReady(url, columns) {
         "order": [],
         //"serverSide": true,
         "processing": true,
+        "responsive": true,
         //"scrollY": "200px",
         //"scrollCollapse": true,
         "ajax": {
@@ -115,7 +122,7 @@ function TableReady(url, columns) {
         //    { "data": "snils" },
         //    { "data": "clientpolicyNumber" }
         // ]
-    })
+    });
     return Table;
 }
 function SimpleTableReady() {
@@ -125,6 +132,7 @@ function SimpleTableReady() {
         //"serverSide": true,
         "processing": true,
         "order": [[0, 'desc']],
+        "responsive": true,
         //"scrollY": "200px",
         //"scrollCollapse": true,
         "language": {
@@ -174,7 +182,9 @@ function edit(element) {
 }
 
 //CustomDialogWin
-function openCustomWin(href, icon, title, modal) {
+function openCustomWin(href, icon, title, modal, width) {
+    if (!width) width = 'auto';
+    console.log(width);
     $.get(href, function (html) {
             Metro.window.create({
             title: title,
@@ -183,6 +193,7 @@ function openCustomWin(href, icon, title, modal) {
             modal: modal,
             overlayColor: "#000000",
             clsCaption: "bg-darkCyan",
+            width: width,
             icon: "<span class='" + icon + "'></span>",
             content: html,
             place: "center"
@@ -193,8 +204,8 @@ function openCustomWin(href, icon, title, modal) {
 var closeWin = function () {
     $('.window').next().remove();
     $('.overlay').remove();
-    $('.window').remove();       
-}
+    $('.window').remove();
+};
 //CustomDialog
 function openCustomDialog(href, title, end) {
     $.get(href, function (html) {
@@ -222,7 +233,7 @@ var onSuccess = function (context) {
     
         Metro.notify.create(context, "Удачно", { cls: "success"});
 };
-//Error Notify
+//Error Notify 
 var onError = function (context) {
         Metro.notify.create(context, "Ошибка", { cls: "alert" });
 };
@@ -239,7 +250,7 @@ function orgEmail() {
         console.log($('.jselect2').find(':selected').text().match(/<(.+)>/i)[1]);
     }
 }
-//Load counters
+//Load counters in Home/SideBar
 function getCounters() {
     var url = 'Tickets/GetTicketCounters';
     var xhr = new XMLHttpRequest();
@@ -255,7 +266,7 @@ function getCounters() {
     xhr.open('GET', url, true);
     xhr.send();
 }
-//Create Ticket with ajax
+//Create Ticket with ajax Ticket/Create
 function ticketCreate(url) {
     var form = document.forms.TicketCreate;
     form.addEventListener('submit', function (ev) {
@@ -274,7 +285,7 @@ function ticketCreate(url) {
                     getCounters();
                 }
                 else {
-                    onError('Ошибка сохранения')
+                    onError('Ошибка сохранения');
                     document.getElementById("tCreateSubmit").disabled = 'enabled';
                     preloader.style.display = 'none';
                 };
@@ -289,25 +300,25 @@ function ticketCreate(url) {
         return false;
     });
 }
-//Save Ticket with ajax
+//Save Ticket with ajax Ticket/Edit
 function ticketSave(url) {
     var form = document.forms.EditTicket;
     var formData = new FormData(form);
     var xhr = new XMLHttpRequest();
-    var preloader = document.getElementById("editPreloader")
+    var preloader = document.getElementById("editPreloader");
     preloader.style.display = "block";
     xhr.open("POST", url, true);
     xhr.onreadystatechange = function () {
         if (this.readyState === 4) {
-            if (this.status === 200) { $('#cell-content').html(this.responseText) }
-            else { onError('Ошибка сохранения') };
+            if (this.status === 200) { $('#cell-content').html(this.responseText); }
+            else { onError('Ошибка сохранения'); }
         }
     };
     preloader.style.display = "none";
     xhr.send(formData);
     getCounters();
 }
-//Submit for end form
+//Submit for end event in form
 var end = function () {
     $('#end').submit();
 }
@@ -412,4 +423,66 @@ $(document).ajaxError(function (e, xhr) {
 });
 
 // For ajax data return
+// Get FildValue for Slays
+var GetFieldValue = function (url, field) {
+    var option = '';
+    $.getJSON(url, function (data) {
+        $.each(data, function (i, value) {
+            option += '<option value="' + value + '">' + value + '</option>';
+        });
+        field.html(option);
+    });
+};
+var enableSelect = function () {  // Enable select2 on ticket forms for nonUser
+     var personSelect = $('#PersonId').select2({
+        placeholder: 'Выберите пользователя',
+        language: 'ru'
+    });
+    personSelect.data('select2').$container.addClass("wbutton");
 
+    $('#StaffId').select2({
+        placeholder: 'Выберите сотрудника',
+        language: 'ru'
+    });
+};
+//Enabled and disabled custom input it Ticket/Create and Edit for user 
+var disInput = function () {
+    $('#StaffId').prop('disabled', true);
+    $('#PersonId').prop('disabled', true);
+    $('#SourceId').prop('disabled', true);
+    $('#SourceId').css('color', 'black');
+    $('.inbutton').hide();
+    $('#DueDate').removeAttr('data-role');
+    $('#DueDate').prop('readonly', true);
+    $('#DueDate').css('background-color', '#e9e9e9');
+    $('.checkbox').hide();
+};
+var addEvent = function (message,user,date) {
+    var bell = $('.eventAlarm');
+    if (!$(bell).hasClass('mif-bell')) {
+        $(bell).toggleClass('mif-bell ani-ring mif-lg');
+        $(bell).after('<span class="badge inside bg-red fg-white" id="eventCount">1</span>');
+    } else {       
+        $('#eventCount').html(+$('#eventCount').text() + 1);
+    }
+    var events = '<blockquote class="place-right" style="border-left-color: #13709e"><p>' + message + '<p><small>' + 'От ' + user + ' ' + date + '</small></blockquote>' + $(bell).data('popoverText');
+    $(bell).data('popoverText', events).attr('data-popover-text', events);
+};
+//Load response template for TicketThread 
+var getTemplate = function (editor, url) {
+    var TemplateId = document.getElementById("TemplateId").value;
+    url = url + TemplateId;
+    //console.log(url);
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState === 4 && this.status === 200) {
+            if (this.responseText === 'empty') {
+                $('#Body').trumbowyg(this.responseText);
+            } else {
+                $('#Body').trumbowyg('html', this.responseText);
+            }
+        }
+    };
+    xhttp.open("GET", url, true);
+    xhttp.send();
+};

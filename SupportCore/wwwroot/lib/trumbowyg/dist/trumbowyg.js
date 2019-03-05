@@ -1,5 +1,5 @@
 /**
- * Trumbowyg v2.11.1 - A lightweight WYSIWYG editor
+ * Trumbowyg v2.14.0 - A lightweight WYSIWYG editor
  * Trumbowyg core file
  * ------------------------
  * @link http://alex-d.github.io/Trumbowyg
@@ -93,6 +93,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
         resetCss: false,
         removeformatPasted: false,
         tagsToRemove: [],
+        tagsToKeep: ['hr', 'img', 'embed', 'iframe', 'input'],
         btns: [
             ['viewHTML'],
             ['undo', 'redo'], // Only supported in Blink browsers
@@ -609,6 +610,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
                     }
 
                     if ((e.ctrlKey || e.metaKey) && (keyCode === 89 || keyCode === 90)) {
+                        t.semanticCode(false, true);
                         t.$c.trigger('tbwchange');
                     } else if (!ctrl && keyCode !== 17) {
                         var compositionEndIE = t.isIE ? e.type === 'compositionend' : true;
@@ -652,7 +654,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
                         }
                     }
                 })
-                .on('cut', function () {
+                .on('cut drop', function () {
                     setTimeout(function () {
                         t.semanticCode(false, true);
                         t.$c.trigger('tbwchange');
@@ -692,6 +694,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
                     setTimeout(function () {
                         t.semanticCode(false, true);
                         t.$c.trigger('tbwpaste', e);
+                        t.$c.trigger('tbwchange');
                     }, 0);
                 });
 
@@ -1082,7 +1085,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
         },
         syncTextarea: function () {
             var t = this;
-            t.$ta.val(t.$ed.text().trim().length > 0 || t.$ed.find('hr,img,embed,iframe,input').length > 0 ? t.$ed.html() : '');
+            t.$ta.val(t.$ed.text().trim().length > 0 || t.$ed.find(t.o.tagsToKeep.join(',')).length > 0 ? t.$ed.html() : '');
         },
         syncCode: function (force) {
             var t = this;
@@ -1161,7 +1164,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
                         return $(this).text().trim().length === 0 && $(this).children().not('br,span').length === 0;
                     }).contents().unwrap();
 
-                    // Get rid of temporial span's
+                    // Get rid of temporary span's
                     $('[data-tbw]', t.$ed).contents().unwrap();
 
                     // Remove empty <p>
@@ -1189,6 +1192,10 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
 
             $(oldTag, this.$ed).each(function () {
                 var $oldTag = $(this);
+                if($oldTag.contents().length === 0) {
+                    return false;
+                }
+
                 $oldTag.wrap('<' + newTag + '/>');
                 if (copyAttributes) {
                     $.each($oldTag.prop('attributes'), function () {
@@ -1333,7 +1340,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
             }
 
             t.openModalInsert(t.lang.insertImage, options, function (v) { // v are values
-                t.execCmd('insertImage', v.url);
+                t.execCmd('insertImage', v.url, false, true);
                 var $img = $('img[src="' + v.url + '"]:not([alt])', t.$box);
                 $img.attr('alt', v.alt);
 
@@ -1432,7 +1439,7 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
             }).css({
                 top: t.$box.offset().top + t.$btnPane.height(),
                 zIndex: 99999
-            }).appendTo($(document.body));
+            }).appendTo($(t.doc.body));
 
             // Click on overlay close modal by cancelling them
             t.$overlay.one('click', function () {
@@ -1684,18 +1691,20 @@ Object.defineProperty(jQuery.trumbowyg, 'defaultOptions', {
 
             t.range = null;
 
-            if (documentSelection.rangeCount) {
-                var savedRange = t.range = documentSelection.getRangeAt(0),
-                    range = t.doc.createRange(),
-                    rangeStart;
-                range.selectNodeContents(t.$ed[0]);
-                range.setEnd(savedRange.startContainer, savedRange.startOffset);
-                rangeStart = (range + '').length;
-                t.metaRange = {
-                    start: rangeStart,
-                    end: rangeStart + (savedRange + '').length
-                };
+            if (!documentSelection || !documentSelection.rangeCount) {
+                return;
             }
+
+            var savedRange = t.range = documentSelection.getRangeAt(0),
+                range = t.doc.createRange(),
+                rangeStart;
+            range.selectNodeContents(t.$ed[0]);
+            range.setEnd(savedRange.startContainer, savedRange.startOffset);
+            rangeStart = (range + '').length;
+            t.metaRange = {
+                start: rangeStart,
+                end: rangeStart + (savedRange + '').length
+            };
         },
         restoreRange: function () {
             var t = this,

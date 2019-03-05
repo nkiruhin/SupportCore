@@ -569,9 +569,9 @@ var List = {
     },
 
     _getItemContent: function(item){
-        var o = this.options;
+        var o = this.options, $item = $(item);
         var i, inset, data;
-        var format;
+        var format, formatMask = Utils.isValue($item.data("formatMask")) ? $item.data("formatMask") : null;
 
         if (Utils.isValue(o.sortClass)) {
             data = "";
@@ -590,20 +590,46 @@ var List = {
 
         if (Utils.isValue(format)) {
 
-            if (['number', 'int', 'float', 'money'].indexOf(format) !== -1 && (o.thousandSeparator !== "," || o.decimalSeparator !== "." )) {
+            if (['number', 'int', 'integer', 'float', 'money'].indexOf(format) !== -1 && (o.thousandSeparator !== "," || o.decimalSeparator !== "." )) {
                 data = Utils.parseNumber(data, o.thousandSeparator, o.decimalSeparator);
             }
 
             switch (format) {
-                case "date": data = Utils.isDate(data) ? new Date(data) : ""; break;
+                case "date": data = Utils.isValue(formatMask) ? data.toDate(formatMask) : new Date(data); break;
                 case "number": data = Number(data); break;
-                case "int": data = parseInt(data); break;
+                case "int":
+                case "integer": data = parseInt(data); break;
                 case "float": data = parseFloat(data); break;
                 case "money": data = Utils.parseMoney(data); break;
+                case "card": data = Utils.parseCard(data); break;
+                case "phone": data = Utils.parsePhone(data); break;
             }
         }
 
         return data;
+    },
+
+    deleteItem: function(value){
+        var i, deleteIndexes = [], item;
+        var is_func = Utils.isFunc(value);
+
+        for (i = 0; i < this.items.length; i++) {
+            item = this.items[i];
+
+            if (is_func) {
+                if (Utils.exec(value, [item])) {
+                    deleteIndexes.push(i);
+                }
+            } else {
+                if (item.textContent.contains(value)) {
+                    deleteIndexes.push(i);
+                }
+            }
+        }
+
+        this.items = Utils.arrayDeleteByMultipleKeys(this.items, deleteIndexes);
+
+        return this;
     },
 
     draw: function(){

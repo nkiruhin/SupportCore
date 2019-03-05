@@ -60,6 +60,8 @@ namespace SupportCore.Controllers
         // GET: Organizations/Create
         public IActionResult Create()
         {
+            ViewData["SLAId"] = new SelectList(_context.SLAs.Where(n=>n.Type==0), "Id", "Name");
+            ViewData["CuratorId"] = new SelectList(_context.Person.Where(n => n.IsStaff == true), "Id", "Name");
             return PartialView();
         }
 
@@ -68,7 +70,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Contract,Address,Email,Telephone,isProvider")] Organization organization)
+        public async Task<IActionResult> Create([Bind("Name,Contract,Address,Email,Telephone,isProvider,SLAId,CuratorId")] Organization organization)
         {
             if (ModelState.IsValid)
             {
@@ -91,6 +93,8 @@ namespace SupportCore.Controllers
             }
 
             var organization = await _context.Organizations.AsNoTracking().SingleOrDefaultAsync(m => m.Id == id);
+            ViewData["SLAId"] = new SelectList(_context.SLAs.Where(n => n.Type == 0), "Id", "Name",organization.SLAId);
+            ViewData["CuratorId"] = new SelectList(_context.Person.Where(n => n.IsStaff == true), "Id", "Name",organization.CuratorId);
             if (organization == null)
             {
                 return NotFound();
@@ -103,7 +107,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Contract,Address,Email,Telephone,isProvider")] Organization organization)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Contract,Address,Email,Telephone,isProvider,SLAId,CuratorId")] Organization organization)
         {
             if (id != organization.Id)
             {

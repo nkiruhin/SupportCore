@@ -42,7 +42,7 @@
         }
     </style>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -367,14 +367,15 @@
                 <h4 id="_carousel_controls_bullets">Bullets</h4>
                 <p>
                     You can use one of three predefined variants of <code>bullets</code>.
-                    To set bullet type use attribute <code>data-bullet-style</code> with values: <code>circle</code>, <code>square</code> (default), <code>rect</code> or <code>diamond</code>.
+                    To set bullet type use attribute <code>data-bullets-style</code> with values: <code>circle</code>, <code>square</code> (default), <code>rect</code> or <code>diamond</code>.
+                    To set bullet size use attribute <code>data-bullets-size</code> with values: <code>mini</code>, <code>small</code>, <code>default</code> or <code>large</code>.
                     Also you can set bullets position via attribute <code>data-bullets-position</code>. You can set bullet on the <code>left</code>, <code>right</code> or <code>center</code>.
                     The default value for <code>data-bullets-position</code> is a <code>center</code>.
                 </p>
                 <div class="example">
                     <div class="row">
                         <div class="cell-md-6">
-                            <div data-role="carousel" data-bullet-style="circle" data-controls="false">
+                            <div data-role="carousel" data-bullets-style="circle" data-controls="false">
                                 <div class="slide" data-cover="images/1.jpg"></div>
                                 <div class="slide" data-cover="images/2.jpg"></div>
                                 <div class="slide" data-cover="images/3.jpg"></div>
@@ -390,14 +391,14 @@
                     </div>
                     <div class="row mt-2">
                         <div class="cell-md-6">
-                            <div data-role="carousel" data-bullet-style="rect" data-controls="false" data-bullets-position="left">
+                            <div data-role="carousel" data-bullets-style="rect" data-controls="false" data-bullets-position="left">
                                 <div class="slide" data-cover="images/1.jpg"></div>
                                 <div class="slide" data-cover="images/2.jpg"></div>
                                 <div class="slide" data-cover="images/3.jpg"></div>
                             </div>
                         </div>
                         <div class="cell-md-6">
-                            <div data-role="carousel" data-bullet-style="diamond" data-controls="false" data-bullets-position="right">
+                            <div data-role="carousel" data-bullets-style="diamond" data-controls="false" data-bullets-position="right">
                                 <div class="slide" data-cover="images/1.jpg"></div>
                                 <div class="slide" data-cover="images/2.jpg"></div>
                                 <div class="slide" data-cover="images/3.jpg"></div>
@@ -455,6 +456,8 @@
                         &lt;div class="slide" data-cover="images/bg-4.jpg"&gt;&lt;/div&gt;
                     &lt;/div&gt;
                 </code></pre>
+
+                <!-- ads-html -->
 
                 <h3 id="_carousel_effects">Effects</h3>
                 <p>
@@ -721,10 +724,16 @@
                         <td>Show or hide bullets</td>
                     </tr>
                     <tr>
-                        <td>bulletStyle</td>
-                        <td><code>data-bullet-style</code></td>
+                        <td>bulletsStyle</td>
+                        <td><code>data-bullets-style</code></td>
                         <td>square</td>
-                        <td>The bullets style. Can be square, circle, rect or diamond</td>
+                        <td>Set bullets style. Can be square, circle, rect or diamond</td>
+                    </tr>
+                    <tr>
+                        <td>bulletsSize</td>
+                        <td><code>data-bullets-size</code></td>
+                        <td>default</td>
+                        <td>Set bullets size. Can be default, mini, small, large</td>
                     </tr>
                     <tr>
                         <td>controlsOnMouse</td>
@@ -810,6 +819,16 @@
                         <td>onPrevClick(el, event)</td>
                         <td><code>data-on-next-click</code></td>
                         <td>Fired click prev (to left) switch</td>
+                    </tr>
+                    <tr>
+                        <td>onSlideShow(slide)</td>
+                        <td><code>data-on-slide-show</code></td>
+                        <td>Fired when slide show</td>
+                    </tr>
+                    <tr>
+                        <td>onSlideHide(slide)</td>
+                        <td><code>data-on-slide-hide</code></td>
+                        <td>Fired when slide hide</td>
                     </tr>
                     <tr>
                         <td>onCarouselCreate(el)</td>

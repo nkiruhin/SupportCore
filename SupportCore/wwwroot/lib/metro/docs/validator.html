@@ -35,7 +35,7 @@
 
     <title>Validator - Metro 4 :: Popular HTML, CSS and JS library</title>
 </head>
-<body data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
+<body class="m4-cloak" data-role="htmlcontainer" data-html-source="header.html" data-insert-mode="prepend">
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
@@ -429,7 +429,7 @@
                     <li id="_validator_func_date">
                         <strong>date</strong> - valid date required
                         <pre><code>
-                            &lt;input type="text" data-validate="date"&gt;
+                            &lt;input type="text" data-validate="date" data-value-format="_format_input_date_"&gt;
                         </code></pre>
                     </li>
 
@@ -541,6 +541,8 @@
                     &lt;input type="text" data-validate="required pattern=^[\w]{7,15}$"&gt;
                 </code></pre>
 
+                <!-- ads-html -->
+
                 <h3 id="_validator_functions_mode">Functions mode</h3>
                 <p class="text-small">New in 4.2.6</p>
                 <p>
@@ -612,12 +614,12 @@
                 <h3 id="_validator_events">Events</h3>
                 <p>
                     When Validator is works, fired any events:
-                        <code>onBeforeSubmit(form)</code>,
+                        <code>onBeforeSubmit(form, data)</code>,
                         <code>onError(element, value)</code>,
                         <code>onValidate(element, value)</code>,
-                        <code>onErrorForm()</code>,
-                        <code>onValidateForm()</code>,
-                        <code>onSubmit(form)</code>,
+                        <code>onErrorForm(form, data)</code>,
+                        <code>onValidateForm(form, data)</code>,
+                        <code>onSubmit(form, data)</code>,
                         <code>onValidatorCreate(form)</code>.
                 </p>
                 <p>

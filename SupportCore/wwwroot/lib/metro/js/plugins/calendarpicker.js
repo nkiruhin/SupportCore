@@ -336,6 +336,7 @@ var CalendarPicker = {
         }
 
         if (Utils.isDate(v, o.inputFormat) === true) {
+            this.calendar.data("calendar").clearSelected();
             this.value = typeof v === 'string' ? v.toDate(o.inputFormat) : v;
             element.val(this.value.format(o.format));
             element.trigger("change");
@@ -353,7 +354,7 @@ var CalendarPicker = {
     },
 
     toggleState: function(){
-        if (this.element.data("disabled") === false) {
+        if (this.elem.disabled) {
             this.disable();
         } else {
             this.enable();

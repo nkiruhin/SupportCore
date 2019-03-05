@@ -2,12 +2,12 @@
 <h6>Задачи</h6>
 @if (ViewBag.Edit != null){
 <div class="row p-3-md">
-    <a class="button primary" data-role="button" href="#" onclick="openCustomWin('/Tasks/Create/@Model.Id','mif-event-available','Задачи..',true)">
+    <a class="button primary" data-role="button" href="#" onclick="openCustomWin('/Tasks/Create/@Model.Id','mif-event-available','Задачи..',true,'60%')">
         <span class="mif-plus"></span> Добавить...
     </a>
 </div>
 }
-<table class="dataTable table-border compact cell-border striped">
+<table class="dataTable no-footer compact cell-border striped">
     <thead class="bg-darkCyan fg-white">
         <tr>
             <th class="text-left-md p-1-md">
@@ -94,7 +94,7 @@
                         @item.Organization.Name;
                     }
                 </td>
-                <td>
+                <td class="text-ellipsis" style="max-width:50px">
                     @if (item.Staff?.Name == null)
                     {
                         @:<em>не указана</em>
@@ -115,14 +115,14 @@
                             }
                             @if (item.Status == 0 && item.Number != null)
                             {
-                            <li><a href="#" onclick="openCustomWin('/Tasks/GetIssue/@item.Number.Split('/').Last()','mif-checkmark','Задачи..',true)"><span class="mif-checkmark icon"></span>Проверить</a></li>
+                            <li><a href="#" onclick="openCustomWin('/Tasks/GetIssue/@item.Number.Split('/').Last()','mif-checkmark','Задачи..',true,'60%')"><span class="mif-checkmark icon"></span>Проверить</a></li>
                             }
-                            <li><a href="#" onclick="openCustomWin('/Tasks/Details/@item.Id','mif-event-available','Задачи..',true)"><span class="mif-zoom-in icon"></span>Просмотреть</a></li>
+                            <li><a href="#" onclick="openCustomWin('/Tasks/Details/@item.Id','mif-event-available','Задачи..',true,'60%')"><span class="mif-zoom-in icon"></span>Просмотреть</a></li>
                             @if (User.IsInRole("Администратор") || User.IsInRole("Менеджер"))
                             {
                             <li>
                                 <a href="#"
-                                   title="Удалить" onclick="openCustomDialog('/Task/Delete/@item.Id','mif-bin')"><span class="mif-bin icon"></span>Удалить</a>
+                                   title="Удалить" onclick="openCustomDialog('/Tasks/Delete/@item.Id','Удалить',end)"><span class="mif-bin icon"></span>Удалить</a>
                             </li>}
                         </ul>
                     </div>

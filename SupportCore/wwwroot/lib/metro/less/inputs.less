@@ -89,6 +89,36 @@ textarea,
         height: 100%;
     }
 
+    &.required {
+        border: 1px @cyan dashed !important;
+        &:focus, &.focused {
+            box-shadow: 0 0 0 3px rgba(red(@cyan), green(@cyan), blue(@cyan), 0.45)!important;
+        }
+    }
+
+    &.invalid {
+        border: 1px @red solid !important;
+        &:focus, &.focused {
+            box-shadow: 0 0 0 3px rgba(red(@red), green(@red), blue(@red), 0.45)!important;
+        }
+
+        &::after {
+            position: absolute;
+            content: "!";
+            color: @red;
+            left: -16px;
+            top: 0;
+            font-size: 1.625rem;
+            font-weight: bold;
+        }
+    }
+
+    &.valid {
+        border: 1px @green solid !important;
+        &:focus, &.focused {
+            box-shadow: 0 0 0 3px rgba(red(@green), green(@green), blue(@green), 0.45)!important;
+        }
+    }
 }
 
 input[type=button], input[type=submit], input[type=reset] {
@@ -119,10 +149,18 @@ label {
     }
 }
 
+.hidden-input {
+    width: 1px;
+    height: 1px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+}
+
 .inline-form {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     align-items: center;
     justify-content: flex-start;
 
@@ -144,6 +182,13 @@ label {
         margin-left: .5rem;
         margin-right: .5rem;
     }
+
+    .form-group {
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: flex-start;
+    }
 }
 
 form, fieldset, .form-group {
@@ -152,9 +197,9 @@ form, fieldset, .form-group {
     }
 }
 
-.file, .input, .textarea, .select, .tag-input, .spinner {
+.file, .input, .textarea, .select, .tag-input, .spinner, .tag-input, .rating {
     &:disabled, &.disabled {
-        input, textarea, select {
+        input, textarea, select, .select-input, .caption, .stars li {
             background: transparent;
             color: @darkGray;
         }
@@ -192,38 +237,6 @@ form, fieldset, .form-group {
     }
 }
 
-.required {
-    border: 1px @cyan dashed !important;
-    &:focus, &.focused {
-        box-shadow: 0 0 0 3px rgba(red(@cyan), green(@cyan), blue(@cyan), 0.45)!important;
-    }
-}
-
-.invalid {
-    border: 1px @red solid !important;
-    &:focus, &.focused {
-        box-shadow: 0 0 0 3px rgba(red(@red), green(@red), blue(@red), 0.45)!important;
-    }
-
-    &::after {
-        position: absolute;
-        content: "!";
-        color: @red;
-        left: -16px;
-        top: 0;
-        font-size: 1.625rem;
-        font-weight: bold;
-    }
-}
-
-.valid {
-    border: 1px @green solid !important;
-    &:focus, &.focused {
-        box-shadow: 0 0 0 3px rgba(red(@green), green(@green), blue(@green), 0.45)!important;
-    }
-}
-
-
 .invalid_feedback {
     display: none;
 }
@@ -244,4 +257,13 @@ form, fieldset, .form-group {
 
 input[type=search] {
     -webkit-appearance: none;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px white inset;
+    background-color: @white!important;
+    transition: background-color 5000s ease-in-out 0s;
 }

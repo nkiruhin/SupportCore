@@ -17,6 +17,7 @@ var Tabs = {
         expand: false,
         expandPoint: null,
         tabsPosition: "top",
+        tabsType: "default",
 
         clsTabs: "",
         clsTabsList: "",
@@ -29,7 +30,7 @@ var Tabs = {
     },
 
     _setOptionsFromDOM: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
 
         $.each(element.data(), function(key, value){
             if (key in o) {
@@ -43,7 +44,7 @@ var Tabs = {
     },
 
     _create: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element;
         var tab = element.find(".active").length > 0 ? $(element.find(".active")[0]) : undefined;
 
         this._createStructure();
@@ -52,8 +53,7 @@ var Tabs = {
     },
 
     _createStructure: function(){
-        var that = this, element = this.element, o = this.options;
-        var prev = element.prev();
+        var element = this.element, o = this.options;
         var parent = element.parent();
         var right_parent = parent.hasClass("tabs");
         var container = right_parent ? parent : $("<div>").addClass("tabs tabs-wrapper");
@@ -66,6 +66,9 @@ var Tabs = {
         container.addClass(o.tabsPosition.replace(["-", "_", "+"], " "));
 
         element.addClass("tabs-list");
+        if (o.tabsType !== "default") {
+            element.addClass("tabs-"+o.tabsType);
+        }
         if (!right_parent) {
             container.insertBefore(element);
             element.appendTo(container);
@@ -167,6 +170,8 @@ var Tabs = {
         var that = this, element = this.element;
         var tabs = element.find("li");
 
+        this._targets = [];
+
         $.each(tabs, function(){
             var target = $(this).find("a").attr("href").trim();
             if (target.length > 1 && target[0] === "#") {
@@ -176,7 +181,7 @@ var Tabs = {
     },
 
     _open: function(tab){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
         var tabs = element.find("li");
         var expandTitle = element.siblings(".expand-title");
 
@@ -221,7 +226,7 @@ var Tabs = {
     },
 
     next: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element;
         var next, active_tab = element.find("li.active");
 
         next = active_tab.next("li");
@@ -231,7 +236,7 @@ var Tabs = {
     },
 
     prev: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element;
         var next, active_tab = element.find("li.active");
 
         next = active_tab.prev("li");
@@ -241,7 +246,7 @@ var Tabs = {
     },
 
     open: function(tab){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element;
         var tabs = element.find("li");
 
         if (!Utils.isValue(tab)) {

@@ -1,4 +1,6 @@
 var Dialog = {
+    _counter: 0,
+
     init: function( options, elem ) {
         this.options = $.extend( {}, this.options, options );
         this.elem  = elem;
@@ -167,36 +169,39 @@ var Dialog = {
     },
 
     hide: function(callback){
-        var element = this.element, o = this.options;
+        var that = this, element = this.element, o = this.options;
         var timeout = 0;
         if (o.onHide !== Metro.noop) {
             timeout = 300;
-            Utils.exec(o.onHide, [element]);
         }
         setTimeout(function(){
             element.css({
                 visibility: "hidden",
                 top: "100%"
             });
+            Utils.exec(o.onHide, [that], element[0]);
             Utils.callback(callback);
         }, timeout);
     },
 
     show: function(callback){
-        var element = this.element, o = this.options;
+        var that = this, element = this.element, o = this.options;
         this.setPosition();
         element.css({
             visibility: "visible"
         });
+        Utils.exec(o.onShow, [that], element[0]);
         Utils.callback(callback);
-        Utils.exec(o.onShow, [element]);
     },
 
     setPosition: function(){
         var element = this.element, o = this.options;
-        var top, left, bottom;
+        var top, bottom;
         if (o.toTop !== true && o.toBottom !== true) {
             top = ( $(window).height() - element.outerHeight() ) / 2;
+            if (top < 0) {
+                top = 0;
+            }
             bottom = "auto";
         } else {
             if (o.toTop === true) {
@@ -248,13 +253,12 @@ var Dialog = {
         var that = this, element = this.element, o = this.options;
 
         if (!Utils.bool(o.leaveOverlayOnClose)) {
-            console.log("ku");
             $('body').find('.overlay').remove();
         }
 
         this.hide(function(){
             element.data("open", false);
-            Utils.exec(o.onClose, [element]);
+            Utils.exec(o.onClose, [element], element[0]);
             if (o.removeOnClose === true) {
                 element.remove();
             }
@@ -274,7 +278,7 @@ var Dialog = {
         }
 
         this.show(function(){
-            Utils.exec(o.onOpen, [element]);
+            Utils.exec(o.onOpen, [element], element[0]);
             element.data("open", true);
             if (parseInt(o.autoHide) > 0) {
                 setTimeout(function(){

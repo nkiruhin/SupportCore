@@ -1,3 +1,7 @@
+'use strict';
+
+var $ = jQuery;
+
 if (typeof jQuery === 'undefined') {
     throw new Error('Metro 4 requires jQuery!');
 }
@@ -15,6 +19,8 @@ var meta_animation_duration = $("meta[name='metro4:animation_duration']").attr("
 var meta_callback_timeout = $("meta[name='metro4:callback_timeout']").attr("content");
 var meta_timeout = $("meta[name='metro4:timeout']").attr("content");
 var meta_scroll_multiple = $("meta[name='metro4:scroll_multiple']").attr("content");
+var meta_cloak = $("meta[name='metro4:cloak']").attr("content"); //default or fade
+var meta_cloak_duration = $("meta[name='metro4:cloak_duration']").attr("content"); //100
 
 if (window.METRO_INIT === undefined) {
     window.METRO_INIT = meta_init !== undefined ? JSON.parse(meta_init) : true;
@@ -44,6 +50,12 @@ if (window.METRO_TIMEOUT === undefined) {
 }
 if (window.METRO_SCROLL_MULTIPLE === undefined) {
     window.METRO_SCROLL_MULTIPLE = meta_scroll_multiple !== undefined ? parseInt(meta_scroll_multiple) : 20;
+}
+if (window.METRO_CLOAK_REMOVE === undefined) {
+    window.METRO_CLOAK_REMOVE = meta_cloak !== undefined ? (""+meta_cloak).toLowerCase() : "fade";
+}
+if (window.METRO_CLOAK_DURATION === undefined) {
+    window.METRO_CLOAK_DURATION = meta_cloak_duration !== undefined ? parseInt(meta_cloak_duration) : 500;
 }
 if (window.METRO_HOTKEYS_FILTER_CONTENT_EDITABLE === undefined) {window.METRO_HOTKEYS_FILTER_CONTENT_EDITABLE = true;}
 if (window.METRO_HOTKEYS_FILTER_INPUT_ACCEPTING_ELEMENTS === undefined) {window.METRO_HOTKEYS_FILTER_INPUT_ACCEPTING_ELEMENTS = true;}
@@ -139,17 +151,17 @@ var Metro = {
 
     events: {
         click: 'click.metro',
-        start: 'touchstart.metro mousedown.metro',
-        stop: 'touchend.metro mouseup.metro',
-        move: 'touchmove.metro mousemove.metro',
-        enter: 'touchstart.metro mouseenter.metro',
+        start: isTouch ? 'touchstart.metro' : 'mousedown.metro',
+        stop: isTouch ? 'touchend.metro' : 'mouseup.metro',
+        move: isTouch ? 'touchmove.metro' : 'mousemove.metro',
+        enter: isTouch ? 'touchstart.metro' : 'mouseenter.metro',
         leave: 'mouseleave.metro',
         focus: 'focus.metro',
         blur: 'blur.metro',
         resize: 'resize.metro',
         keyup: 'keyup.metro',
         keydown: 'keydown.metro',
-        keypress: 'keypredd.metro',
+        keypress: 'keypress.metro',
         dblclick: 'dblclick.metro',
         input: 'input.metro',
         change: 'change.metro',
@@ -193,6 +205,7 @@ var Metro = {
 
     media_queries: {
         FS: "(min-width: 0px)",
+        XS: "(min-width: 360px)",
         SM: "(min-width: 576px)",
         MD: "(min-width: 768px)",
         LG: "(min-width: 992px)",
@@ -213,12 +226,15 @@ var Metro = {
 
     media_mode: {
         FS: "fs",
+        XS: "xs",
         SM: "sm",
         MD: "md",
         LG: "lg",
         XL: "xl",
         XXL: "xxl"
     },
+
+    media_modes: ["fs","xs","sm","md","lg","xl","xxl"],
 
     actions: {
         REMOVE: 1,
@@ -228,11 +244,11 @@ var Metro = {
     hotkeys: [],
 
     about: function(f){
-        console.log("Metro 4 Components Library - v" + (f === true ? this.versionFull : this.version));
+        console.log("Metro 4 - v" + (f === true ? this.versionFull : this.version));
     },
 
     aboutDlg: function(f){
-        alert("Metro 4 Components Library - v" + (f === true ? this.versionFull : this.version));
+        alert("Metro 4 - v" + (f === true ? this.versionFull : this.version));
     },
 
     ver: function(f){
@@ -240,6 +256,7 @@ var Metro = {
     },
 
     observe: function(){
+        'use strict';
         var observer, observerCallback;
         var observerConfig = {
             childList: true,
@@ -254,6 +271,7 @@ var Metro = {
                     var mc = element.data('metroComponent');
                     if (mc !== undefined) {
                         $.each(mc, function(){
+                            'use strict';
                             var plug = element.data(this);
                             if (plug) plug.changeAttribute(mutation.attributeName);
                         });
@@ -269,7 +287,7 @@ var Metro = {
                         var node = mutation.addedNodes[i];
 
                         if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') {
-                            return;
+                            continue ;
                         }
                         obj = $(mutation.addedNodes[i]);
 
@@ -321,11 +339,22 @@ var Metro = {
 
         this.about(true);
 
+        if (METRO_CLOAK_REMOVE !== "fade") {
+            $(".m4-cloak").removeClass("m4-cloak");
+        } else {
+            $(".m4-cloak").animate({
+                opacity: 1
+            }, METRO_CLOAK_REMOVE, function(){
+                $(".m4-cloak").removeClass("m4-cloak");
+            })
+        }
+
         return this;
     },
 
     initHotkeys: function(hotkeys){
         $.each(hotkeys, function(){
+            'use strict';
             var element = $(this);
             var hotkey = element.data('hotkey') ? element.data('hotkey').toLowerCase() : false;
 
@@ -361,6 +390,7 @@ var Metro = {
         var that = this;
 
         $.each(widgets, function () {
+            'use strict';
             var $this = $(this), w = this;
             var roles = $this.data('role').split(/\s*,\s*/);
             roles.map(function (func) {
@@ -382,6 +412,7 @@ var Metro = {
     },
 
     plugin: function(name, object){
+        'use strict';
         $.fn[name] = function( options ) {
             return this.each(function() {
                 $.data( this, name, Object.create(object).init(options, this ));
@@ -415,6 +446,7 @@ var Metro = {
         var mc = $(element).data("metroComponent");
 
         if (mc !== undefined && mc.length > 0) $.each(mc, function(){
+            'use strict';
             Metro.destroyPlugin(element, this);
         });
     },
@@ -449,6 +481,7 @@ var Metro = {
         var mc = $(element).data("metroComponent");
 
         if (mc !== undefined && mc.length > 0) $.each(mc, function(){
+            'use strict';
             Metro.reinitPlugin(element, this);
         });
     },

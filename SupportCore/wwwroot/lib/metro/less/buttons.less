@@ -147,6 +147,7 @@
     border: 1px solid transparent;
     outline: none;
     position: relative;
+    font-weight: 500;
 
     &:active, &.focus, &:focus {
         .focus-show(@lightGray);
@@ -165,6 +166,8 @@
         text-align: left;
         color: inherit;
         order: 2;
+        font-weight: 400;
+        line-height: 1.2;
 
         small {
             display: block;
@@ -190,6 +193,7 @@
     align-items: center;
     height: 36px;
     line-height: 30px;
+    font-weight: 400;
 
     .icon {
         width: 34px;
@@ -285,37 +289,10 @@
     }
 }
 
-.toolbar {
-    display: inline-flex;
-    position: relative;
-    padding: 0 0 0 .5725rem;
-    top: 2px;
-    flex-flow: row;
-
-    &.no-divider {
-        &:before {
-            display: none;
-        }
-    }
-
-    &:before {
-        position: absolute;
-        content: "";
-        width: .325rem;
-        height: 100%;
-        left: 0;
-        background-color: rgba(red(@grayMouse), green(@grayMouse), blue(@grayMouse), .20);
-        cursor: move;
-    }
-
-    &.vertical {
-        flex-flow: column;
-    }
-}
-
 .tool-button {
     width: 2rem;
     height: 2rem;
+    line-height: 2rem;
     vertical-align: middle;
     display: inline-block;
     text-align: center;
@@ -340,6 +317,46 @@
         width: auto;
         padding-left: .5rem;
         padding-right: .5rem;
+    }
+}
+
+.toolbar {
+    display: inline-flex;
+    position: relative;
+    padding: 0 0 0 .5725rem;
+    top: 2px;
+    flex-flow: row nowrap;
+
+    &.no-divider {
+        &::before {
+            display: none;
+        }
+    }
+
+    &::before {
+        position: absolute;
+        content: "";
+        width: .325rem;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-color: rgba(red(@grayMouse), green(@grayMouse), blue(@grayMouse), .20);
+        cursor: move;
+    }
+
+    &.vertical {
+        flex-flow: column nowrap;
+        padding: .5725rem 0 0 0;
+        width: 32px;
+
+        &::before {
+            width: 32px;
+            height: .325rem;
+        }
+
+        .tool-button {
+            margin: 2px 0;
+        }
     }
 }
 
@@ -417,10 +434,6 @@
             color: @linkColorHover;
         }
     }
-}
-
-a.button, a.command-button, a.image-button, a.shortcut, a.tool-button, a.split-button a.split {
-    color: @dark;
 }
 
 .button, .command-button, .image-button, .shortcut, .tool-button, .split-button .split {
@@ -727,5 +740,30 @@ a.button, a.command-button, a.image-button, a.shortcut, a.tool-button, a.split-b
     }
     &.floating-action-bottom {
         z-index: @zindex-top; bottom: 20px; right: 20px; position: fixed;
+    }
+}
+
+
+a {
+    &.button,
+    &.flat-button,
+    &.action-button,
+    &.command-button,
+    &.image-button,
+    &.shortcut,
+    &.tool-button,
+    &.split-button,
+    &.split {
+        color: @dark;
+        box-shadow: none;
+        text-decoration: none;
+
+        &:hover {
+            box-shadow: none;
+        }
+
+        &:active, &.focus, &:focus {
+            .focus-show(@lightGray);
+        }
     }
 }

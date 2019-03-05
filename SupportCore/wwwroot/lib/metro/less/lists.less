@@ -2,7 +2,7 @@
 @import (once) "include/mixins";
 
 .step-list {
-    margin: 0 0 0 2rem;
+    margin: 0 0 0 3em;
     padding: 0;
     list-style-type: none;
     counter-reset:li;
@@ -15,7 +15,7 @@
         vertical-align: top;
     }
 
-    & > li:before {
+    & > li::before {
         position: absolute;
         content:counter(li);
         counter-increment:li;
@@ -23,7 +23,9 @@
         color: @lightGray;
         left: 0;
         top: .3125rem;
-        margin-left: -1.5rem;
+        margin-left: -2em;
+        width: 1.8em;
+        text-align: right;
     }
 }
 
@@ -52,7 +54,7 @@
     display: block;
     list-style: none inside;
 
-    .item {
+    .item, & > li {
         display: flex;
         flex-flow: column;
         justify-content: center;
@@ -108,18 +110,33 @@
     .item + .item {
         border-top: 1px @borderColor solid;
     }
+
+    & > li + li {
+        border-top: 1px @borderColor solid;
+    }
 }
 
 .feed-list {
 
     .title {
-        padding: 4px 16px;
+        padding: 0 16px;
         font-size: 18px;
-        border-bottom: 1px solid @borderColor;
         font-weight: 500;
+        height: 36px;
+        line-height: 36px;
+        display: block;
     }
 
-    .item {
+    .item + .title,
+    li + .title {
+        margin-top: 32px;
+    }
+
+    .title + .item, .title + li, li + .title {
+        border-top: 1px @transparent solid;
+    }
+
+    .item, & > li {
         height: 104px;
         padding: 16px 0;
         justify-content: space-around;
@@ -166,13 +183,29 @@
     list-style: none inside;
     border: 1px solid @borderColor;
 
-    .item {
+    .item, & > li {
         display: block;
         position: relative;
         padding: 4px 8px;
     }
 
-    .item + .item {
+    .item + .item,  & > li + li {
         border-top: 1px solid @borderColor;
+    }
+
+    &.horizontal {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .item, & > li {
+            flex-basis: 100%;
+        }
+
+        .item + .item,  & > li + li {
+            border-top: none;
+            border-left: 1px solid @borderColor;
+        }
+
     }
 }

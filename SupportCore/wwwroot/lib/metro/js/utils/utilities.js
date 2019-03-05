@@ -14,8 +14,11 @@ var Utils = {
     isEmbedObject: function(val){
         var embed = ["iframe", "object", "embed", "video"];
         var result = false;
-        $.each(embed, function(){
-            if (val.indexOf(this) !== -1) {
+        $.each(embed, function(i, v){
+            'use strict';
+            if (typeof val === "string" && val.toLowerCase() === v) {
+                result = true;
+            } else if (val.nodeType !== undefined && val.tagName.toLowerCase() === v) {
                 result = true;
             }
         });
@@ -102,6 +105,10 @@ var Utils = {
         }
 
         if (typeof o === 'string' && o.indexOf("[") !== -1) {
+            return false;
+        }
+
+        if (typeof o === "number" && t.toLowerCase() !== "number") {
             return false;
         }
 
@@ -332,6 +339,15 @@ var Utils = {
 
     objectDelete: function(obj, key){
         if (obj[key] !== undefined) delete obj[key];
+    },
+
+    arrayDeleteByMultipleKeys: function(arr, keys){
+        keys.forEach(function(ind){
+            delete arr[ind];
+        });
+        return arr.filter(function(item){
+            return item !== undefined;
+        })
     },
 
     arrayDelete: function(arr, val){
@@ -676,8 +692,8 @@ var Utils = {
         return Object.values(obj).indexOf(value) > -1;
     },
 
-    keyInObject: function(){
-        return Object.keys(obj).indexOf(value) > -1;
+    keyInObject: function(obj, key){
+        return Object.keys(obj).indexOf(key) > -1;
     },
 
     inObject: function(obj, key, val){
@@ -749,6 +765,14 @@ var Utils = {
 
     parseMoney: function(val){
         return Number(parseFloat(val.replace(/[^0-9-.]/g, '')));
+    },
+
+    parseCard: function(val){
+        return val.replace(/[^0-9]/g, '');
+    },
+
+    parsePhone: function(val){
+        return Utils.parseCard(val);
     },
 
     isVisible: function(el){
@@ -824,35 +848,72 @@ var Utils = {
         return (location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.hostname === "")
     },
 
-    iframeBubbleMouseMove: function(iframe){
-        if (Utils.isJQueryObject(iframe)) {
-            iframe = iframe[0];
+    formData: function(form){
+        if (Utils.isNull(form)) {
+            return ;
         }
-        var existingOnMouseMove = iframe.contentWindow.onmousemove;
-        iframe.contentWindow.onmousemove = function(e){
-            if(existingOnMouseMove) existingOnMouseMove(e);
-            var evt = document.createEvent("MouseEvents");
-            var boundingClientRect = iframe.getBoundingClientRect();
-            evt.initMouseEvent(
-                "mousemove",
-                true,
-                false,
-                window,
-                e.detail,
-                e.screenX,
-                e.screenY,
-                e.clientX + boundingClientRect.left,
-                e.clientY + boundingClientRect.top,
-                e.ctrlKey,
-                e.altKey,
-                e.shiftKey,
-                e.metaKey,
-                e.button,
-                null
-            );
-
-            iframe.dispatchEvent(evt);
-        };
+        if (Utils.isJQueryObject(form)) {
+            form = form[0];
+        }
+        if (!form || form.nodeName !== "FORM") {
+            return;
+        }
+        var i, j, q = {};
+        for (i = form.elements.length - 1; i >= 0; i = i - 1) {
+            if (form.elements[i].name === "") {
+                continue;
+            }
+            switch (form.elements[i].nodeName) {
+                case 'INPUT':
+                    switch (form.elements[i].type) {
+                        case 'text':
+                        case 'hidden':
+                        case 'password':
+                        case 'button':
+                        case 'reset':
+                        case 'submit':
+                            q[form.elements[i].name] = form.elements[i].value;
+                            break;
+                        case 'checkbox':
+                        case 'radio':
+                            if (form.elements[i].checked) {
+                                q[form.elements[i].name] = form.elements[i].value;
+                            }
+                            break;
+                    }
+                    break;
+                case 'file':
+                    break;
+                case 'TEXTAREA':
+                    q[form.elements[i].name] = form.elements[i].value;
+                    break;
+                case 'SELECT':
+                    switch (form.elements[i].type) {
+                        case 'select-one':
+                            q[form.elements[i].name] = form.elements[i].value;
+                            break;
+                        case 'select-multiple':
+                            q[form.elements[i].name] = [];
+                            for (j = form.elements[i].options.length - 1; j >= 0; j = j - 1) {
+                                if (form.elements[i].options[j].selected) {
+                                    q[form.elements[i].name].push(form.elements[i].options[j].value);
+                                }
+                            }
+                            break;
+                    }
+                    break;
+                case 'BUTTON':
+                    switch (form.elements[i].type) {
+                        case 'reset':
+                        case 'submit':
+                        case 'button':
+                            q[form.elements[i].name] = form.elements[i].value;
+                            break;
+                    }
+                    break;
+            }
+        }
+        return q;
     }
 };
 

@@ -52,23 +52,17 @@ var MaterialInput = {
     },
 
     _createStructure: function(){
-        var that = this, element = this.element, o = this.options;
-        var prev = element.prev();
-        var parent = element.parent();
+        var element = this.element, o = this.options;
         var container = $("<div>").addClass("input-material " + element[0].className);
 
         element[0].className = "";
+        element.attr("autocomplete", "nope");
 
         if (element.attr("type") === undefined) {
             element.attr("type", "text");
         }
 
-        if (prev.length === 0) {
-            parent.prepend(container);
-        } else {
-            container.insertAfter(prev);
-        }
-
+        container.insertBefore(element);
         element.appendTo(container);
 
         if (Utils.isValue(o.label)) {
@@ -99,8 +93,6 @@ var MaterialInput = {
     },
 
     _createEvents: function(){
-        var that = this, element = this.element, o = this.options;
-        var container = element.closest(".input");
 
     },
 
@@ -119,7 +111,7 @@ var MaterialInput = {
     },
 
     toggleState: function(){
-        if (this.element.data("disabled") === false) {
+        if (this.elem.disabled) {
             this.disable();
         } else {
             this.enable();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,6 +14,7 @@ using SupportCore.Models;
 
 namespace SupportCore.Controllers
 {
+    [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
     public class TasksController : Controller
     {
         private readonly Context _context;
@@ -258,9 +260,10 @@ namespace SupportCore.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var task = await _context.Tasks.SingleOrDefaultAsync(m => m.Id == id);
+            int TicketId = task.TicketId;
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index),new { TicketId });
         }
 
         // POST: Tasks/GetIssue/5

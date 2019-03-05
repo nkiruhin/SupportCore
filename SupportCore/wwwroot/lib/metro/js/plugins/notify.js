@@ -44,6 +44,10 @@ var Notify = {
         var notify, that = this, o = this.options;
         var m, t;
 
+        if (Utils.isNull(options)) {
+            options = {};
+        }
+
         if (!Utils.isValue(message)) {
             return false;
         }
@@ -86,11 +90,14 @@ var Notify = {
             Utils.exec(Utils.isValue(options.onAppend) ? options.onAppend : o.onAppend, null, notify[0]);
 
             notify.css({
-                marginTop: o.distance
+                marginTop: Utils.isValue(options.distance) ? options.distance : o.distance
             }).fadeIn(100, function(){
+                var duration = Utils.isValue(options.duration) ? options.duration : o.duration;
+                var animation = Utils.isValue(options.animation) ? options.animation : o.animation;
+
                 notify.animate({
                     marginTop: ".25rem"
-                }, o.duration, o.animation, function(){
+                }, duration, animation, function(){
 
                     Utils.exec(o.onNotifyCreate, null, this);
 

@@ -85,8 +85,6 @@ var Rating = {
     _createRating: function(){
         var element = this.element, o = this.options;
 
-        var prev = element.prev();
-        var parent = element.parent();
         var id = Utils.elementId("rating");
         var rating = $("<div>").addClass("rating " + String(element[0].className).replace("d-block", "d-flex")).addClass(o.clsRating);
         var i, stars, result, li;
@@ -96,12 +94,7 @@ var Rating = {
 
         rating.attr("id", id);
 
-        if (prev.length === 0) {
-            parent.prepend(rating);
-        } else {
-            rating.insertAfter(prev);
-        }
-
+        rating.insertBefore(element);
         element.appendTo(rating);
 
         stars = $("<ul>").addClass("stars").addClass(o.clsStars).appendTo(rating);
@@ -139,6 +132,12 @@ var Rating = {
             for (i = 0; i < element[0].style.length; i++) {
                 rating.css(element[0].style[i], element.css(element[0].style[i]));
             }
+        }
+
+        if (element.is(":disabled")) {
+            this.disable();
+        } else {
+            this.enable();
         }
 
         this.rating = rating;
@@ -232,10 +231,29 @@ var Rating = {
         this.static(isStatic);
     },
 
+    disable: function(){
+        this.element.data("disabled", true);
+        this.element.parent().addClass("disabled");
+    },
+
+    enable: function(){
+        this.element.data("disabled", false);
+        this.element.parent().removeClass("disabled");
+    },
+
+    toggleState: function(){
+        if (this.elem.disabled) {
+            this.disable();
+        } else {
+            this.enable();
+        }
+    },
+
     changeAttribute: function(attributeName){
         switch (attributeName) {
             case "value":
             case "data-value": this.changeAttributeValue(attributeName); break;
+            case "disabled": this.toggleState(); break;
             case "data-message": this.changeAttributeMessage(); break;
             case "data-static": this.changeAttributeStatic(); break;
         }

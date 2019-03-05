@@ -3,6 +3,8 @@ var Splitter = {
         this.options = $.extend( {}, this.options, options );
         this.elem  = elem;
         this.element = $(elem);
+        this.storage = Utils.isValue(Metro.storage) ? Metro.storage : null;
+        this.storageKey = "SPLITTER:";
 
         this._setOptionsFromDOM();
         this._create();
@@ -16,7 +18,8 @@ var Splitter = {
         gutterSize: 4,
         minSizes: null,
         children: "*",
-        gutterClick: "expand", // expand or collapse
+        gutterClick: "expand", // TODO expand or collapse
+        saveState: false,
         onResizeStart: Metro.noop,
         onResizeStop: Metro.noop,
         onResizeSplit: Metro.noop,
@@ -85,12 +88,17 @@ var Splitter = {
                 children_sizes = Utils.strToArray(o.minSizes);
                 for (i = 0; i < children_sizes.length; i++) {
                     $(children[i]).data("min-size", children_sizes[i]);
+                    children[i].style.setProperty('min-'+resizeProp, String(children_sizes[i]).contains("%") ? children_sizes[i] : String(children_sizes[i]).replace("px", "")+"px", 'important');
                 }
             } else {
                 $.each(children, function(){
                     this.style.setProperty('min-'+resizeProp, String(o.minSizes).contains("%") ? o.minSizes : String(o.minSizes).replace("px", "")+"px", 'important');
                 });
             }
+        }
+
+        if (o.saveState && this.storage !== null) {
+            this._getSize();
         }
     },
 
@@ -108,6 +116,9 @@ var Splitter = {
             var start_pos = Utils.getCursorPosition(element, e);
 
             gutter.addClass("active");
+
+            prev_block.addClass("stop-select stop-pointer");
+            next_block.addClass("stop-select stop-pointer");
 
             Utils.exec(o.onResizeStart, [start_pos, gutter, prev_block, next_block], element);
 
@@ -130,6 +141,11 @@ var Splitter = {
 
             $(window).on(Metro.events.stop + "-" + element.attr("id"), function(e){
 
+                prev_block.removeClass("stop-select stop-pointer");
+                next_block.removeClass("stop-select stop-pointer");
+
+                that._saveSize();
+
                 gutter.removeClass("active");
 
                 $(window).off(Metro.events.move + "-" + element.attr("id"));
@@ -138,6 +154,37 @@ var Splitter = {
                 Utils.exec(o.onResizeStop, [Utils.getCursorPosition(element, e), gutter, prev_block, next_block], element);
             })
         });
+    },
+
+    _saveSize: function(){
+        var that = this, element = this.element, o = this.options;
+        var storage = this.storage, itemsSize = [];
+
+        if (o.saveState === true && storage !== null) {
+
+            $.each(element.children(".split-block"), function(){
+                var item = $(this);
+                itemsSize.push(item.css("flex-basis"));
+            });
+
+            storage.setItem(this.storageKey + element.attr("id"), itemsSize);
+        }
+
+    },
+
+    _getSize: function(){
+        var that = this, element = this.element, o = this.options;
+        var storage = this.storage, itemsSize = [];
+
+        if (o.saveState === true && storage !== null) {
+
+            itemsSize = storage.getItem(this.storageKey + element.attr("id"));
+
+            $.each(element.children(".split-block"), function(i, v){
+                var item = $(v);
+                if (Utils.isValue(itemsSize) && Utils.isValue(itemsSize[i])) item.css("flex-basis", itemsSize[i]);
+            });
+        }
     },
 
     changeAttribute: function(attributeName){

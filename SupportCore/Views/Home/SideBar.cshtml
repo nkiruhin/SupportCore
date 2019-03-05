@@ -35,7 +35,7 @@
                 <a href="#" onclick="ReloadTable(100)">
 
                     <!-- <span class="mif-drive-eta icon"></span> -->
-                    <span class="icon"><span class="mif-bell"></span></span>
+                    <span class="icon"><span class="mif-fire"></span></span>
                     <span class="caption">Просроченные</span>
                     &nbsp;<span class="badge inline bg-red fg-white" id="overlayTicketCount">0</span>
                 </a>
@@ -52,18 +52,19 @@
 
                 </a>
             </li>
-            <li>
-                <a asp-action="Filter"
-                   asp-controller="Tickets"
-                   data-ajax="true"
-                   data-ajax-method="GET"
-                   data-ajax-update="#cell-content"
-                   data-ajax-mode="update">
-                    <span class="icon"><span class="mif-filter"></span></span>
-                    <span class="caption">Фильтр</span>
+            @if (!User.IsInRole("Пользователь")) { 
+                <li>
+                    <a asp-action="Filter"
+                       asp-controller="Tickets"
+                       data-ajax="true"
+                       data-ajax-method="GET"
+                       data-ajax-update="#cell-content"
+                       data-ajax-mode="update">
+                        <span class="icon"><span class="mif-filter"></span></span>
+                        <span class="caption">Фильтр</span>
 
-                </a>
-            </li>
+                    </a>
+                </li>
             <li class="item-header">Обращения</li>
             <li>
                 <a asp-controller="Requests"
@@ -76,18 +77,18 @@
                     <span class="icon"><span class="mif-mail"></span></span>
                     <span class="caption">Входящие</span>
                     @*<span class="counter">0</span>*@
-            </a>
-        </li>
-        <li class="item-header">Шаблоны</li>
-        <li>
-            <a asp-controller="Forms"
-               data-ajax="true"
-               data-ajax-method="GET"
-               data-ajax-update="#cell-content"
-               data-ajax-mode="update">
-                <span class="icon"><span class="mif-insert-template"></span></span>
-                <span class="caption">Форм</span>
-                @*<span class="counter">0</span>*@
+                </a>
+            </li>
+            <li class="item-header">Шаблоны</li>
+            <li>
+                <a asp-controller="Forms"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update">
+                    <span class="icon"><span class="mif-insert-template"></span></span>
+                    <span class="caption">Форм</span>
+                    @*<span class="counter">0</span>*@
                 </a>
             </li>
             <li>
@@ -101,6 +102,7 @@
                     @*<span class="counter">0</span>*@
                 </a>
             </li>
+            }
         </ul>
 <script>
 $(function () {

@@ -1,5 +1,5 @@
 ﻿@model SupportCore.Models.Tasks
-<div class="p-4-md">
+<div class="p-4-md" style="max-width:920px">
     <h5>Задача @Model.Id </h5>
     <hr class="thin bg-grayLighter" />
         <dl>
@@ -10,7 +10,7 @@
             <div class="cell-md-4">
                 <dl>
                   <dt><label asp-for="Number"></label></dt>  
-                   <dd class="text-ellipsis" style="max-width:100px">@Html.DisplayFor(model=>model.Number)</dd>
+                   <dd class="text-ellipsis" style="max-width:200px">@Html.DisplayFor(model=>model.Number)</dd>
                 </dl>
                 <span asp-validation-for="Number"></span>
             </div>

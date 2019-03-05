@@ -45,18 +45,8 @@ var Table = {
     options: {
         locale: METRO_LOCALE,
 
-        crud: false,
-        crudTitle: "CRUD",
-        editButton: true,
-        delButton: true,
-        addButton: true,
-        editButtonIcon: "<span class='default-icon-pencil'></span>",
-        delButtonIcon: "<span class='default-icon-minus'></span>",
-        addButtonIcon: "<span class='default-icon-plus'></span>",
-        clsEditButton: "",
-        clsDelButton: "",
-        clsAddButton: "",
-
+        horizontalScroll: false,
+        horizontalScrollStop: null,
         check: false,
         checkType: "checkbox",
         checkStyle: 1,
@@ -114,6 +104,7 @@ var Table = {
         cellWrapper: true,
 
         clsComponent: "",
+        clsTableContainer: "",
         clsTable: "",
 
         clsHead: "",
@@ -154,6 +145,7 @@ var Table = {
         onSearch: Metro.noop,
         onRowsCountChange: Metro.noop,
         onDataLoad: Metro.noop,
+        onDataLoadError: Metro.noop,
         onDataLoaded: Metro.noop,
         onFilterRowAccepted: Metro.noop,
         onFilterRowDeclined: Metro.noop,
@@ -206,6 +198,7 @@ var Table = {
                 that._build(data);
                 Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
             }).fail(function( jqXHR, textStatus, errorThrown) {
+                Utils.exec(o.onDataLoadError, [o.source, jqXHR, textStatus, errorThrown], element[0]);
                 console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
             });
         } else {
@@ -277,18 +270,6 @@ var Table = {
         var o = this.options;
 
         this.service = [
-            {
-                // CRUD
-                title: o.crudTitle,
-                format: undefined,
-                name: undefined,
-                sortable: false,
-                sortDir: undefined,
-                clsColumn: "crud-cell" + (o.crud === true ? "" : " d-none "),
-                cls: "crud-cell" + (o.crud === true ? "" : " d-none "),
-                colspan: undefined,
-                type: "button"
-            },
             {
                 // Rownum
                 title: o.rownumTitle,
@@ -371,10 +352,10 @@ var Table = {
 
     _createInspector: function(){
         var o = this.options;
-        var component = this.component;
         var inspector, table_wrap, table, tbody, actions;
 
         inspector = $("<div data-role='draggable' data-drag-element='.table-inspector-header' data-drag-area='body'>").addClass("table-inspector");
+        inspector.attr("for", this.element.attr("id"));
 
         $("<div class='table-inspector-header'>"+o.inspectorTitle+"</div>").appendTo(inspector);
 
@@ -392,9 +373,10 @@ var Table = {
         $("<button class='button secondary js-table-inspector-reset ml-2 mr-2' type='button'>").html(this.locale.buttons.reset).appendTo(actions);
         $("<button class='button link js-table-inspector-cancel place-right' type='button'>").html(this.locale.buttons.cancel).appendTo(actions);
 
+        inspector.data("open", false);
         this.inspector = inspector;
 
-        component.append(inspector);
+        $("body").append(inspector);
 
         this._createInspectorEvents();
     },
@@ -578,9 +560,6 @@ var Table = {
                 classes.push("hidden");
             }
 
-            if (item.type === 'rowcheck') {classes.push("check-cell");}
-            if (item.type === 'rownum') {classes.push("rownum-cell");}
-
             classes.push(o.clsHeadCell);
 
             if (Utils.bool(view[cell_index]['show'])) {
@@ -649,7 +628,7 @@ var Table = {
 
     _createTopBlock: function (){
         var that = this, element = this.element, o = this.options;
-        var top_block = $("<div>").addClass("table-top").addClass(o.clsTableTop).insertBefore(element);
+        var top_block = $("<div>").addClass("table-top").addClass(o.clsTableTop).insertBefore(element.parent());
         var search_block, search_input, rows_block, rows_select;
 
         search_block = Utils.isValue(this.wrapperSearch) ? this.wrapperSearch : $("<div>").addClass("table-search-block").addClass(o.clsSearch).appendTo(top_block);
@@ -697,7 +676,7 @@ var Table = {
 
     _createBottomBlock: function (){
         var element = this.element, o = this.options;
-        var bottom_block = $("<div>").addClass("table-bottom").addClass(o.clsTableBottom).insertAfter(element);
+        var bottom_block = $("<div>").addClass("table-bottom").addClass(o.clsTableBottom).insertAfter(element.parent());
         var info, pagination;
 
         info = Utils.isValue(this.wrapperInfo) ? this.wrapperInfo : $("<div>").addClass("table-info").addClass(o.clsTableInfo).appendTo(bottom_block);
@@ -715,7 +694,7 @@ var Table = {
 
     _createStructure: function(){
         var that = this, element = this.element, o = this.options;
-        var table_component, columns;
+        var table_container, table_component, columns;
         var w_search = $(o.searchWrapper), w_info = $(o.infoWrapper), w_rows = $(o.rowsWrapper), w_paging = $(o.paginationWrapper);
 
         if (w_search.length > 0) {this.wrapperSearch = w_search;}
@@ -723,11 +702,17 @@ var Table = {
         if (w_rows.length > 0) {this.wrapperRows = w_rows;}
         if (w_paging.length > 0) {this.wrapperPagination = w_paging;}
 
-        if (!element.parent().hasClass("table-component")) {
-            table_component = $("<div>").addClass("table-component").insertBefore(element);
-            element.appendTo(table_component);
-        } else {
-            table_component = element.parent();
+        table_component = $("<div>").addClass("table-component");
+        table_component.insertBefore(element);
+
+        table_container = $("<div>").addClass("table-container").addClass(o.clsTableContainer).appendTo(table_component);
+        element.appendTo(table_container);
+
+        if (o.horizontalScroll === true) {
+            table_container.addClass("horizontal-scroll");
+        }
+        if (!Utils.isNull(o.horizontalScrollStop) && Utils.mediaExist(o.horizontalScrollStop)) {
+            table_container.removeClass("horizontal-scroll");
         }
 
         table_component.addClass(o.clsComponent);
@@ -793,10 +778,21 @@ var Table = {
 
     _createEvents: function(){
         var that = this, element = this.element, o = this.options;
-        var component = element.parent();
+        var component = element.closest(".table-component");
+        var table_container = component.find(".table-container");
         var search = component.find(".table-search-block input");
         var customSearch;
         var id = element.attr("id");
+
+        $(window).on(Metro.events.resize+"-"+id, function(){
+            if (o.horizontalScroll === true) {
+                if (!Utils.isNull(o.horizontalScrollStop) && Utils.mediaExist(o.horizontalScrollStop)) {
+                    table_container.removeClass("horizontal-scroll");
+                } else {
+                    table_container.addClass("horizontal-scroll");
+                }
+            }
+        });
 
         element.on(Metro.events.click, ".sortable-column", function(){
 
@@ -812,7 +808,7 @@ var Table = {
             that.activity.show(o.activityTimeout, function(){
                 that.currentPage = 1;
                 that.sort.colIndex = col.data("index");
-                if (!col.has("sort-asc") && !col.hasClass("sort-desc")) {
+                if (!col.hasClass("sort-asc") && !col.hasClass("sort-desc")) {
                     that.sort.dir = o.sortDir;
                 } else {
                     if (col.hasClass("sort-asc")) {
@@ -881,7 +877,7 @@ var Table = {
             Utils.exec(o.onCheckClickAll, [status], this);
         });
 
-        var _search = function(e){
+        var _search = function(){
             that.searchString = this.value.trim().toLowerCase();
 
             clearInterval(that.input_interval); that.input_interval = false;
@@ -1062,7 +1058,7 @@ var Table = {
             that.openInspector(false);
         });
 
-        inspector.on(Metro.events.click, ".js-table-inspector-reset", function(e){
+        inspector.on(Metro.events.click, ".js-table-inspector-reset", function(){
             that.resetView();
         });
     },
@@ -1102,7 +1098,7 @@ var Table = {
 
     _info: function(start, stop, length){
         var element = this.element, o = this.options;
-        var component = element.parent();
+        var component = element.closest(".table-component");
         var info = Utils.isValue(this.wrapperInfo) ? this.wrapperInfo : component.find(".table-info");
         var text;
 
@@ -1127,7 +1123,7 @@ var Table = {
 
     _paging: function(length){
         var that = this, element = this.element, o = this.options;
-        var component = element.parent();
+        var component = element.closest(".table-component");
         var pagination_wrapper = Utils.isValue(this.wrapperPagination) ? this.wrapperPagination : component.find(".table-pagination");
         var i, prev, next;
         var shortDistance = 5;
@@ -1242,11 +1238,11 @@ var Table = {
                 if (that.searchFields.length > 0) {
                     $.each(that.heads, function(i, v){
                         if (that.searchFields.indexOf(v.name) > -1) {
-                            row_data += ""+row[i];
+                            row_data += "•"+row[i];
                         }
                     })
                 } else {
-                    row_data = row.join("");
+                    row_data = row.join("•");
                 }
 
                 row_data = row_data.replace(/[\n\r]+|[\s]{2,}/g, ' ').trim().toLowerCase();
@@ -1263,10 +1259,11 @@ var Table = {
                 return result;
             });
 
-            Utils.exec(o.onSearch, [that.searchString, items], element[0])
         } else {
             items = this.items;
         }
+
+        Utils.exec(o.onSearch, [that.searchString, items], element[0]);
 
         this.filteredItems = items;
 
@@ -1293,48 +1290,13 @@ var Table = {
             if (Utils.isValue(items[i])) {
                 tr = $("<tr>").addClass(o.clsBodyRow);
 
-                // CRUD buttons
-                td = $("<td>");
-                if (that.service[0].clsColumn !== undefined) {
-                    td.addClass(that.service[0].clsColumn);
-                }
-                var crud_container = $("<div>").addClass("crud-container").appendTo(td);
-                if (o.editButton === true) {
-                    $("<button>")
-                        .addClass("button")
-                        .addClass("js-table-crud-button js-table-crud-button-edit")
-                        .addClass(o.clsEditButton)
-                        .html(o.editButtonIcon)
-                        .data("uid", items[i][o.checkColIndex])
-                        .appendTo(crud_container);
-                }
-                if (o.addButton === true) {
-                    $("<button>")
-                        .addClass("button")
-                        .addClass("js-table-crud-button js-table-crud-button-add")
-                        .addClass(o.clsAddButton)
-                        .html(o.addButtonIcon)
-                        .data("uid", null)
-                        .appendTo(crud_container);
-                }
-                if (o.delButton === true) {
-                    $("<button>")
-                        .addClass("button")
-                        .addClass("js-table-crud-button js-table-crud-button-del")
-                        .addClass(o.clsDelButton)
-                        .html(o.delButtonIcon)
-                        .data("uid", items[i][o.checkColIndex])
-                        .appendTo(crud_container);
-                }
-                td.appendTo(tr);
-
                 // Rownum
 
                 is_even_row = i % 2 === 0;
 
                 td = $("<td>").html(i + 1);
-                if (that.service[1].clsColumn !== undefined) {
-                    td.addClass(that.service[1].clsColumn);
+                if (that.service[0].clsColumn !== undefined) {
+                    td.addClass(that.service[0].clsColumn);
                 }
                 td.appendTo(tr);
 
@@ -1353,8 +1315,8 @@ var Table = {
                 check.addClass("table-service-check");
                 Utils.exec(o.onCheckDraw, [check], check[0]);
                 check.appendTo(td);
-                if (that.service[2].clsColumn !== undefined) {
-                    td.addClass(that.service[2].clsColumn);
+                if (that.service[1].clsColumn !== undefined) {
+                    td.addClass(that.service[1].clsColumn);
                 }
                 td.appendTo(tr);
 
@@ -1414,12 +1376,9 @@ var Table = {
     },
 
     _getItemContent: function(row){
-
-        // console.log(this.sort);
-
         var result, col = row[this.sort.colIndex];
         var format = this.heads[this.sort.colIndex].format;
-        var formatMask = this.heads[this.sort.colIndex].formatMask;
+        var formatMask = !Utils.isNull(this.heads) && !Utils.isNull(this.heads[this.sort.colIndex]) && Utils.isValue(this.heads[this.sort.colIndex]['formatMask']) ? this.heads[this.sort.colIndex]['formatMask'] : "%Y-%m-%d";
         var o = this.options;
 
         result = (""+col).toLowerCase().replace(/[\n\r]+|[\s]{2,}/g, ' ').trim();
@@ -1436,14 +1395,65 @@ var Table = {
                 case "int": result = parseInt(result); break;
                 case "float": result = parseFloat(result); break;
                 case "money": result = Utils.parseMoney(result); break;
+                case "card": result = Utils.parseCard(result); break;
+                case "phone": result = Utils.parsePhone(result); break;
             }
         }
 
         return result;
     },
 
+    deleteItem: function(fieldIndex, value){
+        var i, deleteIndexes = [];
+        var is_func = Utils.isFunc(value);
+        for(i = 0; i < this.items.length; i++) {
+            if (is_func) {
+                if (Utils.exec(value, [this.items[i][fieldIndex]])) {
+                    deleteIndexes.push(i);
+                }
+            } else {
+                if (this.items[i][fieldIndex] === value) {
+                    deleteIndexes.push(i);
+                }
+            }
+        }
+
+        this.items = Utils.arrayDeleteByMultipleKeys(this.items, deleteIndexes);
+
+        return this;
+    },
+
+    deleteItemByName: function(fieldName, value){
+        var i, fieldIndex, deleteIndexes = [];
+        var is_func = Utils.isFunc(value);
+
+        for(i = 0; i < this.heads.length; i++) {
+            if (this.heads[i]['name'] === fieldName) {
+                fieldIndex = i;
+                break;
+            }
+        }
+
+        for(i = 0; i < this.items.length; i++) {
+            if (is_func) {
+                if (Utils.exec(value, [this.items[i][fieldIndex]])) {
+                    deleteIndexes.push(i);
+                }
+            } else {
+                if (this.items[i][fieldIndex] === value) {
+                    deleteIndexes.push(i);
+                }
+            }
+        }
+
+        this.items = Utils.arrayDeleteByMultipleKeys(this.items, deleteIndexes);
+
+        return this;
+    },
+
     draw: function(){
-        return this._draw();
+        this._draw();
+        return this;
     },
 
     sorting: function(dir){
@@ -1475,60 +1485,96 @@ var Table = {
         });
 
         Utils.exec(o.onSortStop, [this.items], element[0]);
+
+        return this;
     },
 
     search: function(val){
         this.searchString = val.trim().toLowerCase();
         this.currentPage = 1;
         this._draw();
+        return this;
+    },
+
+    _rebuild: function(review){
+        var that = this, element = this.element;
+        var need_sort = false, sortable_columns;
+
+        if (review === true) {
+            this.view = this._createView();
+        }
+
+        this._createTableHeader();
+        this._createTableBody();
+        this._createTableFooter();
+
+        if (this.heads.length > 0) $.each(this.heads, function(i){
+            var item = this;
+            if (!need_sort && ["asc", "desc"].indexOf(item.sortDir) > -1) {
+                need_sort = true;
+                that.sort.colIndex = i;
+                that.sort.dir = item.sortDir;
+            }
+        });
+
+        if (need_sort) {
+            sortable_columns = element.find(".sortable-column");
+            this._resetSortClass(sortable_columns);
+            $(sortable_columns.get(that.sort.colIndex)).addClass("sort-"+that.sort.dir);
+            this.sorting();
+        }
+
+        that.currentPage = 1;
+
+        that._draw();
+    },
+
+    setHeads: function(data){
+        this.heads = data;
+        return this;
+    },
+
+    setHeadItem: function(name, data){
+        var i, index;
+        for(i = 0; i < this.heads.length; i++) {
+            if (item.name === name) {
+                index = i;
+                break;
+            }
+        }
+        this.heads[index] = data;
+        return this;
+    },
+
+    setItems: function(data){
+        this.items = data;
+        return this;
+    },
+
+    setData: function(/*obj*/ data){
+        this.items = [];
+        this.heads = [];
+        this.foots = [];
+
+        this._createItemsFromJSON(data);
+
+        this._rebuild(true);
+
+        return this;
     },
 
     loadData: function(source, review){
         var that = this, element = this.element, o = this.options;
-        var need_sort = false;
-        var sortable_columns;
 
         if (!Utils.isValue(review)) {
             review = true;
-        }
-
-        function redraw(){
-
-            if (review === true) {
-                that.view = that._createView();
-            }
-
-            that._createTableHeader();
-            that._createTableBody();
-            that._createTableFooter();
-
-            if (that.heads.length > 0) $.each(that.heads, function(i){
-                var item = this;
-                if (!need_sort && ["asc", "desc"].indexOf(item.sortDir) > -1) {
-                    need_sort = true;
-                    that.sort.colIndex = i;
-                    that.sort.dir = item.sortDir;
-                }
-            });
-
-            if (need_sort) {
-                sortable_columns = element.find(".sortable-column");
-                that._resetSortClass(sortable_columns);
-                $(sortable_columns.get(that.sort.colIndex)).addClass("sort-"+that.sort.dir);
-                that.sorting();
-            }
-
-            that.currentPage = 1;
-
-            that._draw();
         }
 
         element.html("");
 
         if (!Utils.isValue(source)) {
 
-            // this._createItemsFromHTML();
-            redraw();
+            this._rebuild(review);
 
         } else {
             o.source = source;
@@ -1543,10 +1589,11 @@ var Table = {
 
                 that._createItemsFromJSON(data);
 
-                redraw();
+                that._rebuild(review);
 
                 Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
             }).fail(function( jqXHR, textStatus, errorThrown) {
+                Utils.exec(o.onDataLoadError, [o.source, jqXHR, textStatus, errorThrown], element[0]);
                 console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
             });
         }
@@ -1564,6 +1611,7 @@ var Table = {
             return ;
         }
         this._draw();
+        return this;
     },
 
     prev: function(){
@@ -1574,18 +1622,21 @@ var Table = {
             return ;
         }
         this._draw();
+        return this;
     },
 
     first: function(){
         if (this.items.length === 0) return ;
         this.currentPage = 1;
         this._draw();
+        return this;
     },
 
     last: function(){
         if (this.items.length === 0) return ;
         this.currentPage = this.pagesCount;
         this._draw();
+        return this;
     },
 
     page: function(num){
@@ -1599,6 +1650,7 @@ var Table = {
 
         this.currentPage = num;
         this._draw();
+        return this;
     },
 
     addFilter: function(f, redraw){
@@ -1643,6 +1695,7 @@ var Table = {
             this.currentPage = 1;
             this.draw();
         }
+        return this;
     },
 
     getItems: function(){
@@ -1699,7 +1752,17 @@ var Table = {
     },
 
     openInspector: function(mode){
-        this.inspector[mode ? "addClass" : "removeClass"]("open");
+        var ins = this.inspector;
+        if (mode) {
+            ins.show(0, function(){
+                ins.css({
+                    top: ($(window).height()  - ins.outerHeight(true)) / 2 + pageYOffset,
+                    left: ($(window).width() - ins.outerWidth(true)) / 2 + pageXOffset
+                }).data("open", true);
+            });
+        } else {
+            ins.hide().data("open", false);
+        }
     },
 
     closeInspector: function(){
@@ -1707,7 +1770,7 @@ var Table = {
     },
 
     toggleInspector: function(){
-        this.inspector.toggleClass("open");
+        this.openInspector(!this.inspector.data("open"));
     },
 
     resetView: function(){

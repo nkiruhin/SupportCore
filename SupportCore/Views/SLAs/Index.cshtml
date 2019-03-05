@@ -1,0 +1,86 @@
+﻿@model List<SupportCore.Models.SLA>
+
+@{
+    Layout = null;
+}
+
+@*Panel with button*@
+<h2 class="text-light">SLA <span class="mif-alarm-on place-right"></span></h2>
+
+<hr class="thin bg-grayLighter">
+<a asp-action="Create"
+   data-ajax="true"
+   data-ajax-method="GET"
+   data-ajax-update="#cell-content"
+   data-ajax-mode="update"
+   class="button primary">
+    <span class="mif-plus"></span> Добавить...
+</a>
+<hr class="thin bg-grayLighter">
+
+<table class="dataTable table-border compact cell-border striped">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            @*<th style="width: 20px">
+                </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model[0].Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].ResponseTime)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].DeadTime)
+            </th>
+            <th style="width:7%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int item = 0; item < Model.Count; item++)
+        {
+            <tr>
+                <td>
+                    @Model[item].Name
+                </td>
+                <td>
+                    @Model[item].ResponseTime
+                </td>
+                <td>
+                    @Model[item].DeadTime
+                </td>
+                <td>
+                    <div class="dropdown-button h-25">
+                        <button class="button small dropdown-toggle secondary outline">Действия   </button>
+                        <ul class="d-menu context" data-role="dropdown">
+                            <li>
+                                <a asp-action="Edit"
+                                   data-ajax="true"
+                                   data-ajax-method="GET"
+                                   data-ajax-update="#cell-content"
+                                   data-ajax-mode="update"
+                                   asp-route-id="@Model[item].Id" title="Редактировать"><span class="mif-pencil icon"></span>Изменить</a>
+                            </li>
+                            <li>
+                                <a asp-action="Details"
+                                   data-ajax="true"
+                                   data-ajax-method="GET"
+                                   data-ajax-update="#cell-content"
+                                   data-ajax-mode="update"
+                                   asp-route-id="@Model[item].Id" title="Просмотреть"><span class="mif-zoom-in icon"></span>Просмотреть</a>
+                            </li>
+                            <li>
+                                <a href="#"
+                                   title="Удалить" onclick="openCustomDialog('/SLAs/Delete/@Model[item].Id','Удалить',end)"><span class="mif-bin icon"></span>Удалить</a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    $(function () {
+        SimpleTableReady();
+    })
+</script> 

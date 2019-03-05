@@ -1,0 +1,108 @@
+﻿@model SupportCore.Models.SLA
+
+
+@*<input asp-for="FormId" value="@ViewBag.FormId" />*@
+
+<div id="SLAs">
+    <div class="panel" data-role="panel">
+        <div class="heading">
+            <span class="title">Правила SLA</span>
+        </div>
+        <div class="content">
+            <div class="table">
+                <div class="thead">
+                    <div class="tr">
+                        <div class="td"><label asp-for="Name"></label></div>
+                        <div class="td category"><label asp-for="CategoryId"></label></div>
+                        <div class="td fields" style="display:none"><label asp-for="FieldId"></label></div>
+                        <div class="td " ><label asp-for="FieldValue"></label></div>
+                        <div class="td"><label asp-for="ResponseTime"></label></div>
+                        <div class="td"><label asp-for="DeadTime"></label></div>
+                        <div class="td"><label>По категории|полю формы</label></div>
+                        <div class="td"></div>
+                    </div>
+                </div>
+                <div class="tbody">
+                    <form class="tr" asp-action="Create" id="SLAs"
+                          data-ajax="true"
+                          data-ajax-method="POST"
+                          data-ajax-update="#SLAs"
+                          data-ajax-failure="onError('Ошибка добавления правила')"
+                          data-ajax-mode="update">
+                        <input asp-for="ParentId" value="@Model.ParentId" />
+                        <input asp-for="Type" value="1" hidden />
+                        <div class="td">
+                            <input asp-for="Name">
+                        </div>
+                        <div class="td category">
+                            <select  disabled>
+                                <option value="">Категория</option>
+                            </select>
+                        </div>
+
+                        <div class="td fields" style="display:none">
+                            <select asp-for="FieldId" asp-items="ViewBag.FieldId" onchange="GetValue(this)" style="color:gray" >
+                                <option value="" disabled selected style='display:none;'>Выбирите поле формы </option>
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="td fields" style="display:none">
+                            <select asp-for="FieldValue" />
+                        </div>
+                        <div class="td category">
+                            <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" style="color:gray" onchange="this.style.color='black'">
+                                <option value="" disabled selected style='display:none;'>Выбирите категорию</option>
+                                <option value=""></option>
+                            </select>
+                        </div>
+                        <div class="td">
+                            <input asp-for="ResponseTime" />
+                        </div>
+                        <div class="td">
+                            <input asp-for="DeadTime" />
+                        </div>
+                        <div class="td">
+                            <input type="checkbox" data-role="switch" id="isField" onchange="ChangeType(this)">
+                        </div>
+                        <div class="td">
+                            <button class="button primary" type="submit">Добавить</button>
+                        </div>
+                    </form>
+                    @await Component.InvokeAsync("SLARules", new { ParentId = Model.ParentId })
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    //$(document).ready(function () {
+    ////    var form = $.validator.unobtrusive.parse('#Fields');
+    //})
+    var ChangeType = function (e) {
+        if (e.checked == true) {
+            $('.fields').show(); 
+            $('.category').hide();
+        } else {
+            $('.fields').hide();
+            $('.category').show();
+        }
+    };
+    var GetValue = function (f) {
+        f.style.color = 'black';
+        fieldId = $(f).val();
+        if (!fieldId) {
+            $('#FieldValue').empty();
+            return;
+        }
+        
+        if ($(f).attr('id') === 'FieldId') {
+            field = $('#FieldValue')
+        } else {
+            var rowId = $(f).data('row-id');
+            var selector = '*[data-value-id="' + rowId + '"]';
+            field = $(selector);
+        }
+        var url = '@Url.Action("GetValues")' + '?FieldId=' + fieldId;
+        GetFieldValue(url, field);
+    }
+</script>

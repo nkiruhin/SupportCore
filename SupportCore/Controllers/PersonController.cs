@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -22,12 +23,14 @@ namespace SupportCore.Controllers
         }
 
         // GET: Person
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         public IActionResult Index()
         {
             //var context = _context.Person.Include(p => p.Organization);
             return PartialView();
         }
         // GET: Person
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         public async Task<JsonResult> List(bool isStaff,int? OrganizationId)  {
             var data = await _context.Person
                 .Include(p => p.Organization)
@@ -44,6 +47,7 @@ namespace SupportCore.Controllers
             return Json(new { data });
         }
         // GET: Create Person from dialog
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         [HttpGet]
         public IActionResult Create()
         {
@@ -54,6 +58,7 @@ namespace SupportCore.Controllers
             return PartialView(Person);
         }
         // GET: Create Person from dialog
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         public IActionResult CreateDialog()
         {
             return PartialView();
@@ -127,6 +132,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         public async Task<IActionResult> Create([Bind("Name,IsDeleted,AccountID,IsStaff,Email,OrganizationId")] Person person, int step)
         {
             //switch (step)
@@ -151,6 +157,7 @@ namespace SupportCore.Controllers
         // POST: Person/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FastCreate([Bind("Name,Email,OrganizationId")] Person person, string PhoneList)
@@ -221,12 +228,13 @@ namespace SupportCore.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Details),new { Id=person.Id });
             }
             return PartialView(person);
         }
 
         // GET: Person/Delete/5
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         public async Task<IActionResult> Delete(string id)
         {
             if (id == null)
@@ -246,6 +254,7 @@ namespace SupportCore.Controllers
 
         // POST: Person/Delete/5
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
@@ -265,6 +274,7 @@ namespace SupportCore.Controllers
             return _context.Person.Any(e => e.Id == id);
         }
         // GET: Person/GetPersonForPhone/id
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
         public async Task<IActionResult> GetPersonForPhone(string id)
         {
             var person = await _context.Phone.AsNoTracking()

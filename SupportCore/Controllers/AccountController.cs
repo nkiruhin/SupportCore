@@ -103,7 +103,7 @@ namespace SupportCore.Controllers
         }
         // POST: /Account/Register
         [HttpPost]
-        [AllowAnonymous]
+       // [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(AccountView model)
         {
@@ -137,13 +137,12 @@ namespace SupportCore.Controllers
                 var person = await _context.Person.SingleOrDefaultAsync(p => p.Id == model.PersonId);
                 person.AccountID = await _userManager.GetUserIdAsync(user);
                 await _context.SaveChangesAsync();
-            }
-            
+            }          
             return RedirectToAction("Register",new { id = model.PersonId });
         }
         // POST: /Account/Delete
         [HttpPost]
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string PersonId,string AccountId)
         {
@@ -153,6 +152,32 @@ namespace SupportCore.Controllers
             person.AccountID = null;
             await _context.SaveChangesAsync();
             return ViewComponent("Account", new { id = PersonId, AccountId = String.Empty });
+        }
+        // POST: /Account/EditAccount
+        [HttpPost]
+        //[AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(AccountView NewAccount)
+        {
+            var User = await _userManager.FindByIdAsync(NewAccount.AccountId);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(User);
+            var result = await _userManager.ResetPasswordAsync(User,token,NewAccount.Password);
+            if (!result.Succeeded)
+            {
+                ModelState.AddModelError(string.Empty, "Ошибка при создании учетной записи:");
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                    return ViewComponent("Account", new { id = NewAccount.PersonId, AccountId = NewAccount.AccountId });
+                }
+            }
+            var Roles = await _userManager.GetRolesAsync(User);
+            if (Roles.FirstOrDefault() != NewAccount.RoleName)
+            {
+                await _userManager.RemoveFromRolesAsync(User, Roles);
+                await _userManager.AddToRoleAsync(User, NewAccount.RoleName);
+            }
+            return ViewComponent("Account", new { id = NewAccount.PersonId, AccountId = NewAccount.AccountId });
         }
     }
 }

@@ -1,3 +1,163 @@
+### 4.2.37
++ [x] Input material: fix error when creating element, issue #1318
++ [x] Calendar: fix `justify-content` for `days-row`
++ [x] Table: fix minor bug for sortable column click event
++ [x] Table: fix minor bug when inspector dragged
++ [x] Window: fix creating window with empty title
++ [x] Utils: fix method `keyInObject`
++ [x] Utils: fix constant for `keypress
++ [x] Table: fix firing `onSearch` for clearing search field
++ [x] TreeView: fix method `toggleNode`, pr #1326
++ [x] Step list: fix index position when `index > 9`, issue #1328
++ [x] Lists: add `group-list horizontal`
+
+### 4.2.36
++ [x] Window: fix system button click behavior when draggable enabled
++ [x] Window: fix creating `icon` and `title` if these not defined
++ [x] ListView: add trigger `change` when nodes selected/deselected, issue #1313
++ [x] Window: add custom buttons to caption
+
+### 4.2.35
++ [x] Draggable: refactoring
++ [x] File: add label for counting selected files for dropdown area
++ [x] Storage: refactoring and fix session storage
++ [x] Input material: set autocomplete off
++ [x] Tabs: fix clear targets before recollect, issue #1303
++ [x] ListView: fix attributes observing
++ [x] Notify: fix using custom distance option
++ [x] Rating: minor improve code
++ [x] Ribbon menu: fix button group width calc, issue #1296
++ [x] CSS: fix `align-items` property for `selected` and `tag-input`, pull-request #1306, issue #1305
++ [x] Spinner: fix twice click effect on Android devices, issue #1307
++ [x] Input: fix triggering `change` for `autocomplete` feature, issue #1310
++ [x] CalendarPicker: fix selection when using `val(...)`, issue #1308
++ [x] Popovers: fix change value for attribute `data-popover-text`, issue #1309
++ [x] Charms: add charm `tiles` and `notifies` with classes `.charm-tile` and `.charm-notify`
+
+### 4.2.34
++ [x] Sidebar: fix error for shifting content issue #1294
++ [x] Checkbox: fix create rule
++ [x] Radio: fix create rule
++ [x] Switch: fix create rule
++ [x] Select: fix rotating drop down toggle 
++ [x] Tabs: fix switching content, issue #1297 
++ [x] Input: fix autocomplete list, issue #1298
++ [x] Metro: return to strict mode
++ [x] Toast: fix creating error 
++ [x] Streamer: fix select stream 
+
+### 4.2.33
++ [x] Init: fixed initialization process for widgets, loaded over Ajax
+
+### 4.2.32
++ [x] File: fix event trigger `on-select` for FF when user drops files 
++ [x] File: fix event trigger `on-select` for IE11 when user drops files
++ [x] Dialog: fix `onChange` event
++ [x] Table: add event `data-on-data-load-error`
+
+### 4.2.31
++ [x] Sidebar: add submenu support
++ [x] Sidebar: add any content support with li class `.content-container`
++ [x] Sidebar: add attribute `data-size` to set sidebar width
++ [x] Sidebar: add attribute `data-position` to set sidebar `right` or `left` (default)
++ [x] Array: add function (if not exists) `contains(val, idx)`
++ [x] String: add function `toArray(delim, type, format)` this function is equal to `Utils.strToArray`
++ [x] Calendar: add attribute `data-exclude-day`. Comma separated string with day number from 0 (Sunday) to 6 (Saturday) 
++ [x] Calendar: add attribute `data-show-week-number="true|false"` 
++ [x] Calendar: add attribute `data-week-number-click="true|false"` 
++ [x] Calendar: add event `data-on-week-number-click="..."` 
++ [x] Calendar: add event `data-on-day-draw="..."`
++ [x] Calendar: fix day selection for disabled 
++ [x] Calendar: add class `day-border` and attribute `data-day-border="true|false"`
++ [x] Validator: fix error if value is undefined  
++ [x] Validator: function `date` now support additional input attribute `data-value-format` for non ECMAScript dates
++ [x] Validator: function `date` now support additional input attribute `data-value-locale` for non ECMAScript dates
++ [x] Z-index: set equal z-index for `appbar`, `bottomnav`, `bottomsheet`, `tabsmaterial`
++ [x] Carousel: rename attribute `data-bullet-style` to `data-bullets-style`
++ [x] Carousel: add attribute `data-bullets-size` with values `default`, `mini`, `small`, `large`
++ [x] Carousel: add style `cycle`
++ [x] Popover: set default value for `data-popover-timeout` to `10`, issue #1277
++ [x] Storage: Objects `storage` and `session storage` combined into one object. Access to objects remained unchanged: `Metro.storage`, `Metro.session`
++ [x] String: `String.toDate` now support `locale` as second parameter: `"21 грудня 1972".toDate('%d %m %y', 'uk-UA')`
++ [x] Navview: upd docs and less
++ [x] Lists: upd `items-list`, `feed-list`, `group-list` to use with not a list element.
++ [x] Table: minor improve update
++ [x] Table: add attribute `data-horizontal-scroll-stop`. You can use this attribute to define media to stop scrolling.
+
+### 4.2.30
++ [x] Toast: add function `init(options)`, now you can set toast `top` position and `distance`. See docs for details.
++ [x] t-menu: less code moved to separate file
++ [x] h-menu: less code moved to separate file
++ [x] drop-utils: now contains classes for drop-down: `dropdown-toggle`, `drop-up`, `drop-left`, `drop-right`
++ [x] sidenav-m3: fix icon position for submenu, issue #1266
++ [x] Splitter: fix gutter for nested splitters
++ [x] Splitter: fix calc min size if value for attribute `data-min-sizes` comma separated value
++ [x] Docs: fix mistake in docs for `sidenav-counter-expand-*`, issue #1269
++ [x] Docs: fix mistake in docs for `spacing`
++ [x] Command button: set `font-weight` to override it when use in wordpress
++ [x] Command button: set `line-height` to override it when use in wordpress
++ [x] Inline-form: change behavior for `.form-group`
++ [x] Carousel: add events `onSlideShow(HTMLElement slide)`, `onSlideHide(HTMLElement slide)` 
++ [x] Examples: fix `start-screen` for scroll on mobile devices 
+
+### 4.2.29
++ [x] Validator: fix for issue #1254
++ [x] Inputs: `required`, `invalid`, `valid` classes now works only for inputs.
++ [x] Validator: use attribute `data-use-required-class` to disable or enable class `required` for inputs with `data-validate=required`
++ [x] Popover: fix firing event `onPopoverShow`, issue #1258
++ [x] Notify: fix default options from new notify
++ [x] Inputs: fix toggle attribute `disabled` for inputs with `role`
++ [x] Splitter: add service classes `.stop-select`, `.stop-pointer`
++ [x] Table: fix issue #1262
++ [x] Table: optimize functions `deleteItem`, `deleteItemByName`
++ [x] List: optimize functions `deleteItem`
++ [x] Table: add attribute `data-horizontal-scroll` to enable horizontal scrolling for wide table 
++ [x] Table: add attribute `data-cls-table-container`
++ [x] Tabs: add attribute `data-tabs-type`. This attribute sets new tab types for expanded horizontal tabs. Values: `text`, `group`, `pills`  
+
+### 4.2.28
++ [x] Sidebar: fix z-index
++ [x] Docs: fix mistakes in table options
++ [x] Utils css: fix class `m4-cloak` 
++ [x] Validator: add argument `data` to events `data-on-validate-form`, `data-on-error-form`, `data-on-submit`. Data is a `object` and contains pairs: `input-name: input-value` for form elements.
++ [x] Popover: fix close popover
++ [x] v-menu: fix drop down for `v-menu` -> `v-menu` 
++ [x] Validator: fix for issue #1254
++ [x] Utils: add functions `parseCard(val)`, `parsePhone(val)`. Functions remove all not numeric chars from value
++ [x] Table: add data formats `card`, `phone`
++ [x] List: add data formats `card`, `phone`
++ [x] Sorter: add data formats `card`, `phone`
+
+### 4.2.27
++ [x] Input: remove -webkit-autofill background color
++ [x] App bar: fixed class `ml-auto`
++ [x] v-menu: add service class `for-dropdown`, added automatically, when add role `dropdown
++ [x] d-menu, v-menu: remove `min-width` for item 
++ [x] d-menu: fix icon position in item
++ [x] Cloak: add class `.m4-cloak` for `body` to remove blinking initiated components
++ [x] Cloak: add meta tag `metro4:cloak` can receive values: `show`, `fade` (default)  
++ [x] Cloak: add meta tag `metro4:cloak_duration` can receive integer values, default `500`. Use for `fade`  
++ [x] Dialog: add element as context to events
++ [x] Popovers: fix minor bugs, issue #1179, issue #1238
++ [x] Popovers: add attribute `data-close-button="true|false""`
++ [x] Popovers: now you can change popover content and position at runtime with attributes `data-popover-text`, `data-popover-position`
++ [x] Popovers: add attribute `data-cls-popover-content`
++ [x] Popovers: change context for events to `element` for which popover is created
++ [x] Colors: add branding color classes `bg-*` for facebook, twitter, github, gitlab, amazon, bootstrap
++ [x] Select: fix add, remove `focused` class
++ [x] Select: add class `input-large`
++ [x] Spinner: add class `input-large`
++ [x] Tag input: add class `input-large`
++ [x] Tag input: add auto resize to input
++ [x] Table: add methods `deleteItem(field_index, val)`, `deleteItemByName(field_name, val)`. Function return list instance. `Val` can be function or primitive value. Method can not redraw list, to redraw call method `draw()`.
++ [x] Utils: add function `arrayDeleteByMultipleKeys(arr, /*array*/ indexes)`. Function return new Array.
++ [x] Toolbar: fix for vertical layout
++ [x] Splitter: add attribute `data-save-state`, required element `ID`. If `true`, panes sizes stored into `Storage`
++ [x] Table: add method `setData(obj)` 
++ [x] Table: add method `setHeads(obj)`, `setHeadItem(obj)`  
++ [x] Table: add method `setItems(obj)` 
++ [x] List: add method `deleteItem(val)`. Function return list instance. `Val` can be function or primitive value. Method can not redraw list, to redraw call method `draw()`.
+
 ### 4.2.26
 + [x] Image compare: fix for touch devices
 + [x] Image magnifier: fix for touch devices

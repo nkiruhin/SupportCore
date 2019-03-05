@@ -1,6 +1,10 @@
 @import (once) "include/vars";
 @import (once) "include/mixins";
 
+.m4-cloak {
+    opacity: 0;
+}
+
 .transition {
     transition: all .3s linear;
 }
@@ -106,54 +110,6 @@
         top: .25rem;
         z-index: 102;
         transform: rotate(-45deg);
-    }
-}
-
-[data-role*=dropdown] {
-    //display: block;
-}
-
-.dropdown-toggle {
-
-    .toggle();
-
-    &.drop-marker-light, &.marker-light  {
-        &::before {
-            border-color: @white;
-        }
-    }
-
-    &.no-marker {
-        &::before {
-            display: none;
-        }
-    }
-
-    &.active-toggle {
-        &::before {
-            .rotate(135deg);
-            transition: @transition-short;
-        }
-    }
-
-    &.marker-center {
-        &::before {
-            left: 50%;
-            top: 50%;
-            margin-left: 0;
-            margin-top: 0;
-            .translateX(-50%);
-            .translateY(-50%);
-            .rotate(-45deg);
-        }
-        &.active-toggle {
-            &::before {
-                .translateX(-50%);
-                .translateY(-50%);
-                .rotate(135deg);
-                transition: @transition-short;
-            }
-        }
     }
 }
 

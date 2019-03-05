@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -117,11 +118,20 @@ namespace SupportCore.Controllers
             string Priority = "";
             if (String.IsNullOrEmpty(glfilter.UserId))
             {
-                glfilter.StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
+                if(HttpContext.User.IsInRole("Пользователь")) {
+                    glfilter.PersonId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
+                    glfilter.isInform = true;
+                } else { 
+                    glfilter.StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
+                }
             }
             if (glfilter.StatusId == 100)//for due tickets
             {
-                filterExpresson = p => p.DueDate.Date < DateTime.Now.Date && p.StaffId == glfilter.StaffId && p.StatusId == 1;
+                if (!String.IsNullOrEmpty(glfilter.PersonId)) {
+                    filterExpresson = p => p.DueDate.Date < DateTime.Now.Date && p.PersonId == glfilter.PersonId && p.StatusId == 1 && p.IsInform;
+                } else { 
+                    filterExpresson = p => p.DueDate.Date < DateTime.Now.Date && p.StaffId == glfilter.StaffId && p.StatusId == 1;
+                }
             }
             else { 
             filterExpresson = GetFilter(glfilter).Item1;
@@ -185,7 +195,10 @@ namespace SupportCore.Controllers
             {
                 return NotFound();
             }
- 
+            if (HttpContext.User.IsInRole("Пользователь"))
+            {
+                ticket.TicketThreads = ticket.TicketThreads.Where(n => n.IsInform).ToList();
+            }
             ViewBag.Source = new SourceList().List.SingleOrDefault(n => n.Value == ticket.SourceId.ToString())?.Text;
             return PartialView(ticket);
         }
@@ -214,7 +227,10 @@ namespace SupportCore.Controllers
             {
                 return NotFound();
             }
-
+            if (HttpContext.User.IsInRole("Пользователь"))
+            {
+                ticket.TicketThreads = ticket.TicketThreads.Where(n => n.IsInform).ToList();
+            }
             ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name");
             ViewData["SourceId"] = new SourceList().List;
             return PartialView(ticket);
@@ -223,12 +239,23 @@ namespace SupportCore.Controllers
         [HttpGet]
         public async Task<IActionResult> Create(uint RequestId=0,string PersonId=null)
         {
-            var Staff = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User));
-            Ticket ticket = new Ticket
+            Person Staff = null;
+            Ticket ticket = new Ticket();
+            if (User.IsInRole("Пользователь"))
             {
-                StaffId = Staff?.Id,
-                DueDate =DateTime.Now.AddHours(24)
-            };
+               var Person = _context.Person.AsNoTracking()
+                   .Include(o=>o.Organization)
+                   .SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User));
+                PersonId = Person.Id;
+                Staff = await _context.Person.AsNoTracking().SingleOrDefaultAsync(p => p.Id == Person.Organization.CuratorId);
+                ticket.SourceId = 4;
+            }
+            else { 
+                Staff = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User));
+            }
+
+            ticket.StaffId = Staff?.Id;
+            ticket.DueDate = DateTime.Now.AddHours(24);
             if (RequestId != 0)
             {
                 var email = await _emailService.ReadEmailAsync(RequestId, _context);
@@ -241,7 +268,7 @@ namespace SupportCore.Controllers
                 ticket.PersonId = PersonId;
                 ViewBag.PersonName = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == PersonId).Name;
             }
-            ViewBag.StaffName = Staff.Name;
+            ViewBag.StaffName = Staff?.Name;
             ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name");
             ViewData["SourceId"] = new SourceList().List;
             return PartialView(ticket);
@@ -259,6 +286,7 @@ namespace SupportCore.Controllers
             int startFormEntry = 7;
             ticket.DateCreate = ticket.DateUpdate=DateTime.Now;
             ticket.StatusId = 1; // Open status, see Event model 
+            ticket.IsInform = isInform;
             var Staff = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User));
             var Person = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == ticket.PersonId);
             ticket.FormEntryValue = new List<FormEntryValue>();
@@ -284,7 +312,8 @@ namespace SupportCore.Controllers
                     Poster = Staff.Name,
                     PersonId = Staff.Id,
                     Body = $"Создана заявка.{Inform}",
-                    Type = 0
+                    Type = 0,
+                    IsInform = isInform
                 }
             };
             try
@@ -295,6 +324,9 @@ namespace SupportCore.Controllers
                 }
                 _context.Add(ticket);
                 await _context.SaveChangesAsync();
+                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
+                TicketThread ticketThread = ticket.TicketThreads.FirstOrDefault();
+                await _contextHub.Clients.GroupExcept("Staff", ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString(), $"<a href=\"/Tickets/Edit/{ticketThread.TicketId}\" data-ajax=\"true\" data-ajax-method=\"GET\" data-ajax-update=\"#cell-content\" data-ajax-mode=\"update\" title=\"Перейти\">Заявка #{ticketThread.TicketId}:<\a> {ticketThread.Title}");
                 if (isInform)
                 {
                     string message = $"По вашему обращению открыта заявка #{ticket.Id}. Благодарим за обращение";
@@ -305,9 +337,7 @@ namespace SupportCore.Controllers
                     }
                     await _emailService.SendEmailAsync(Person.Email, $"Создана заявка #{ticket.Id}", message);
                 }
-                string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
-                TicketThread ticketThread = ticket.TicketThreads.FirstOrDefault();
-                await _contextHub.Clients.AllExcept(ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString(), $"Заявка #{ticketThread.TicketId}: {ticketThread.Title}");
+               
                 return RedirectToAction(nameof(Edit), new { id = ticket.Id });
             }
             catch (DbUpdateException ex)
@@ -335,6 +365,7 @@ namespace SupportCore.Controllers
                 par.Remove(new KeyValuePair<String, Microsoft.Extensions.Primitives.StringValues>("Files", ""));
             }
             int startFormEntry = 6;
+            if (HttpContext.User.IsInRole("Пользователь")) startFormEntry = 3;
             Ticket ticketforUpdate = await _context.Tickets
                 .Include(fe=>fe.FormEntryValue)
                 .SingleOrDefaultAsync(t => t.Id == id);
@@ -379,7 +410,8 @@ namespace SupportCore.Controllers
                  (filter.DateCreate2 == null || p.DateCreate <= filter.DateCreate2) &&
                  (filter.SourceId == 0 || p.SourceId == filter.SourceId) &&
                  (filter.StatusId == 0 || p.StatusId == filter.StatusId) &&
-                 (filter.CategoryId == 0 || p.CategoryId == filter.CategoryId);
+                 (filter.CategoryId == 0 || p.CategoryId == filter.CategoryId)&&
+                 (p.IsInform == filter.isInform ||p.IsInform);
             return new Tuple<Func<Ticket, bool>, string>(exp, filter.Priority);
         }
 
@@ -426,6 +458,19 @@ namespace SupportCore.Controllers
         // Get Tickets/GetTicketCounters
         public JsonResult GetTicketCounters()
         {
+            if (HttpContext.User.IsInRole("Пользователь"))
+            {
+                var PersonId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
+                Counters count = new Counters
+                {
+                    overlayTicketCount = _context.Tickets.AsNoTracking().Where(p => p.DueDate.Date < DateTime.Now.Date && p.PersonId == PersonId && p.StatusId == 1&&p.IsInform).Count(),
+                    openTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 1 && p.PersonId == PersonId&&p.IsInform).Count(),
+                    closeTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 2 && p.PersonId == PersonId&&p.IsInform).Count(),
+                    myTicketCount = _context.Tickets.AsNoTracking().Where(p => p.PersonId == PersonId&& p.IsInform).Count()
+                };
+                return Json(count);
+            }
+            else { 
             var StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
             Counters count = new Counters {
                 overlayTicketCount = _context.Tickets.AsNoTracking().Where(p => p.DueDate.Date < DateTime.Now.Date && p.StaffId == StaffId && p.StatusId == 1).Count(),
@@ -433,7 +478,9 @@ namespace SupportCore.Controllers
                 closeTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 2 && p.StaffId == StaffId).Count(),
                 myTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StaffId == StaffId).Count()
             };
-            return Json(count);
+                return Json(count);
+            }
+            
         }
         // Get: Tickets/Delete/5
         [HttpGet]

@@ -4,19 +4,24 @@ Metro 4 is an MIT-licensed open source project.
 It's an independent project with its ongoing development made possible entirely thanks to the support by these awesome Backers. 
 If you'd like to join them, please consider:
 
-- [Become a backer or sponsor on Patreon](https://www.patreon.com/metroui).
+- [Become a backer or sponsor on Patreon](https://www.patreon.com/metroui)
+- [Become a backer or sponsor on Open Collective](https://opencollective.com/metro4#backer)
 
 <!--
-<h2 align="center">Platinum via Patreon</h2>
+<h2 align="center">Platinum sponsors</h2>
 -->
 
-<!--
-<h2 align="center">Gold via Patreon</h2>
--->
 
-<!--
-<h2 align="center">Silver via Patreon</h2>
--->
+<h2 align="center">Gold sponsors</h2>
+<div align="center">
+<a href="https://openbuilds.com/"><img src="https://metroui.org.ua/images/OpenBuilds_logo.png"></a>
+</div>
+
+<h4 align="center">Silver sponsors</h4>
+<div align="center">
+<a href="http://www.infinitytechsystems.com/"><img src="https://metroui.org.ua/images/ITSLogoSmall.png"></a>
+<a href="https://www.triplebeta.nl/"><img src="https://metroui.org.ua/images/triplebeta.png"></a>
+</div>
 
 <!--
 <h2 align="center">Bronze via Patreon</h2>
@@ -32,6 +37,7 @@ If you'd like to join them, please consider:
  - [Jonathan](https://www.patreon.com/user/creators?u=10019621) 
  - [Mike](https://www.patreon.com/user/creators?u=2603858) 
  - [Hebert Alves](https://www.patreon.com/user/creators?u=10134199)
+ - [Arnaud Dagnelies](https://www.patreon.com/user/creators?u=13947239)
 
 <h2 align="center">Project donors (one pay or former patron)</h2>
 

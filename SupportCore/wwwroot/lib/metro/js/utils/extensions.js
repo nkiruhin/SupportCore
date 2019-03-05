@@ -52,26 +52,38 @@ Array.prototype.unique = function () {
     return a;
 };
 
-if (typeof Array.from !== "function") {
-    Array.prototype.from = function() {
+if (!Array.from) {
+    Array.from = function(val) {
         var i, a = [];
-        if (Utils.isNull(this.length)) {
-            throw new Error("Value is not iterable");
+
+        if (val.length === undefined && typeof val === "object") {
+            return Object.values(val);
         }
-        for(i = 0; i < this.length; i++) {
-            a.push(this[i]);
+
+        if (val.length !== undefined) {
+            for(i = 0; i < val.length; i++) {
+                a.push(val[i]);
+            }
+            return a;
         }
-        return a;
+
+        throw new Error("Value can not be converted to array");
+    };
+}
+
+if (typeof Array.contains !== "function") {
+    Array.prototype.contains = function(val, from){
+        return this.indexOf(val, from) > -1;
     }
 }
 
 /**
  * Number.prototype.format(n, x, s, c)
  *
- * @param integer n: length of decimal
- * @param integer x: length of whole part
- * @param mixed   s: sections delimiter
- * @param mixed   c: decimal delimiter
+ * @param  n: length of decimal
+ * @param  x: length of whole part
+ * @param  s: sections delimiter
+ * @param  c: decimal delimiter
  */
 Number.prototype.format = function(n, x, s, c) {
     var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\D' : '$') + ')',
@@ -88,20 +100,59 @@ String.prototype.contains = function() {
     return !!~String.prototype.indexOf.apply(this, arguments);
 };
 
-String.prototype.toDate = function(format)
-{
-    var normalized, normalizedFormat, formatItems, dateItems;
+String.prototype.toDate = function(format, locale) {
+    var result;
+    var normalized, normalizedFormat, formatItems, dateItems, checkValue;
     var monthIndex, dayIndex, yearIndex, hourIndex, minutesIndex, secondsIndex;
-    var today, year, month, day, hour, minute, second;
+    var year, month, day, hour, minute, second;
+    var parsedMonth;
 
-    if (!Utils.isValue(format)) {
-        format = "yyyy-mm-dd";
+    locale = locale || "en-US";
+
+    var monthNameToNumber = function(month){
+        var d, months, index, i;
+
+        month = month.substr(0, 3);
+
+        if (
+               locale !== undefined
+            && locale !== "en-US"
+            && Locales !== undefined
+            && Locales[locale] !== undefined
+            && Locales[locale]['calendar'] !== undefined
+            && Locales[locale]['calendar']['months'] !== undefined
+        ) {
+            months = Locales[locale]['calendar']['months'];
+            for(i = 12; i < months.length; i++) {
+                if (months[i].toLowerCase() === month.toLowerCase()) {
+                    index = i - 12;
+                    break;
+                }
+            }
+            month = Locales["en-US"]['calendar']['months'][index];
+        }
+
+        d = Date.parse(month + " 1, 1972");
+        if(!isNaN(d)){
+            return new Date(d).getMonth() + 1;
+        }
+        return -1;
+    };
+
+    if (format === undefined || format === null || format === "") {
+        return new Date(this);
     }
 
-    normalized      = this.replace(/[^a-zA-Z0-9%]/g, '-');
+    // normalized      = this.replace(/[^a-zA-Z0-9%]/g, '-');
+    normalized      = this.replace(/[\/,.:\s]/g, '-');
     normalizedFormat= format.toLowerCase().replace(/[^a-zA-Z0-9%]/g, '-');
     formatItems     = normalizedFormat.split('-');
     dateItems       = normalized.split('-');
+    checkValue      = normalized.replace(/\-/g,"");
+
+    if (checkValue.trim() === "") {
+        return "Invalid Date";
+    }
 
     monthIndex  = formatItems.indexOf("mm") > -1 ? formatItems.indexOf("mm") : formatItems.indexOf("%m");
     dayIndex    = formatItems.indexOf("dd") > -1 ? formatItems.indexOf("dd") : formatItems.indexOf("%d");
@@ -110,17 +161,59 @@ String.prototype.toDate = function(format)
     minutesIndex  = formatItems.indexOf("ii") > -1 ? formatItems.indexOf("ii") : formatItems.indexOf("mi") > -1 ? formatItems.indexOf("mi") : formatItems.indexOf("%i");
     secondsIndex  = formatItems.indexOf("ss") > -1 ? formatItems.indexOf("ss") : formatItems.indexOf("%s");
 
-    today = new Date();
+    if (monthIndex > -1 && dateItems[monthIndex] !== "") {
+        if (isNaN(parseInt(dateItems[monthIndex]))) {
+            dateItems[monthIndex] = monthNameToNumber(dateItems[monthIndex]);
+            if (dateItems[monthIndex] === -1) {
+                return "Invalid Date";
+            }
+        } else {
+            parsedMonth = parseInt(dateItems[monthIndex]);
+            if (parsedMonth < 1 || parsedMonth > 12) {
+                return "Invalid Date";
+            }
+        }
+    } else {
+        return "Invalid Date";
+    }
 
-    year  = yearIndex >-1 ? dateItems[yearIndex] : today.getFullYear();
-    month = monthIndex >-1 ? dateItems[monthIndex]-1 : today.getMonth()-1;
-    day   = dayIndex >-1 ? dateItems[dayIndex] : today.getDate();
+    year  = yearIndex >-1 && dateItems[yearIndex] !== "" ? dateItems[yearIndex] : null;
+    month = monthIndex >-1 && dateItems[monthIndex] !== "" ? dateItems[monthIndex] : null;
+    day   = dayIndex >-1 && dateItems[dayIndex] !== "" ? dateItems[dayIndex] : null;
 
-    hour    = hourIndex >-1 ? dateItems[hourIndex] : today.getHours();
-    minute  = minutesIndex>-1 ? dateItems[minutesIndex] : today.getMinutes();
-    second  = secondsIndex>-1 ? dateItems[secondsIndex] : today.getSeconds();
+    hour    = hourIndex >-1 && dateItems[hourIndex] !== "" ? dateItems[hourIndex] : null;
+    minute  = minutesIndex>-1 && dateItems[minutesIndex] !== "" ? dateItems[minutesIndex] : null;
+    second  = secondsIndex>-1 && dateItems[secondsIndex] !== "" ? dateItems[secondsIndex] : null;
 
-    return new Date(year,month,day,hour,minute,second);
+    result = new Date(year,month-1,day,hour,minute,second);
+
+    return result;
+};
+
+String.prototype.toArray = function(delimiter, type, format){
+    var str = this;
+    var a;
+
+    type = type || "string";
+    delimiter = delimiter || ",";
+    format = format === undefined || format === null ? false : format;
+
+    a = (""+str).split(delimiter);
+
+    return a.map(function(s){
+        var result;
+
+        switch (type) {
+            case "int":
+            case "integer": result = parseInt(s); break;
+            case "number":
+            case "float": result = parseFloat(s); break;
+            case "date": result = !format ? new Date(s) : s.toDate(format); break;
+            default: result = s.trim();
+        }
+
+        return result;
+    });
 };
 
 Date.prototype.getWeek = function (dowOffset) {
@@ -158,7 +251,7 @@ Date.prototype.format = function(format, locale){
         locale = "en-US";
     }
 
-    var cal = (Metro.locales[locale] !== undefined ? Metro.locales[locale] : Metro.locales["en-US"])['calendar'];
+    var cal = (Metro.locales !== undefined && Metro.locales[locale] !== undefined ? Metro.locales[locale] : Metro.locales["en-US"])['calendar'];
 
     var date = this;
     var nDay = date.getDay(),
