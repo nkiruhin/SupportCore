@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2005
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportCore", "SupportCore\SupportCore.csproj", "{AAC9DA84-CFFC-4F94-9186-881B81A66777}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SupportCore", "SupportCore\SupportCore.csproj", "{AAC9DA84-CFFC-4F94-9186-881B81A66777}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +20,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		LessCompiler = aac9da84-cffc-4f94-9186-881b81a66777
 		SolutionGuid = {33E68276-FFF8-46A4-B222-1909AE0D7D4B}
 	EndGlobalSection
 EndGlobal

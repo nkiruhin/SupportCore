@@ -87,14 +87,19 @@
         </ul>
         @*Rigth menu*@
         <div class="app-bar-container ml-auto order-3 order-md-4">
-            <div class="app-bar-item"><span class="registred"></span></div>
+
             <div class="app-bar-item">
                 <span class="eventAlarm" data-role="popover"
-                        data-popover-text="<button class='button info outline'>Все события..</button>"
-                        data-popover-position="bottom" data-popover-hide="0"
-                        data-popover-trigger="click"></span>
-                <span class="badge inside bg-red fg-white" id="eventCount">1</span>
+                      data-popover-text="<p><a href='/TicketThreads/List' 
+                           data-ajax='true' 
+                           data-ajax-method='GET'
+                           data-ajax-update='#cell-content'
+                           data-ajax-mode='update'
+                           class='button info outline'>Все события..</a>"
+                      data-popover-position="bottom" data-popover-hide="0"
+                      data-popover-trigger="click"></span>
             </div>
+            <div class="app-bar-item"><span class="registred"></span></div>
             <div class="app-bar-container">
                 <a class="app-bar-item dropdown-toggle marker-light" href="#"><span class="mif-cog">  @ViewBag.UserName</span></a>
                 <ul class="d-menu place-right" data-role="dropdown">
@@ -115,45 +120,17 @@
                     </li>
                 </ul>
             </div>
-
-            @*<div class="app-bar-container">
-            <a class="app-bar-item dropdown-toggle marker-light pl-1 pr-5" href="#">
-                <img class="rounded" data-role="gravatar" data-email="sergey@pimenov.com.ua" data-size="25">
-            </a>
-            <ul class="v-menu place-right" data-role="dropdown">
-                <li><a href="">Signed as <strong>olton</strong></a></li>
-                <li class="divider"></li>
-                <li><a href="">Your profile</a></li>
-                <li><a href="">Your stars</a></li>
-                <li><a href="">Your gists</a></li>
-                <li class="divider"></li>
-                <li><a href="">Help</a></li>
-                <li><a href="">Settings</a></li>
-                <li><a href="">Sign out</a></li>
-            </ul>
-        </div>*@
         </div>
     </header>
 </div>
 <script>
-    $(function () {
+ $(function () {
         var url = '@Url.Action("GetSipSettings")'
-        $.getJSON(url, function (data) {
-            var configuration = {
-                uri: data.uri,
-                wsServers: ['ws://' + data.wsServer],
-                authorizationUser: data.sipUser,
-                password: data.sipPassword,
-                register: true,
-                log: {
-                    level: 0
-                },
-                //traceSip: true,
-            }
-            sipClientStart(configuration)
-        });      
+        @if (!User.IsInRole("Пользователь")) { 
+        @:sipClientStart(url);
         //Signalr client
-        signalRStart()
+        @:signalRStart()
+        }
     })
   
 </script>

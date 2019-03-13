@@ -112,6 +112,7 @@ namespace SupportCore.Controllers
         //}
         public JsonResult IndexJson(int length, int start, int draw, int filter,Filter glfilter=null)
         {
+           
             //string Search = this.Request.Query["search[value]"];
             //int count = _context.Tickets.AsNoTracking().Count(); 
             Func<Ticket, bool> filterExpresson; 
@@ -125,6 +126,7 @@ namespace SupportCore.Controllers
                     glfilter.StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
                 }
             }
+            
             if (glfilter.StatusId == 100)//for due tickets
             {
                 if (!String.IsNullOrEmpty(glfilter.PersonId)) {
@@ -132,6 +134,9 @@ namespace SupportCore.Controllers
                 } else { 
                     filterExpresson = p => p.DueDate.Date < DateTime.Now.Date && p.StaffId == glfilter.StaffId && p.StatusId == 1;
                 }
+            } else if (glfilter.StatusId == 101)
+            {
+                filterExpresson = p => !p.IsAnswered&&(p.StaffId==glfilter.StaffId || String.IsNullOrEmpty(p.StaffId))&&p.StatusId == 1;
             }
             else { 
             filterExpresson = GetFilter(glfilter).Item1;
@@ -287,6 +292,15 @@ namespace SupportCore.Controllers
             ticket.DateCreate = ticket.DateUpdate=DateTime.Now;
             ticket.StatusId = 1; // Open status, see Event model 
             ticket.IsInform = isInform;
+            bool isUser = false;
+            if (HttpContext.User.IsInRole("Пользователь")) { // Set answered flag to false for users tickets
+                ticket.IsAnswered = false;
+                isUser = true; }
+            else
+            {
+                ticket.IsAnswered = true;
+                ticket.LastResponse = DateTime.Now;
+            }
             var Staff = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User));
             var Person = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == ticket.PersonId);
             ticket.FormEntryValue = new List<FormEntryValue>();
@@ -311,7 +325,7 @@ namespace SupportCore.Controllers
                     Title = "Заявка создана",
                     Poster = Staff.Name,
                     PersonId = Staff.Id,
-                    Body = $"Создана заявка.{Inform}",
+                    Body = $"Создана заявка. {Inform}",
                     Type = 0,
                     IsInform = isInform
                 }
@@ -325,8 +339,7 @@ namespace SupportCore.Controllers
                 _context.Add(ticket);
                 await _context.SaveChangesAsync();
                 string[] ExceptCon = SignalrHub._connections.GetConnections(_userManager.GetUserId(HttpContext.User)).Cast<string>().ToArray();
-                TicketThread ticketThread = ticket.TicketThreads.FirstOrDefault();
-                await _contextHub.Clients.GroupExcept("Staff", ExceptCon).SendAsync("ReceiveMessage", ticketThread.Poster, ticketThread.DateCreate.ToString(), $"<a href=\"/Tickets/Edit/{ticketThread.TicketId}\" data-ajax=\"true\" data-ajax-method=\"GET\" data-ajax-update=\"#cell-content\" data-ajax-mode=\"update\" title=\"Перейти\">Заявка #{ticketThread.TicketId}:<\a> {ticketThread.Title}");
+                await _contextHub.Clients.GroupExcept("Staff", ExceptCon).SendAsync("ReceiveMessage", Staff.Name, DateTime.Now.ToString("g"), $"<a href=\"/Tickets/Edit/{ticket.Id}\" data-ajax=\"true\" data-ajax-method=\"GET\" data-ajax-update=\"#cell-content\" data-ajax-mode=\"update\" title=\"Перейти\">Заявка #{ticket.Id}</a>: Добавлена новая заявка",isUser);
                 if (isInform)
                 {
                     string message = $"По вашему обращению открыта заявка #{ticket.Id}. Благодарим за обращение";
@@ -410,8 +423,8 @@ namespace SupportCore.Controllers
                  (filter.DateCreate2 == null || p.DateCreate <= filter.DateCreate2) &&
                  (filter.SourceId == 0 || p.SourceId == filter.SourceId) &&
                  (filter.StatusId == 0 || p.StatusId == filter.StatusId) &&
-                 (filter.CategoryId == 0 || p.CategoryId == filter.CategoryId)&&
-                 (p.IsInform == filter.isInform ||p.IsInform);
+                 (filter.CategoryId == 0 || p.CategoryId == filter.CategoryId) &&
+                 (p.IsInform == filter.isInform || p.IsInform);
             return new Tuple<Func<Ticket, bool>, string>(exp, filter.Priority);
         }
 
@@ -466,18 +479,20 @@ namespace SupportCore.Controllers
                     overlayTicketCount = _context.Tickets.AsNoTracking().Where(p => p.DueDate.Date < DateTime.Now.Date && p.PersonId == PersonId && p.StatusId == 1&&p.IsInform).Count(),
                     openTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 1 && p.PersonId == PersonId&&p.IsInform).Count(),
                     closeTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 2 && p.PersonId == PersonId&&p.IsInform).Count(),
-                    myTicketCount = _context.Tickets.AsNoTracking().Where(p => p.PersonId == PersonId&& p.IsInform).Count()
+                    myTicketCount = _context.Tickets.AsNoTracking().Where(p => p.PersonId == PersonId&& p.IsInform).Count()                 
                 };
                 return Json(count);
-            }
-            else { 
-            var StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
-            Counters count = new Counters {
-                overlayTicketCount = _context.Tickets.AsNoTracking().Where(p => p.DueDate.Date < DateTime.Now.Date && p.StaffId == StaffId && p.StatusId == 1).Count(),
-                openTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 1 && p.StaffId == StaffId).Count(),
-                closeTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 2 && p.StaffId == StaffId).Count(),
-                myTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StaffId == StaffId).Count()
-            };
+                }
+                else { 
+                var StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
+                Counters count = new Counters {
+                    overlayTicketCount = _context.Tickets.AsNoTracking().Where(p => p.DueDate.Date < DateTime.Now.Date && p.StaffId == StaffId && p.StatusId == 1).Count(),
+                    openTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 1 && p.StaffId == StaffId).Count(),
+                    closeTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StatusId == 2 && p.StaffId == StaffId).Count(),
+                    myTicketCount = _context.Tickets.AsNoTracking().Where(p => p.StaffId == StaffId).Count(),
+                    noanswerTicketCount = _context.Tickets.AsNoTracking().Where(p => !p.IsAnswered && (p.StaffId == StaffId || String.IsNullOrEmpty(p.StaffId)) && p.StatusId == 1).Count(),
+                    ticketThreadsCount = _context.TicketThreads.AsNoTracking().OrderByDescending(n => n.DateCreate).Where(n => n.DateCreate.Date == DateTime.Now.Date).Count()
+                };
                 return Json(count);
             }
             

@@ -1,3 +1,9 @@
+### 4.2.38
++ [x] ListView: add class `.vertical-layout` for `icons-*` view mode
++ [x] Windows: partial fixed behavior window when user click on min, max button in min, max state, issue #1331 
++ [x] TreeView: fix wrong works node collapse, expand, issue #1332
++ [x] NavView: fix calc main menu height 
+
 ### 4.2.37
 + [x] Input material: fix error when creating element, issue #1318
 + [x] Calendar: fix `justify-content` for `days-row`

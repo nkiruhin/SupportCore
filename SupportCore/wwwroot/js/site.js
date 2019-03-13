@@ -11,44 +11,57 @@
 //    // }
 
 //});
-var sipClientStart = function (configuration) {
-    phone = new SIP.UA(configuration);
-    phone.start();
-    phone.on('disconnected', function (e) {
-        console.log("Ошибка подключения")
-        $('.registred').toggleClass('mif-phonelink-off')
-        phone.stop();
-    });
-    phone.on('registrationFailed', function (e) {
-        console.log("Ошибка регистрации")
-        configuration.uri = null;
-        configuration.password = null;
-        $('.registred').toggleClass('mif-phonelink-off')
-        phone.stop();
-    });
-    phone.on('registered', function (e) {
-        $('.registred').toggleClass('mif-phonelink');
-    });
-    phone.on('invite', function (session) {
-        console.log('incoming');
-        console.log(session.remoteIdentity.displayName);
-        console.log(session.remoteIdentity.uri.user);
-        var display_name = session.remoteIdentity.displayName || session.remoteIdentity.uri.user;
-        var url = '@Url.Action("GetPersonForPhone", "Person")/' + display_name;
-        var xhr = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-            if (this.readyState === 4 && this.status === 200) {
-                console.log(this.responseText);
-                var notify = Metro.notify;
-                notify.create(this.responseText, 'Звонок в ' + new Date().toLocaleTimeString('ru-RU'), {
-                    keepOpen: true,
-                    width: 'auto',
-                });
-            }
-        };
-        // 2. Конфигурируем его: GET-запрос на URL 'phones.json'
-        xhr.open('GET', url, true);
-        xhr.send();
+var sipClientStart = function (url) {
+    $.getJSON(url, function (data) {
+        var configuration = {
+            uri: data.uri,
+            wsServers: ['ws://' + data.wsServer],
+            authorizationUser: data.sipUser,
+            password: data.sipPassword,
+            register: true,
+            log: {
+                level: 0
+            },
+            //traceSip: true,
+        }
+        phone = new SIP.UA(configuration);
+        phone.start();
+        phone.on('disconnected', function (e) {
+            console.log("Ошибка подключения")
+            $('.registred').toggleClass('mif-phonelink-off')
+            phone.stop();
+        });
+        phone.on('registrationFailed', function (e) {
+            console.log("Ошибка регистрации")
+            configuration.uri = null;
+            configuration.password = null;
+            $('.registred').toggleClass('mif-phonelink-off')
+            phone.stop();
+        });
+        phone.on('registered', function (e) {
+            $('.registred').toggleClass('mif-phonelink');
+        });
+        phone.on('invite', function (session) {
+            console.log('incoming');
+            console.log(session.remoteIdentity.displayName);
+            console.log(session.remoteIdentity.uri.user);
+            var display_name = session.remoteIdentity.displayName || session.remoteIdentity.uri.user;
+            var url = '@Url.Action("GetPersonForPhone", "Person")/' + display_name;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 200) {
+                    console.log(this.responseText);
+                    var notify = Metro.notify;
+                    notify.create(this.responseText, 'Звонок в ' + new Date().toLocaleTimeString('ru-RU'), {
+                        keepOpen: true,
+                        width: 'auto',
+                    });
+                }
+            };
+            // 2. Конфигурируем его: GET-запрос на URL 'phones.json'
+            xhr.open('GET', url, true);
+            xhr.send();
+        });
     });
 };
 var signalRStart = function () {
@@ -75,7 +88,7 @@ function TableReady(url, columns) {
         "order": [],
         //"serverSide": true,
         "processing": true,
-        "responsive": true,
+        //"responsive": true,
         //"scrollY": "200px",
         //"scrollCollapse": true,
         "ajax": {
@@ -132,7 +145,7 @@ function SimpleTableReady() {
         //"serverSide": true,
         "processing": true,
         "order": [[0, 'desc']],
-        "responsive": true,
+         responsive: true,
         //"scrollY": "200px",
         //"scrollCollapse": true,
         "language": {
@@ -256,9 +269,11 @@ function getCounters() {
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
-            var counters = JSON.parse(this.responseText)
+            var counters = JSON.parse(this.responseText);
             for (i in counters) {
-                document.getElementById(i).innerText = counters[i]
+                if (counters[i] > 0) {
+                    document.getElementById(i).innerText = counters[i];
+                }
             }
         }
     };
@@ -465,7 +480,8 @@ var addEvent = function (message,user,date) {
     } else {       
         $('#eventCount').html(+$('#eventCount').text() + 1);
     }
-    var events = '<blockquote class="place-right" style="border-left-color: #13709e"><p>' + message + '<p><small>' + 'От ' + user + ' ' + date + '</small></blockquote>' + $(bell).data('popoverText');
+    var events = '<blockquote style="border-left-color: #13709e"><p>' + message + '<p><small>' + 'От ' + user + ' ' + date + '</small></blockquote>' + $(bell).data('popoverText');
+    $('#ticketThreadsCount').html(+$('#ticketThreadsCount').text() + 1);
     $(bell).data('popoverText', events).attr('data-popover-text', events);
 };
 //Load response template for TicketThread 

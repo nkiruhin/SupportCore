@@ -21,7 +21,7 @@
                 </a>
             </li>
             <li>
-                <a href="#" onclick="ReloadTable('1')">
+                <a href="#" onclick="ReloadTable(1)">
 
                     <span class="icon"><span class="mif-unlock"></span></span>
 
@@ -40,70 +40,102 @@
                     &nbsp;<span class="badge inline bg-red fg-white" id="overlayTicketCount">0</span>
                 </a>
             </li>
-
-            <li>
-                <a href="#" onclick="ReloadTable(2)">
-
-                    <span class="icon"><span class="mif-lock "></span></span>
-
-                    <span class="caption">Закрытые</span>
-
-                    &nbsp;<span class="badge inline bg-green fg-white" id="closeTicketCount">0</span>
-
-                </a>
-            </li>
-            @if (!User.IsInRole("Пользователь")) { 
+            @if (!User.IsInRole("Пользователь"))
+            {
                 <li>
-                    <a asp-action="Filter"
-                       asp-controller="Tickets"
-                       data-ajax="true"
-                       data-ajax-method="GET"
-                       data-ajax-update="#cell-content"
-                       data-ajax-mode="update">
-                        <span class="icon"><span class="mif-filter"></span></span>
-                        <span class="caption">Фильтр</span>
+                    <a href="#" onclick="ReloadTable(101)">
+
+                        <span class="icon"><span class="mif-question "></span></span>
+
+                        <span class="caption">Ждут ответа</span>
+
+                        &nbsp;<span class="badge inline bg-red fg-white" id="noanswerTicketCount">0</span>
 
                     </a>
                 </li>
-            <li class="item-header">Обращения</li>
-            <li>
-                <a asp-controller="Requests"
-                   data-ajax="true"
-                   data-ajax-method="GET"
-                   data-ajax-update="#cell-content"
-                   data-ajax-begin="$('#cell-content').html('')"
-                   data-ajax-loading="#reqPreloader"
-                   data-ajax-mode="update">
-                    <span class="icon"><span class="mif-mail"></span></span>
-                    <span class="caption">Входящие</span>
-                    @*<span class="counter">0</span>*@
-                </a>
-            </li>
-            <li class="item-header">Шаблоны</li>
-            <li>
-                <a asp-controller="Forms"
-                   data-ajax="true"
-                   data-ajax-method="GET"
-                   data-ajax-update="#cell-content"
-                   data-ajax-mode="update">
-                    <span class="icon"><span class="mif-insert-template"></span></span>
-                    <span class="caption">Форм</span>
-                    @*<span class="counter">0</span>*@
-                </a>
-            </li>
-            <li>
-                <a asp-controller="Templates"
-                   data-ajax="true"
-                   data-ajax-method="GET"
-                   data-ajax-update="#cell-content"
-                   data-ajax-mode="update">
-                    <span class="icon"><span class="mif-bubbles"></span></span>
-                    <span class="caption">Ответов</span>
-                    @*<span class="counter">0</span>*@
-                </a>
-            </li>
             }
-        </ul>
+
+                <li>
+                    <a href="#" onclick="ReloadTable(2)">
+
+                        <span class="icon"><span class="mif-lock "></span></span>
+
+                        <span class="caption">Закрытые</span>
+
+                        &nbsp;<span class="badge inline bg-green fg-white" id="closeTicketCount">0</span>
+
+                    </a>
+                </li>
+                @if (!User.IsInRole("Пользователь"))
+                {
+                    <li>
+                        <a asp-action="List"
+                           asp-controller="TicketThreads"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+
+                            <span class="icon"><span class="mif-history "></span></span>
+
+                            <span class="caption">Журнал событий</span>
+
+                            &nbsp;<span class="badge inline bg-green fg-white" id="ticketThreadsCount">0</span>
+
+                        </a>
+                    </li>
+
+                    <li>
+                        <a asp-action="Filter"
+                           asp-controller="Tickets"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="icon"><span class="mif-filter"></span></span>
+                            <span class="caption">Фильтр</span>
+
+                        </a>
+                    </li>
+                    <li class="item-header">Обращения</li>
+                    <li>
+                        <a asp-controller="Requests"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-begin="$('#cell-content').html('')"
+                           data-ajax-loading="#reqPreloader"
+                           data-ajax-mode="update">
+                            <span class="icon"><span class="mif-mail"></span></span>
+                            <span class="caption">Входящие</span>
+                            @*<span class="counter">0</span>*@
+                        </a>
+                    </li>
+                    <li class="item-header">Шаблоны</li>
+                    <li>
+                        <a asp-controller="Forms"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="icon"><span class="mif-insert-template"></span></span>
+                            <span class="caption">Форм</span>
+                            @*<span class="counter">0</span>*@
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Templates"
+                           data-ajax="true"
+                           data-ajax-method="GET"
+                           data-ajax-update="#cell-content"
+                           data-ajax-mode="update">
+                            <span class="icon"><span class="mif-bubbles"></span></span>
+                            <span class="caption">Ответов</span>
+                            @*<span class="counter">0</span>*@
+                        </a>
+                    </li>
+                }
+            </ul>
 <script>
 $(function () {
     getCounters()    

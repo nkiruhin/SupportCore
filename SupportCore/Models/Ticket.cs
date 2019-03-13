@@ -87,5 +87,7 @@ namespace SupportCore.Models
         public int openTicketCount { set; get; }
         public int myTicketCount { set; get; }
         public int closeTicketCount { set; get; }
+        public int noanswerTicketCount { set; get; }
+        public int ticketThreadsCount { set; get; }
     }
 }

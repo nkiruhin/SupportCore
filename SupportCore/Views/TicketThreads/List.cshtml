@@ -1,0 +1,117 @@
+﻿@model List<SupportCore.Models.TicketThread>
+
+@{
+    Layout = null;
+}
+
+@*Panel with button*@
+<h2 class="text-light">Журнал событий за @DateTime.Now.ToShortDateString() <span class="mif-organization place-right"></span></h2>
+
+<hr class="thin bg-grayLighter">
+
+<table class="dataTable table-border compact cell-border striped" data-auto-width="false" id="table">
+    <thead class="bg-darkCyan fg-white">
+        <tr>
+            @*<th style="width: 20px">
+        </th>*@
+            <th>
+                @Html.DisplayNameFor(model => model[0].DateCreate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].TicketId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Title)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model[0].Poster)
+            </th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @for (int item = 0; item < Model.Count; item++)
+        {
+        <tr>
+            <td>
+                @Model[item].DateCreate
+            </td>
+            <td>
+                <a asp-action="Details" asp-controller="Tickets" asp-route-id="@Model[item].TicketId"
+                   data-ajax="true"
+                   data-ajax-method="GET"
+                   data-ajax-update="#cell-content"
+                   data-ajax-mode="update">#@Model[item].TicketId</a>
+            </td>
+            <td>
+                <span data-role="hint"
+                      data-hint-position="bottom"
+                      data-hint-text="@Model[item].Body">@Model[item].Title</span>
+                </td>
+                <td>
+                    @Model[item].Poster
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    $(function () {
+        FormsTable = SimpleTableReady();
+    })
+</script>
+
+
+@*<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Type)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Body)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Ticket)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Person)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsInform)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Type)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Body)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Ticket.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Person.Id)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsInform)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>*@

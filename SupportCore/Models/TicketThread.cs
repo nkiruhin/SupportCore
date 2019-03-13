@@ -24,21 +24,25 @@ namespace SupportCore.Models
         [HiddenInput(DisplayValue = false)]
         public int Type { set; get; }
         [ScaffoldColumn(false)]
+        [Display(Name = "Автор")]
         public string Poster { set; get; }
         [ScaffoldColumn(false)]
         public int SourceId { set; get; }
         [ScaffoldColumn(false)]
+        [Display(Name = "Событие")]
         public string Title {set; get;}
         [DataType(DataType.MultilineText)]
         [Required]
         [Display(Name ="Комментарий")]
         public string Body { set; get; }
         [ScaffoldColumn(false)]
+        [Display(Name = "Дата события")]
         public DateTime DateCreate { set; get; }
         [ScaffoldColumn(false)]
         public DateTime DateUpdate { set; get; }
         //foreign key and navigation property
         [HiddenInput(DisplayValue = false)]
+        [Display(Name = "Заявка №")]
         public int TicketId { set; get; }
         [ScaffoldColumn(false)]
         public Ticket Ticket { set; get; }

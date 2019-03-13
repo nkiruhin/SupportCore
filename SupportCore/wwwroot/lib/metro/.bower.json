@@ -1,15 +1,15 @@
 {
   "name": "metro",
   "homepage": "https://github.com/olton/Metro-UI-CSS",
-  "version": "4.2.37",
-  "_release": "4.2.37",
+  "version": "4.2.38",
+  "_release": "4.2.38",
   "_resolution": {
     "type": "version",
-    "tag": "v4.2.37",
-    "commit": "5b025ba6459d8032385458f671bcbaa853c6aace"
+    "tag": "v4.2.38",
+    "commit": "491b68d2871dcb0b9e61b440e894ced0cbd55bf7"
   },
   "_source": "https://github.com/olton/Metro-UI-CSS.git",
-  "_target": "v4.2.37",
+  "_target": "v4.2.38",
   "_originalSource": "metro",
   "_direct": true
 }

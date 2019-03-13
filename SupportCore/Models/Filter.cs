@@ -48,5 +48,8 @@ namespace SupportCore.Models
         [NotMapped]
         [DisplayName("Информирование")]
         public bool isInform { set; get; }
+        [NotMapped]
+        [DisplayName("С ответом")]
+        public bool IsAnswered { set; get; }
     }
 }

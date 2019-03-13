@@ -38,5 +38,17 @@
     "inputFiles": [
       "wwwroot/lib/jquery-ajax-unobtrusive/src/jquery.unobtrusive-ajax.js"
     ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/datatables-responsive/js/dataTables.responsive.min.js",
+    "inputFiles": [
+      "wwwroot/lib/datatables-responsive/js/dataTables.responsive.js"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/lib/select2/dist/js/i18n/ru.min.js",
+    "inputFiles": [
+      "wwwroot/lib/select2/dist/js/i18n/ru.js"
+    ]
   }
 ]

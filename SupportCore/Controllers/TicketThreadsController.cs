@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +39,13 @@ namespace SupportCore.Controllers
             }else { 
                 ticketThreads = await _context.TicketThreads.AsNoTracking().Where(n=>n.TicketId==Id).OrderByDescending(n=>n.DateCreate).ToListAsync();
             }
+            return PartialView(ticketThreads);
+        }
+        [Authorize(Roles = "Администратор,Сотрудник,Менеджер")]
+        public async Task<IActionResult> List()
+        {
+           
+            var  ticketThreads = await _context.TicketThreads.AsNoTracking().OrderByDescending(n => n.DateCreate).Where(n=>n.DateCreate.Date==DateTime.Now.Date).ToListAsync();
             return PartialView(ticketThreads);
         }
 
@@ -96,7 +104,17 @@ namespace SupportCore.Controllers
                     .Include(t=>t.CoAuthors)
                     .SingleOrDefaultAsync(t => t.Id == ticketThread.TicketId);
                 if (events.IsStatus(Event)){
-                    ticket.StatusId = Event;
+                    ticket.StatusId = Event;                   
+                }
+                if (Event != 2 && isUser == true)
+                {
+                    ticket.IsAnswered = false;
+                    ticket.LastMessage = DateTime.Now;
+                }
+                else if(isInform == true)
+                {
+                    ticket.IsAnswered = true;
+                    ticket.LastResponse = DateTime.Now;
                 }
                 ticket.DateUpdate = ticketThread.DateCreate = DateTime.Now;
                 if (Event == 2) { ticket.Closed = DateTime.Now; }
