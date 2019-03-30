@@ -24,7 +24,7 @@ namespace SupportCore.App.Interfaces
         Task<List<Requests>> GetEmailsAsync(Context _context);
         Task<Requests> ReadEmailAsync(uint uid, Context _context);
         Task<AttachFile> GetAttach(uint id, string FileName);
-        void MakeReadAsync(uint uid);
+        Task MakeReadAsync(uint uid);
     }
 
         public class AttachFile
@@ -176,7 +176,7 @@ namespace SupportCore.App.Interfaces
                 return email;
             }
         }
-        public async void MakeReadAsync(uint uid)
+        public async Task MakeReadAsync(uint uid)
         {
             using (var emailClient = new ImapClient())
             {

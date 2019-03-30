@@ -51,7 +51,7 @@
             });
         @if (!User.IsInRole("Пользователь")) {
             @:url = '@Url.Action("GetTemplate","Templates",new {Model.TicketId })' + '&id='
-            @:getTemplate(editor,url);
+            @:getTemplate(url);
         }
         else
         {

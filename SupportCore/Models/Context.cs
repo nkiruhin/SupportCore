@@ -46,8 +46,12 @@ namespace SupportCore.Models
             modelBuilder.Entity<Field>()
                 .Property(b => b.Type)
                 .HasDefaultValue(1);
+            modelBuilder.Entity<Field>()
+                .HasIndex(f => f.Label);
             modelBuilder.Entity<Ticket>()
                 .HasIndex(b => b.Name);
+            modelBuilder.Entity<Ticket>()
+                .HasIndex(b => b.DateCreate);
             modelBuilder.Entity<Filter>()
                .HasIndex(b => b.UserId);
             modelBuilder.Entity<SLA>()

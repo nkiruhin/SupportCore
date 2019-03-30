@@ -1,3 +1,20 @@
+### 4.2.39
++ [x] NavView: minor improve styling 
++ [x] NavView: add method `pullClick()` for emulate pull button click at runtime 
++ [x] NavView: add class `.focusableItems` to add focus state for items
++ [x] NavView: add attribute `data-active-state="true|false"` to add active state for menu items
++ [x] NavView: add `.badges` container for menu item for collect menu item badges
++ [x] NavView: add `.data-box` container for navigation view pane
++ [x] IconBox: new css component
++ [x] Panel: fix draggable
++ [x] Panel: add custom buttons to panel title
++ [x] Table: fix assign classes from attribute `data-cls-head-cell`
++ [x] Breadcrumbs: add `.breadcrumb-item` class
++ [x] Draggable: fix recreate element content when drag started
++ [x] Table: fix implements custom class to custom wrappers (search, pagination, ...), issue #1335
++ [x] Select: fix error for validating required func for select with `multiple` option, issue #1338
++ [x] Select: for validating added functions `length`, `minlength`, `maxlength` for select with `multiple` option 
+
 ### 4.2.38
 + [x] ListView: add class `.vertical-layout` for `icons-*` view mode
 + [x] Windows: partial fixed behavior window when user click on min, max button in min, max state, issue #1331 

@@ -6,7 +6,7 @@
     @await Html.PartialAsync("AppMenu")
 
 <div class="pt-13 bg-light h-auto">
-    <div data-role="navview" data-expanded="md" class="compacted">
+    <div data-role="navview" data-expanded="md" class="compacted" data-on-menu-item-click="setActive">
         <div class="navview-pane bg-darkCyan fg-white">
             @await Html.PartialAsync("SideBar")
         </div>
@@ -21,4 +21,3 @@
         </div>
     </div>
 </div>
-

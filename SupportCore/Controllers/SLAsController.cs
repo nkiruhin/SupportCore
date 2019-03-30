@@ -84,8 +84,8 @@ namespace SupportCore.Controllers
                 return RedirectToAction(nameof(IndexRules), new { ParentId = sLA.Id });
             }
 
-            ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name", sLA.CategoryId);
-            ViewData["FieldId"] = new SelectList(_context.Fields, "Id", "Name", sLA.FieldId);            
+            ViewData["CategoryId"] = new SelectList(_context.Category.AsNoTracking(), "Id", "Name", sLA.CategoryId);
+            ViewData["FieldId"] = new SelectList(_context.Fields.AsNoTracking(), "Id", "Name", sLA.FieldId);            
             return PartialView(sLA);
         }
 
@@ -118,7 +118,10 @@ namespace SupportCore.Controllers
             {
                 return NotFound();
             }
-
+            if(sLA.ParentId != null)
+            {
+                sLA.Type = 1;
+            }
             if (ModelState.IsValid)
             {
                 try
@@ -139,8 +142,8 @@ namespace SupportCore.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name", sLA.CategoryId);
-            ViewData["FieldId"] = new SelectList(_context.Fields, "Id", "Name", sLA.FieldId);
+            ViewData["CategoryId"] = new SelectList(_context.Category.AsNoTracking(), "Id", "Name", sLA.CategoryId);
+            ViewData["FieldId"] = new SelectList(_context.Fields.AsNoTracking(), "Id", "Name", sLA.FieldId);
             return View(sLA);
         }
 
@@ -166,12 +169,13 @@ namespace SupportCore.Controllers
 
         // POST: SLAs/Delete/5
         [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+      //  [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id, int? ParentId)
         {
             var sLA = await _context.SLAs.FindAsync(id);
             _context.SLAs.Remove(sLA);
             await _context.SaveChangesAsync();
+            if(ParentId!=null) return RedirectToAction(nameof(IndexRules),new { ParentId });
             return RedirectToAction(nameof(Index));
         }
 
@@ -179,9 +183,20 @@ namespace SupportCore.Controllers
         {
             return _context.SLAs.Any(e => e.Id == id);
         }
-        public async Task<JsonResult> GetValues (int FieldId)
+        public JsonResult GetValues(int FieldId)
         {
-            var ValueList =  _context.Fields.AsNoTracking().SingleOrDefaultAsync(f => f.Id == FieldId).Result.Configuration.Split("\r\n");
+            var ValueList = _context.Fields.AsNoTracking().SingleOrDefaultAsync(f => f.Id == FieldId).Result.Configuration.Split("\r\n");
+            return Json(ValueList);
+        }
+        public async Task<JsonResult> GetFields()
+        {
+            var ValueList = await _context.Fields.AsNoTracking()
+                .AsNoTracking().Where(f => f.Type == "select" && f.Form.Type == 0)
+                .Select(r => new
+                {
+                    r.Id,
+                    r.Name
+                }).ToListAsync();
             return Json(ValueList);
         }
     }

@@ -23,9 +23,10 @@
                         else
                         {
                             <div class="cell-6">
-                                @if(prop.ModelType.IsGenericType) { 
-                                    <label>@prop.GetDisplayName()</label> 
-                                }
+                                @if (prop.ModelType.FullName!= "System.Boolean")
+                                {
+                                    <label>@prop.GetDisplayName()</label>
+                                }                                
                                 @Html.Editor(prop.PropertyName)
                             </div>
                         }

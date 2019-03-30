@@ -27,20 +27,18 @@ namespace SupportCore.Models
         [Phone(ErrorMessage ="Неверный формат")]
         [Display(Name = "Телефон")]
         public string Telephone { set; get; }
-        [Display(Name = "Подрядчик")]
-        public bool isProvider { set; get; }
-        [Display(Name = "SLA")]
         [ScaffoldColumn(false)]
-        public SLA SLA { set; get; }
-        [Display(Name = "SLA")]
-        public int? SLAId { set; get; }
-        //[Display(Name = "Ответственный сотрудник")]
-        //
+        [ForeignKey("CuratorId")]
+        [Display(Name = "Куратор")]
+        public Person Curator { set; get; }
         [Display(Name = "Ответственный сотрудник")]
         public string CuratorId { set; get; }
         [ScaffoldColumn(false)]
-        [ForeignKey("CuratorId")]
-        public Person Curator { set; get; }
+        public SLA SLA { set; get; }
+        [Display(Name = "SLA")]
+        public int? SLAId { set; get; }             
+        [Display(Name = "Подрядчик")]
+        public bool isProvider { set; get; }
         [ScaffoldColumn(false)]
         public DateTime CreateTime { set; get; }
         [ScaffoldColumn(false)]

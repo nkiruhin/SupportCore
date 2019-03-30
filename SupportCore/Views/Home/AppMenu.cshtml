@@ -126,8 +126,9 @@
 <script>
  $(function () {
         var url = '@Url.Action("GetSipSettings")'
+     var url_get = '@Url.Action("GetPersonForPhone", "Person")'
         @if (!User.IsInRole("Пользователь")) { 
-        @:sipClientStart(url);
+        @:sipClientStart(url, url_get);
         //Signalr client
         @:signalRStart()
         }

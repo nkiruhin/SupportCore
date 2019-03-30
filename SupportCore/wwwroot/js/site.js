@@ -11,7 +11,7 @@
 //    // }
 
 //});
-var sipClientStart = function (url) {
+var sipClientStart = function (url,url_get) {
     $.getJSON(url, function (data) {
         var configuration = {
             uri: data.uri,
@@ -46,7 +46,7 @@ var sipClientStart = function (url) {
             console.log(session.remoteIdentity.displayName);
             console.log(session.remoteIdentity.uri.user);
             var display_name = session.remoteIdentity.displayName || session.remoteIdentity.uri.user;
-            var url = '@Url.Action("GetPersonForPhone", "Person")/' + display_name;
+            var url = url_get+'/' + display_name;
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState === 4 && this.status === 200) {
@@ -88,20 +88,13 @@ function TableReady(url, columns) {
         "order": [],
         //"serverSide": true,
         "processing": true,
-        //"responsive": true,
         //"scrollY": "200px",
         //"scrollCollapse": true,
         "ajax": {
             "url": url
-            //"url": "/Clients/ViewTableJson", "dataSrc": "clients", "type": "POST",
-            //"data": function (d) {
-            //    d.FirstName = $('#FirstName').val(),
-            //        d.LastName = $('#LastName').val(),
-            //        d.PatrName = $('#PatrName').val(),
-            //        d.BirthDate = $('#BirthDate').val()
-            //    d.recordsTotal = $('#recordsTotal').val()
-            //}
         },
+        "deferRender": true,
+        "orderClasses": false,
         "language": {
             "lengthMenu": "Отображать _MENU_ записей",
             "zeroRecords": "Не найдено",
@@ -117,24 +110,7 @@ function TableReady(url, columns) {
                 "previous": "Предыдущий"
             },
         },
-        //"columnDefs": [{
-        //    "targets": -1,
-        //    "data": 'id',
-        //    "render": function (data, type, full, meta) {
-        //        return '<a href="#" data-id=' + data + ' id="Details"><span class="mif-profile"></span></a> | <a href="#" data-id=' + data + ' id="Edit" class="Edit" ><span class="mif-pencil"></span></a>'
-        //    }
-        //}
-
-        //],
-        "columns": columns // [
-        //  { "data": "name" },
-        //  { "data": "email" },
-        //    { "data": "patrName" },
-        //    { "data": "birthDate" },
-        //    { "data": "sex" },
-        //    { "data": "snils" },
-        //    { "data": "clientpolicyNumber" }
-        // ]
+        "columns": columns 
     });
     return Table;
 }
@@ -160,7 +136,7 @@ function SimpleTableReady() {
                 "first": "Первый",
                 "last": "Последний",
                 "next": "Следующий",
-                "previous": "Предидущий"
+                "previous": "Предыдущий"
             },
         },
     })
@@ -485,10 +461,10 @@ var addEvent = function (message,user,date) {
     $(bell).data('popoverText', events).attr('data-popover-text', events);
 };
 //Load response template for TicketThread 
-var getTemplate = function (editor, url) {
+var getTemplate = function (url) {
     var TemplateId = document.getElementById("TemplateId").value;
     url = url + TemplateId;
-    //console.log(url);
+    console.log(url);
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState === 4 && this.status === 200) {
@@ -502,3 +478,8 @@ var getTemplate = function (editor, url) {
     xhttp.open("GET", url, true);
     xhttp.send();
 };
+//NavView set Active menu
+var setActive = function () {
+    $('li.active').removeClass('active');
+    $(this).parent().addClass('active');
+}

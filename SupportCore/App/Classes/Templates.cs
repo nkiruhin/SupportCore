@@ -43,7 +43,7 @@ public class Templates
         .Replace("@Тема", model.Name)
         .Replace("@ПлановаяДата", model.DueDate.ToShortDateString())
         .Replace("@ДатаЗакрытия", model.Closed.Date.ToString())
-        .Replace("@Сотрудник", model.Stuff.Name);
+        .Replace("@Сотрудник", model.Stuff?.Name);
         //Wait when support net cor 2.1 in RazorLith
             //string result = await engine.CompileRenderAsync(template.Id.ToString(), template.Body.Replace("@", "@Model."), new TemplateView
             //{
@@ -115,7 +115,7 @@ public class Templates
        .Replace("@Тема", ticket.Name)
        .Replace("@ПлановаяДата", ticket.DueDate.ToShortDateString())
        .Replace("@ДатаЗакрытия", ticket.Closed.Date.ToString())
-       .Replace("@Сотрудник", ticket.Stuff.Name);
+       .Replace("@Сотрудник", ticket.Stuff?.Name);
         //string result = await engine.CompileRenderAsync(template.Id.ToString(), template.Body.Replace("@", "@Model."), new TemplateView
         //{
         //    ДатаСоздания = ticket.DateCreate,

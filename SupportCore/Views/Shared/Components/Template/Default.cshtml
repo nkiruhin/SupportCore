@@ -1,5 +1,5 @@
 ﻿@*@model List<SupportCore.Models.Template>*@
-Готовый ответ:    <select id="TemplateId" asp-items="@ViewBag.Templates" onchange="getTemplate()">
+Готовый ответ:    <select id="TemplateId" asp-items="@ViewBag.Templates" onchange="getTemplate('@Url.Action("GetTemplate","Templates",new {Model.TicketId })' + '&id=')">
     <option></option>
     </select>
 

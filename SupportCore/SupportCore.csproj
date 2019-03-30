@@ -16,7 +16,7 @@
     <Compile Remove="wwwroot\lib\jquery-validation\src\**" />
     <Compile Remove="wwwroot\lib\jquery\external\**" />
     <Compile Remove="wwwroot\lib\jquery\src\**" />
-    <Compile Remove="wwwroot\lib\metro\build\mif\**" />
+    <!--<Compile Remove="wwwroot\lib\metro\build\mif\**" />-->
     <Compile Remove="wwwroot\lib\metro\docs\**" />
     <Compile Remove="wwwroot\lib\metro\js\plugins\**" />
     <Compile Remove="wwwroot\lib\metro\js\_\**" />
@@ -91,6 +91,8 @@
     <Compile Remove="Migrations\20190228081911_Curator.Designer.cs" />
     <Compile Remove="Migrations\20190228083348_Curator.cs" />
     <Compile Remove="Migrations\20190228083348_Curator.Designer.cs" />
+    <Compile Remove="Migrations\20190321054015_workbase.cs" />
+    <Compile Remove="Migrations\20190321054015_workbase.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -368,6 +370,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="wwwroot\lib\metro\build\mif\metro.json" />
+    <Content Include="wwwroot\lib\metro\build\mif\metro.svg" />
+    <Content Include="wwwroot\lib\metro\build\mif\metro.ttf" />
+    <Content Include="wwwroot\lib\metro\build\mif\metro.woff" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MailKit" Version="2.1.3" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.3" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
@@ -380,6 +389,7 @@
   <ItemGroup>
     <None Include="compilerconfig.json" />
     <None Include="wwwroot\lib\jquery-validation-unobtrusive\src\jquery.validate.unobtrusive.min.js" />
+    <None Include="wwwroot\lib\metro\build\mif\metro.svg" />
   </ItemGroup>
 
   <ItemGroup>

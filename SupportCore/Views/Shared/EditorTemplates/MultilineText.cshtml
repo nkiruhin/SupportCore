@@ -1,6 +1,4 @@
 ﻿@model String
-<label asp-for="@Model"></label>
-<div class="input-control textarea">
-    <textarea asp-for="@Model"></textarea>
+@*<label asp-for="@Model"></label>*@
+    <textarea asp-for="@Model" style="height:unset"></textarea>
     <span asp-validation-for="@Model"></span>
-</div>

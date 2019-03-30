@@ -129,7 +129,7 @@ namespace SupportCore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(uint id)
         {
-            _emailService.MakeReadAsync(id);
+            await _emailService.MakeReadAsync(id);
             return RedirectToAction(nameof(Index));
         }
 

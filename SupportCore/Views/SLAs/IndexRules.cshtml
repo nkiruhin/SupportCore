@@ -12,7 +12,7 @@
             <div class="table">
                 <div class="thead">
                     <div class="tr">
-                        <div class="td"><label asp-for="Name"></label></div>
+                        @*<div class="td"><label asp-for="Name"></label></div>*@
                         <div class="td category"><label asp-for="CategoryId"></label></div>
                         <div class="td fields" style="display:none"><label asp-for="FieldId"></label></div>
                         <div class="td " ><label asp-for="FieldValue"></label></div>
@@ -31,10 +31,10 @@
                           data-ajax-mode="update">
                         <input asp-for="ParentId" value="@Model.ParentId" />
                         <input asp-for="Type" value="1" hidden />
-                        <div class="td">
+                        @*<div class="td">
                             <input asp-for="Name">
-                        </div>
-                        <div class="td category">
+                        </div>*@
+                        <div class="td static-category">
                             <select  disabled>
                                 <option value="">Категория</option>
                             </select>
@@ -42,7 +42,7 @@
 
                         <div class="td fields" style="display:none">
                             <select asp-for="FieldId" asp-items="ViewBag.FieldId" onchange="GetValue(this)" style="color:gray" >
-                                <option value="" disabled selected style='display:none;'>Выбирите поле формы </option>
+                                <option value="" disabled selected style='display:none;'>Укажите поле формы </option>
                                 <option value=""></option>
                             </select>
                         </div>
@@ -51,7 +51,7 @@
                         </div>
                         <div class="td category">
                             <select asp-for="CategoryId" asp-items="ViewBag.CategoryId" style="color:gray" onchange="this.style.color='black'">
-                                <option value="" disabled selected style='display:none;'>Выбирите категорию</option>
+                                <option value="" disabled selected style='display:none;'>Укажите категорию</option>
                                 <option value=""></option>
                             </select>
                         </div>
@@ -78,13 +78,27 @@
     //$(document).ready(function () {
     ////    var form = $.validator.unobtrusive.parse('#Fields');
     //})
-    var ChangeType = function (e) {
+    var ChangeType = function (e, table) {
+        var form = $(e).parents()[2];
+        //if (table) {        
+        //    $(form).find('.category').hide();
+        //    $(form).find('.category').prop('disabled', true);
+                    
+        //    return;
+        //}
         if (e.checked == true) {
-            $('.fields').show(); 
-            $('.category').hide();
+            $(form).find('.fields').show();
+            $(form).find('.category').hide();
+            $(form).find('.static-category').hide();
+            $(form).find('.category').find('select').prop('disabled', true);
+            $(form).find('.fields').find('select').prop('disabled', false);
         } else {
-            $('.fields').hide();
-            $('.category').show();
+            $(form).find('.fields').hide();
+            $(form).find('.fields').find('select').prop('disabled', true);
+            $(form).find('.category').show();
+            $(form).find('.category').find('select').prop('disabled', false);
+            $(form).find('.static-category').find('select').prop('disabled', true );
+            $(form).find('.static-category').show();            
         }
     };
     var GetValue = function (f) {
@@ -94,7 +108,6 @@
             $('#FieldValue').empty();
             return;
         }
-        
         if ($(f).attr('id') === 'FieldId') {
             field = $('#FieldValue')
         } else {
@@ -102,6 +115,7 @@
             var selector = '*[data-value-id="' + rowId + '"]';
             field = $(selector);
         }
+        console.log($(field));
         var url = '@Url.Action("GetValues")' + '?FieldId=' + fieldId;
         GetFieldValue(url, field);
     }

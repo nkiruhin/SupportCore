@@ -100,6 +100,7 @@ namespace SupportCore.Controllers
                 PersonId = id
             };
             return PartialView(account);
+
         }
         // POST: /Account/Register
         [HttpPost]
@@ -130,15 +131,16 @@ namespace SupportCore.Controllers
                     {
                         RoleList = roles,
                         PersonId = model.PersonId
-                    };
+                    };                  
                     return PartialView(account);
                 }
                 await _userManager.AddToRoleAsync(user, model.RoleName);
                 var person = await _context.Person.SingleOrDefaultAsync(p => p.Id == model.PersonId);
                 person.AccountID = await _userManager.GetUserIdAsync(user);
                 await _context.SaveChangesAsync();
-            }          
-            return RedirectToAction("Register",new { id = model.PersonId });
+            }
+            return RedirectToAction("Edit", "Person", new { id = model.PersonId });
+            //return RedirectToAction("Register",new { id = model.PersonId });
         }
         // POST: /Account/Delete
         [HttpPost]
@@ -151,7 +153,8 @@ namespace SupportCore.Controllers
             var person = await _context.Person.SingleOrDefaultAsync(p => p.Id == PersonId);
             person.AccountID = null;
             await _context.SaveChangesAsync();
-            return ViewComponent("Account", new { id = PersonId, AccountId = String.Empty });
+            //return ViewComponent("Account", new { id = PersonId, AccountId = String.Empty });
+            return RedirectToAction("Edit", "Person", new { id = PersonId });
         }
         // POST: /Account/EditAccount
         [HttpPost]

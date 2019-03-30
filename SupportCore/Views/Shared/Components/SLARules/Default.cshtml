@@ -8,49 +8,45 @@
     //    wbutton = "wbutton";
     //}
 
-<form class="tr" asp-action="SaveField" asp-route-id="@item.Id" id="@item.Id"
+<form class="tr" asp-action="Edit" id="@item.Id" asp-route-id="@item.Id"  
       data-ajax="true"
       data-ajax-method="POST"
       data-ajax-success="disabledInput(@item.Id)">
-    <div class="td"><input asp-for="@item.Name" disabled /></div>
-    @if (item.CategoryId != null)
-    {
-        <div class="td" style="width:20%">
+    @*<div class="td"><input asp-for="@item.Name" disabled /></div>*@
+        <input asp-for="@item.ParentId" name="ParentId" hidden />
+        <div class="td static-category" style="width:20%">
             <select disabled>
                 <option>Категория</option>
             </select>
         </div>
-        <div class="td" style="width:40%">
-            <select asp-for="@item.CategoryId" asp-items="@ViewBag.CategoryId" disabled">
-                <option>Выберите из списка</option>
+        <div class="td category" style="width:40%">
+            <select asp-for="@item.CategoryId" name="CategoryId" asp-items="@ViewBag.CategoryId" disabled">
+                <option value="">Выберите из списка</option>
             </select>
         </div>
-    }
-    else
-    {
-        <div class="td" style="width:20%">
-            <select asp-for="@item.FieldId" data-row-id="@item.Id" asp-items="@ViewBag.FieldId" disabled onchange="GetValue(this)">
-                <option>Выберите из списка</option>
+   
+        <div class="td fields" style="width:20%">
+            <select asp-for="@item.FieldId" name="FieldId" data-row-id="@item.Id" asp-items="@ViewBag.FieldId" disabled onchange="GetValue(this)">
+                <option value="">Выберите из списка</option>
             </select>
         </div>
-        <div class="td" style="width:20%">
-            <select asp-for="@item.FieldValue" data-value-id="@item.Id" disabled>
+        <div class="td fields" style="width:20%">
+            <select asp-for="@item.FieldValue" name="FieldValue" data-value-id="@item.Id" disabled>
                 <option selected>@item.FieldValue</option>
             </select>
         </div>
-    }
-    <div class="td"><input asp-for="@item.ResponseTime" disabled /></div>
-    <div class="td"><input asp-for="@item.DeadTime" disabled /></div>
+    <div class="td"><input asp-for="@item.ResponseTime" name="ResponseTime" disabled /></div>
+    <div class="td"><input asp-for="@item.DeadTime" name="DeadTime" disabled /></div>
     @{  string check = "checked";
         if (item.CategoryId != null) { check = ""; }
     }
-    <div class="td"><input type="checkbox" data-role="switch" disabled @check /></div>
+    <div class="td"><input type="checkbox" data-role="switch"  onchange="ChangeType(this, true)" disabled @check /></div>
     <div class="td" style="width:10%">
         <div data-role="buttongroup">
-            <a asp-action="FieldDelete" asp-route-id="@item.Id"
+            <a asp-action="Delete" asp-route-id="@item.Id" asp-route-ParentId="@item.ParentId"
                data-ajax="true"
                data-ajax-method="POST"
-               data-ajax-update="#Fields"
+               data-ajax-update="#SLAs"
                data-ajax-mode="update"
                class="tool-button" data-role="button"><span class="mif-bin"></span></a>
             <button class="tool-button edit" data-fid="@item.FieldId" data-row-id="@item.Id"><span class="mif-pencil"></span></button>
@@ -60,37 +56,48 @@
 </form>}
 
 <script>
-   $(document).ready(function () {
-        
+    $(document).ready(function () {
+        var isField = $.find('input[type=checkbox]');
+        $.each(isField, function () {
+            form = $(this).parents()[2];
+            if ($(this).prop('checked')) {                
+                $(form).find('.category').hide();
+                $(form).find('.static-category').hide();
+            } else {
+                $(form).find('.fields').hide();
+                $(form).find('.fields').prop('disabled',true);
+            }
+        })
     })
-    $('.edit').on('click', function () {
-        var input = $(this).parent().parent().parent().find(':input');
-        var isField = $(this).parent().parent().prev().find(':input').is(':checked'); 
+    $('.edit').on('click', function () { 
+        var form = $(this).parents()[2];
+        var input = $(form).find(':input');
+        var isField = $(form).find('input[type=checkbox]').prop('checked')
+        console.log($(input));
         input.prop('disabled', false);
         submitButton = $(this).next();
         submitButton.show();
         $(this).hide();
         if (isField) {
             var fieldId = $(this).data('fid');
-            var rowId = $(this).data('row-id');
-            var selector = '*[data-value-id="' + rowId + '"]';
+            selector = $(form).find('#item_FieldValue');
             var selected = $(selector).val();
-            console.log($(selector).val());      
             var url = '@Url.Action("GetValues")' + '?FieldId=' + fieldId;
             var option = '';
-            console.log(url);
             $.getJSON(url, function (data) {
                 $.each(data, function (i, value) {
-                    if (value === selected) { sel = 'selected' } else sel='';
-                    option += '<option '+sel+' value="' + value + '">' + value + '</option>';
+                    if (value === selected) { sel = 'selected' } else sel = '';
+                    option += '<option ' + sel + ' value="' + value + '">' + value + '</option>';
                 })
                 $(selector).html(option);
             });
+        } else {
+            $(input[1]).prop('disabled', true);
         }
         return false;
     })
     $('.save').on('click', function () {
-        var input = $(this).parent().parent().parent().find(':input');
+        //var input = $(this).parent().parent().parent().find(':input');
         editButton = $(this).prev();
         //console.log(editButton);
         editButton.show();

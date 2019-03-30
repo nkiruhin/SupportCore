@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -37,79 +35,9 @@ namespace SupportCore.Controllers
         // GET: Tickets
         public IActionResult Index(Filter filter)
         {
-            //ViewBag.filter = filter.ToString();
-            //if (filter == null)
-            //{
-            //    filter = new Filter
-            //    {
-            //        StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id
-            //    };
-            //    return PartialView(filter);
-            //}
             return PartialView(filter);
         }
-        // GET: Tickets for datatable in json format
-        //public JsonResult IndexJson(int length,int start,int draw,int filter)
-        //{
-        //    //string Search = this.Request.Query["search[value]"];
-        //    //int count = _context.Tickets.AsNoTracking().Count(); 
-        //    string Priority = "";
-        //    var StaffId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
-        //    Func<Ticket,bool> filterExpresson=p=>p.StaffId==StaffId;
-        //    switch (filter)
-        //    {
-        //        case 1://Open Ticket
-        //            filterExpresson = p => p.StatusId == 1 && p.StaffId == StaffId;
-        //            break;
-        //        case 2://Close Tickets
-        //            filterExpresson = p => p.StatusId == 2 && p.StaffId == StaffId;
-        //            break;
-        //        case 3://Due tickets
-        //            filterExpresson = p => p.DueDate.Date<DateTime.Now.Date && p.StaffId == StaffId&&p.StatusId==1;
-        //            break;
-        //        case 4://Custom filter
-        //            filterExpresson = GetFilter().Item1;
-        //            Priority = GetFilter().Item2;
-        //            break;
-        //        case 5:
-                    
-        //            break;
-        //        default:
-        //            break;
-        //    }
-       
-        //    var data =  _context.Tickets.AsNoTracking().
-        //        Include(t => t.Category).
-        //        Include(p => p.Person).
-        //        Include(s => s.Stuff).
-        //        Include(s => s.CoAuthors).
-        //        Include(f=>f.Files).
-        //        Include(t=>t.Tasks).
-        //        Include(f=>f.FormEntryValue).
-        //            ThenInclude(f=>f.Field).
-        //        Where(filterExpresson).
-        //        OrderByDescending(d => d.DateCreate).
-        //        Select(d => new
-        //        {
-        //            d.Id,
-        //            dateCreate = d.DateCreate.ToString("g"),
-        //            d.Name,
-        //            Person = d.Person?.Name,
-        //            Staff = d.Stuff?.Name,
-        //            Status = d.StatusId,
-        //            d.SourceId,
-        //            Category = d.Category.Name,
-        //            IsOverdue= d.DueDate.Date<DateTime.Now.Date&&d.StatusId==1 ? true : false,
-        //            IsCoAthors = d.CoAuthors.Count() == 0 ? false:true,
-        //            withFiles = d.Files.Count()==0 ? false:true,
-        //            withTasks = d.Tasks.Count() == 0 ? false : true,
-        //            Priority = d.FormEntryValue.SingleOrDefault(e=>e.Field.Label=="priority")?.Value
-        //        })/*.Skip(start).Take(length).*/
-        //        .ToList();
-        //        if(!String.IsNullOrEmpty(Priority)) data=data.Where(d => d.Priority == Priority).ToList();
-        //        int recordsFiltered = data.Count();
-        //        return Json(new {/*recordsFiltered = count, recordsTotal = count,*/ data, recordsFiltered });
-        //}
+
         public JsonResult IndexJson(int length, int start, int draw, int filter,Filter glfilter=null)
         {
            
@@ -142,15 +70,16 @@ namespace SupportCore.Controllers
             filterExpresson = GetFilter(glfilter).Item1;
             Priority = GetFilter(glfilter).Item2;
             }
+            int FieldIdPriority = _context.Fields.SingleOrDefault(n => n.Label == "priority").Id;
             var data = _context.Tickets.AsNoTracking().
-                Include(t => t.Category).
+                Include(c => c.Category).
                 Include(p => p.Person).
                 Include(s => s.Stuff).
-                Include(s => s.CoAuthors).
+                Include(co => co.CoAuthors).
                 Include(f => f.Files).
                 Include(t => t.Tasks).
-                Include(f => f.FormEntryValue).
-                    ThenInclude(f => f.Field).
+                Include(fe => fe.FormEntryValue).
+      //             ThenInclude(fl => fl.Field).
                 Where(filterExpresson).
                 OrderByDescending(d => d.DateCreate).
                 Select(d => new
@@ -167,10 +96,11 @@ namespace SupportCore.Controllers
                     IsOverdue = d.DueDate.Date < DateTime.Now.Date && d.StatusId == 1 ? true : false,
                     IsCoAthors = d.CoAuthors.Count() == 0 ? false : true,
                     withFiles = d.Files.Count() == 0 ? false : true,
-                    withTasks = d.Tasks.Count() == 0 ? false : true,
-                    Priority = d.FormEntryValue.SingleOrDefault(e => e.Field.Label == "priority")?.Value
+                    withTasks = d.Tasks?.Count() == 0 ? false : true,
+                    Priority = d.FormEntryValue.SingleOrDefault(e => e.FieldId == FieldIdPriority)?.Value
                 })/*.Skip(start).Take(length).*/
                 .ToList();
+            
             if (!String.IsNullOrEmpty(Priority)) data = data.Where(d => d.Priority == Priority).ToList();
             int recordsFiltered = data.Count();
             return Json(new {/*recordsFiltered = count, recordsTotal = count,*/ data, recordsFiltered });
@@ -423,7 +353,7 @@ namespace SupportCore.Controllers
                  (filter.DateCreate2 == null || p.DateCreate <= filter.DateCreate2) &&
                  (filter.SourceId == 0 || p.SourceId == filter.SourceId) &&
                  (filter.StatusId == 0 || p.StatusId == filter.StatusId) &&
-                 (filter.CategoryId == 0 || p.CategoryId == filter.CategoryId) &&
+                 (filter.CategoryId == 0 || p.CategoryId == filter.CategoryId)&&
                  (p.IsInform == filter.isInform || p.IsInform);
             return new Tuple<Func<Ticket, bool>, string>(exp, filter.Priority);
         }
@@ -650,30 +580,5 @@ namespace SupportCore.Controllers
             }
             return NotFound();
         }
-        //POST Tickets/Send
-        //public async Task<IActionResult> Send()
-        //{
-        //    var client = new SignalRclient();
-        //    client.SendEventAsync(1);
-        //    return Ok("Послали");
-        //}
-        // POST: Tickets/EntrySystemValues/
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> EntrySystemValues(int TicketId)
-        //{
-        //    var formEntry = new FormEntryValue();
-        //    var par = HttpContext.Request.Form.ToList();   
-        //    for (int i = 1; i < par.Count-2; i++)
-        //    {
-        //        formEntry.TicketId = TicketId;
-        //        formEntry.FieldId = Int32.Parse(par[i].Key);
-        //        formEntry.Value = par[i].Value;
-        //        _context.Add(formEntry);
-        //        await _context.SaveChangesAsync();
-        //        formEntry.Id = null;
-        //    }
-        //    return Ok("ок");
-        //}
     }
 }
