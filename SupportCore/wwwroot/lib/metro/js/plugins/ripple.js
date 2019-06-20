@@ -1,22 +1,28 @@
+var RippleDefaultConfig = {
+    rippleColor: "#fff",
+    rippleAlpha: .4,
+    rippleTarget: "default",
+    onRippleCreate: Metro.noop
+};
+
+Metro.rippleSetup = function (options) {
+    RippleDefaultConfig = $.extend({}, RippleDefaultConfig, options);
+};
+
+if (typeof window.metroRippleSetup !== undefined) {
+    Metro.rippleSetup(window.metroRippleSetup);
+}
+
 var Ripple = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, RippleDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onRippleCreate, [this.element]);
-
         return this;
-    },
-
-    options: {
-        rippleColor: "#fff",
-        rippleAlpha: .4,
-        rippleTarget: "default",
-        onRippleCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -79,6 +85,9 @@ var Ripple = {
                 $(".ripple").remove();
             }, 400);
         });
+
+        Utils.exec(o.onRippleCreate, null, element[0]);
+        element.fire("ripplecreate");
     },
 
     changeAttribute: function(attributeName){

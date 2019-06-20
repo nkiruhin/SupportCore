@@ -1,30 +1,37 @@
+var FileDefaultConfig = {
+    mode: "input",
+    buttonTitle: "Choose file(s)",
+    filesTitle: "file(s) selected",
+    dropTitle: "<strong>Choose a file(s)</strong> or drop it here",
+    dropIcon: "<span class='default-icon-upload'></span>",
+    prepend: "",
+    clsComponent: "",
+    clsPrepend: "",
+    clsButton: "",
+    clsCaption: "",
+    copyInlineStyles: true,
+    onSelect: Metro.noop,
+    onFileCreate: Metro.noop
+};
+
+Metro.fileSetup = function (options) {
+    FileDefaultConfig = $.extend({}, FileDefaultConfig, options);
+};
+
+if (typeof window.metroFileSetup !== undefined) {
+    Metro.fileSetup(window.metroFileSetup);
+}
+
 var File = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, FileDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onFileCreate, [this.element], elem);
-
         return this;
-    },
-    options: {
-        mode: "input",
-        buttonTitle: "Choose file(s)",
-        filesTitle: "file(s) selected",
-        dropTitle: "<strong>Choose a file</strong> or drop it here",
-        dropIcon: "<span class='default-icon-upload'></span>",
-        prepend: "",
-        clsComponent: "",
-        clsPrepend: "",
-        clsButton: "",
-        clsCaption: "",
-        copyInlineStyles: true,
-        onSelect: Metro.noop,
-        onFileCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -91,6 +98,9 @@ var File = {
         } else {
             this.enable();
         }
+
+        Utils.exec(o.onFileCreate, null, element[0]);
+        element.fire("filecreate");
     },
 
     _createEvents: function(){
@@ -125,7 +135,10 @@ var File = {
                 files.html(element[0].files.length + " " +o.filesTitle);
             }
 
-            Utils.exec(o.onSelect, [fi.files, element], element[0]);
+            Utils.exec(o.onSelect, [fi.files], element[0]);
+            element.fire("select", {
+                files: fi.files
+            });
         });
 
         element.on(Metro.events.focus, function(){container.addClass("focused");});
@@ -148,8 +161,7 @@ var File = {
                 element[0].files = e.originalEvent.dataTransfer.files;
                 files.html(element[0].files.length + " " +o.filesTitle);
                 container.removeClass("drop-on");
-
-                if (!Utils.detectChrome()) Utils.exec(o.onSelect, [element[0].files, element], element[0]);
+                element.trigger("change");
             });
         }
     },

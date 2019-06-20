@@ -1,6 +1,41 @@
+var SpinnerDefaultConfig = {
+    step: 1,
+    plusIcon: "<span class='default-icon-plus'></span>",
+    minusIcon: "<span class='default-icon-minus'></span>",
+    buttonsPosition: "default",
+    defaultValue: 0,
+    minValue: null,
+    maxValue: null,
+    fixed: 0,
+    repeatThreshold: 1000,
+    hideCursor: false,
+    clsSpinner: "",
+    clsSpinnerInput: "",
+    clsSpinnerButton: "",
+    clsSpinnerButtonPlus: "",
+    clsSpinnerButtonMinus: "",
+    onBeforeChange: Metro.noop_true,
+    onChange: Metro.noop,
+    onPlusClick: Metro.noop,
+    onMinusClick: Metro.noop,
+    onArrowUp: Metro.noop,
+    onArrowDown: Metro.noop,
+    onButtonClick: Metro.noop,
+    onArrowClick: Metro.noop,
+    onSpinnerCreate: Metro.noop
+};
+
+Metro.spinnerSetup = function (options) {
+    SpinnerDefaultConfig = $.extend({}, SpinnerDefaultConfig, options);
+};
+
+if (typeof window.metroSpinnerSetup !== undefined) {
+    Metro.spinnerSetup(window.metroSpinnerSetup);
+}
+
 var Spinner = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, SpinnerDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.repeat_timer = false;
@@ -9,33 +44,6 @@ var Spinner = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        step: 1,
-        plusIcon: "<span class='default-icon-plus'></span>",
-        minusIcon: "<span class='default-icon-minus'></span>",
-        buttonsPosition: "default",
-        defaultValue: 0,
-        minValue: null,
-        maxValue: null,
-        fixed: 0,
-        repeatThreshold: 500,
-        hideCursor: false,
-        clsSpinner: "",
-        clsSpinnerInput: "",
-        clsSpinnerButton: "",
-        clsSpinnerButtonPlus: "",
-        clsSpinnerButtonMinus: "",
-        onBeforeChange: Metro.noop_true,
-        onChange: Metro.noop,
-        onPlusClick: Metro.noop,
-        onMinusClick: Metro.noop,
-        onArrowUp: Metro.noop,
-        onArrowDown: Metro.noop,
-        onButtonClick: Metro.noop,
-        onArrowClick: Metro.noop,
-        onSpinnerCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -58,7 +66,8 @@ var Spinner = {
         this._createStructure();
         this._createEvents();
 
-        Utils.exec(o.onCreate, [element]);
+        Utils.exec(o.onSpinnerCreate, null, element[0]);
+        element.fire("spinnercreate");
     },
 
     _createStructure: function(){
@@ -113,9 +122,34 @@ var Spinner = {
             that._setValue(val.toFixed(o.fixed), true);
 
             Utils.exec(plus ? o.onPlusClick : o.onMinusClick, [curr, val, element.val()], element[0]);
+            element.fire(plus ? "plusclick" : "minusclick", {
+                curr: curr,
+                val: val,
+                elementVal: element.val()
+            });
+
             Utils.exec(plus ? o.onArrowUp : o.onArrowDown, [curr, val, element.val()], element[0]);
+            element.fire(plus ? "arrowup" : "arrowdown", {
+                curr: curr,
+                val: val,
+                elementVal: element.val()
+            });
+
             Utils.exec(o.onButtonClick, [curr, val, element.val(), plus ? 'plus' : 'minus'], element[0]);
+            element.fire("buttonclick", {
+                button: plus ? "plus" : "minus",
+                curr: curr,
+                val: val,
+                elementVal: element.val()
+            });
+
             Utils.exec(o.onArrowClick, [curr, val, element.val(), plus ? 'plus' : 'minus'], element[0]);
+            element.fire("arrowclick", {
+                button: plus ? "plus" : "minus",
+                curr: curr,
+                val: val,
+                elementVal: element.val()
+            });
 
             setTimeout(function(){
                 if (that.repeat_timer) {
@@ -173,7 +207,9 @@ var Spinner = {
         Utils.exec(o.onChange, [val], element[0]);
 
         if (trigger_change === true) {
-            element.trigger("change");
+            element.fire("change", {
+                val: val
+            });
         }
     },
 
@@ -191,6 +227,9 @@ var Spinner = {
         var val = Utils.isValue(o.defaultValue) ? Number(o.defaultValue) : 0;
         this._setValue(val.toFixed(o.fixed), true);
         Utils.exec(o.onChange, [val], element[0]);
+        element.fire("change", {
+            val: val
+        });
     },
 
     disable: function(){

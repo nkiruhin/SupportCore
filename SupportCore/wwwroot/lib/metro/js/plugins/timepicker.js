@@ -1,44 +1,58 @@
+var TimePickerDefaultConfig = {
+    hoursStep: 1,
+    minutesStep: 1,
+    secondsStep: 1,
+    value: null,
+    locale: METRO_LOCALE,
+    distance: 3,
+    hours: true,
+    minutes: true,
+    seconds: true,
+    showLabels: true,
+    scrollSpeed: 4,
+    copyInlineStyles: true,
+    clsPicker: "",
+    clsPart: "",
+    clsHours: "",
+    clsMinutes: "",
+    clsSeconds: "",
+    okButtonIcon: "<span class='default-icon-check'></span>",
+    cancelButtonIcon: "<span class='default-icon-cross'></span>",
+    onSet: Metro.noop,
+    onOpen: Metro.noop,
+    onClose: Metro.noop,
+    onScroll: Metro.noop,
+    onTimePickerCreate: Metro.noop
+};
+
+Metro.timePickerSetup = function (options) {
+    TimePickerDefaultConfig = $.extend({}, TimePickerDefaultConfig, options);
+};
+
+if (typeof window.metroTimePickerSetup !== undefined) {
+    Metro.timePickerSetup(window.metroTimePickerSetup);
+}
+
 var TimePicker = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, TimePickerDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.picker = null;
         this.isOpen = false;
         this.value = [];
         this.locale = Metro.locales[METRO_LOCALE]['calendar'];
+        this.listTimer = {
+            hours: null,
+            minutes: null,
+            seconds: null
+        };
+
 
         this._setOptionsFromDOM();
         this._create();
 
         return this;
-    },
-
-    options: {
-        hoursStep: 1,
-        minutesStep: 1,
-        secondsStep: 1,
-        value: null,
-        locale: METRO_LOCALE,
-        distance: 3,
-        hours: true,
-        minutes: true,
-        seconds: true,
-        showLabels: true,
-        scrollSpeed: 5,
-        copyInlineStyles: true,
-        clsPicker: "",
-        clsPart: "",
-        clsHours: "",
-        clsMinutes: "",
-        clsSeconds: "",
-        okButtonIcon: "<span class='default-icon-check'></span>",
-        cancelButtonIcon: "<span class='default-icon-cross'></span>",
-        onSet: Metro.noop,
-        onOpen: Metro.noop,
-        onClose: Metro.noop,
-        onScroll: Metro.noop,
-        onTimePickerCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -99,7 +113,8 @@ var TimePicker = {
         this._createEvents();
         this._set();
 
-        Utils.exec(o.onTimePickerCreate, [element, picker]);
+        Utils.exec(o.onTimePickerCreate, null, element[0]);
+        element.fire("timepickercreate");
     },
 
     _normalizeValue: function(){
@@ -251,43 +266,37 @@ var TimePicker = {
             e.stopPropagation();
         });
 
-        this._addScrollEvents();
-    },
+        var scrollLatency = 150;
+        $.each(['hours', 'minutes', 'seconds'], function(){
+            var part = this, list = picker.find(".sel-"+part);
 
-    _addScrollEvents: function(){
-        var picker = this.picker, o = this.options;
-        var lists = ['hours', 'minutes', 'seconds'];
+            list.on("scroll", function(){
+                if (that.isOpen) {
+                    if (that.listTimer[part]) {
+                        clearTimeout(that.listTimer[part]);
+                        that.listTimer[part] = null;
+                    }
 
-        $.each(lists, function(){
-            var list_name = this;
-            var list = picker.find(".sel-" + list_name);
+                    if (!that.listTimer[part]) that.listTimer[part] = setTimeout(function () {
 
-            if (list.length === 0) return ;
+                        var target, targetElement, scrollTop, delta;
 
-            list.on(Metro.events.scrollStart, function(){
-                list.find(".active").removeClass("active");
-            });
+                        that.listTimer[part] = null;
 
-            list.on(Metro.events.scrollStop, {latency: 50}, function(){
-                var target = Math.round((Math.ceil(list.scrollTop() + 40) / 40)) ;
-                var target_element = list.find("li").eq(target + o.distance - 1);
-                var scroll_to = target_element.position().top - (o.distance * 40) + list.scrollTop();
+                        target = Math.round((Math.ceil(list.scrollTop()) / 40));
 
-                list.animate({
-                    scrollTop: scroll_to
-                }, 100, function(){
-                    target_element.addClass("active");
-                    Utils.exec(o.onScroll, [target_element, list, picker]);
-                });
-            });
-        });
-    },
+                        targetElement = list.find(".js-" + part + "-" + target);
+                        scrollTop = targetElement.position().top - (o.distance * 40) + list.scrollTop() - 1;
 
-    _removeScrollEvents: function(){
-        var picker = this.picker;
-        var lists = ['hours', 'minutes', 'seconds'];
-        $.each(lists, function(){
-            picker.find(".sel-" + this).off("scrollstart scrollstop");
+                        list.find(".active").removeClass("active");
+
+                        list[0].scrollTop = scrollTop;
+                        targetElement.addClass("active");
+                        Utils.exec(o.onScroll, [targetElement, list, picker], list[0]);
+
+                    }, scrollLatency);
+                }
+            })
         });
     },
 
@@ -320,7 +329,11 @@ var TimePicker = {
 
         element.val([h, m, s].join(":")).trigger("change");
 
-        Utils.exec(o.onSet, [this.value, element.val(), element, picker]);
+        Utils.exec(o.onSet, [this.value, element.val()], element[0]);
+        element.fire("set", {
+            val: this.value,
+            elementVal: element.val()
+        });
     },
 
     open: function(){
@@ -334,7 +347,7 @@ var TimePicker = {
         var h_item, m_item, s_item;
 
         select_wrapper.parent().removeClass("for-top for-bottom");
-        select_wrapper.show();
+        select_wrapper.show(0);
         items.removeClass("active");
 
         select_wrapper_in_viewport = Utils.inViewport(select_wrapper);
@@ -375,14 +388,20 @@ var TimePicker = {
 
         this.isOpen = true;
 
-        Utils.exec(o.onOpen, [this.value, element, picker]);
+        Utils.exec(o.onOpen, [this.value], element[0]);
+        element.fire("open", {
+            val: this.value
+        });
     },
 
     close: function(){
         var picker = this.picker, o = this.options, element = this.element;
-        picker.find(".select-wrapper").hide();
+        picker.find(".select-wrapper").hide(0);
         this.isOpen = false;
-        Utils.exec(o.onClose, [this.value, element, picker]);
+        Utils.exec(o.onClose, [this.value], element[0]);
+        element.fire("close", {
+            val: this.value
+        });
     },
 
     _convert: function(t){
@@ -449,7 +468,26 @@ var TimePicker = {
         switch (attributeName) {
             case "data-value": changeValueAttribute(); break;
         }
+    },
+
+    destroy: function(){
+        var element = this.element;
+        var picker = this.picker;
+        var parent = element.parent();
+
+        $.each(['hours', 'minutes', 'seconds'], function(){
+            picker.find(".sel-"+this).off("scroll");
+        });
+
+        picker.off(Metro.events.start, ".select-block ul");
+        picker.off(Metro.events.click);
+        picker.off(Metro.events.click, ".action-ok");
+        picker.off(Metro.events.click, ".action-cancel");
+
+        element.insertBefore(parent);
+        parent.remove();
     }
+
 };
 
 Metro.plugin('timepicker', TimePicker);

@@ -1,6 +1,47 @@
+var WizardDefaultConfig = {
+    start: 1,
+    finish: 0,
+    iconHelp: "<span class='default-icon-help'></span>",
+    iconPrev: "<span class='default-icon-left-arrow'></span>",
+    iconNext: "<span class='default-icon-right-arrow'></span>",
+    iconFinish: "<span class='default-icon-check'></span>",
+
+    buttonMode: "cycle", // default, cycle, square
+    buttonOutline: true,
+
+    clsWizard: "",
+    clsActions: "",
+    clsHelp: "",
+    clsPrev: "",
+    clsNext: "",
+    clsFinish: "",
+
+    onPage: Metro.noop,
+    onNextPage: Metro.noop,
+    onPrevPage: Metro.noop,
+    onFirstPage: Metro.noop,
+    onLastPage: Metro.noop,
+    onFinishPage: Metro.noop,
+    onHelpClick: Metro.noop,
+    onPrevClick: Metro.noop,
+    onNextClick: Metro.noop,
+    onFinishClick: Metro.noop,
+    onBeforePrev: Metro.noop_true,
+    onBeforeNext: Metro.noop_true,
+    onWizardCreate: Metro.noop
+};
+
+Metro.wizardSetup = function (options) {
+    WizardDefaultConfig = $.extend({}, WizardDefaultConfig, options);
+};
+
+if (typeof window.metroWizardSetup !== undefined) {
+    Metro.wizardSetup(window.metroWizardSetup);
+}
+
 var Wizard = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, WizardDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
@@ -8,34 +49,6 @@ var Wizard = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        start: 1,
-        finish: 0,
-        iconHelp: "<span class='default-icon-help'></span>",
-        iconPrev: "<span class='default-icon-left-arrow'></span>",
-        iconNext: "<span class='default-icon-right-arrow'></span>",
-        iconFinish: "<span class='default-icon-check'></span>",
-
-        buttonMode: "cycle", // default, cycle, square
-        buttonOutline: true,
-
-        clsWizard: "",
-        clsActions: "",
-        clsHelp: "",
-        clsPrev: "",
-        clsNext: "",
-        clsFinish: "",
-
-        onPage: Metro.noop,
-        onHelpClick: Metro.noop,
-        onPrevClick: Metro.noop,
-        onNextClick: Metro.noop,
-        onFinishClick: Metro.noop,
-        onBeforePrev: Metro.noop_true,
-        onBeforeNext: Metro.noop_true,
-        onWizardCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -58,7 +71,8 @@ var Wizard = {
         this._createWizard();
         this._createEvents();
 
-        Utils.exec(o.onWizardCreate, [element]);
+        Utils.exec(o.onWizardCreate, null, element[0]);
+        element.fire("wizardcreate");
     },
 
     _createWizard: function(){
@@ -107,21 +121,43 @@ var Wizard = {
         element.on(Metro.events.click, ".wizard-btn-help", function(){
             var pages = element.children("section");
             var page = pages.get(that.current - 1);
-            Utils.exec(o.onHelpClick, [that.current, page, element])
+            Utils.exec(o.onHelpClick, [that.current, page[0], element[0]]);
+            element.fire("helpclick", {
+                index: that.current,
+                page: page[0]
+            });
         });
 
         element.on(Metro.events.click, ".wizard-btn-prev", function(){
             that.prev();
-            Utils.exec(o.onPrevClick, [that.current, element])
+            var pages = element.children("section");
+            var page = pages.get(that.current - 1);
+            Utils.exec(o.onPrevClick, [that.current, page[0]], element[0]);
+            element.fire("prevclick", {
+                index: that.current,
+                page: page[0]
+            });
         });
 
         element.on(Metro.events.click, ".wizard-btn-next", function(){
             that.next();
-            Utils.exec(o.onNextClick, [that.current, element])
+            var pages = element.children("section");
+            var page = pages.get(that.current - 1);
+            Utils.exec(o.onNextClick, [that.current, page[0]], element[0]);
+            element.fire("nextclick", {
+                index: that.current,
+                page: page[0]
+            });
         });
 
         element.on(Metro.events.click, ".wizard-btn-finish", function(){
-            Utils.exec(o.onFinishClick, [that.current, element])
+            var pages = element.children("section");
+            var page = pages.get(that.current - 1);
+            Utils.exec(o.onFinishClick, [that.current, page[0]], element[0]);
+            element.fire("finishclick", {
+                index: that.current,
+                page: page[0]
+            });
         });
 
         element.on(Metro.events.click, ".complete", function(){
@@ -146,6 +182,13 @@ var Wizard = {
         this.current++;
 
         this.toPage(this.current);
+
+        page = $(element.children("section").get(this.current - 1));
+        Utils.exec(o.onNextPage, [this.current, page[0]], element[0]);
+        element.fire("nextpage", {
+            index: that.current,
+            page: page[0]
+        });
     },
 
     prev: function(){
@@ -159,16 +202,42 @@ var Wizard = {
         this.current--;
 
         this.toPage(this.current);
+
+        page = $(element.children("section").get(this.current - 1));
+        Utils.exec(o.onPrevPage, [this.current, page[0]], element[0]);
+        element.fire("prevpage", {
+            index: that.current,
+            page: page[0]
+        });
     },
 
     last: function(){
         var that = this, element = this.element, o = this.options;
+        var page;
 
         this.toPage(element.children("section").length);
+
+        page = $(element.children("section").get(this.current - 1));
+        Utils.exec(o.onLastPage, [this.current, page[0]], element[0]);
+        element.fire("lastpage", {
+            index: that.current,
+            page: page[0]
+        });
+
     },
 
     first: function(){
+        var that = this, element = this.element, o = this.options;
+        var page;
+
         this.toPage(1);
+
+        page = $(element.children("section").get(0));
+        Utils.exec(o.onFirstPage, [this.current, page[0]], element[0]);
+        element.fire("firstpage", {
+            index: that.current,
+            page: page[0]
+        });
     },
 
     toPage: function(page){
@@ -207,6 +276,14 @@ var Wizard = {
             finish.removeClass("disabled");
         }
 
+        if (parseInt(o.finish) > 0 && this.current === parseInt(o.finish)) {
+            Utils.exec(o.onFinishPage, [this.current, target[0]], element[0]);
+            element.fire("finishpage", {
+                index: this.current,
+                page: target[0]
+            });
+        }
+
         if (this.current < sections.length) {
             next.removeClass("disabled");
         }
@@ -215,8 +292,11 @@ var Wizard = {
             prev.removeClass("disabled");
         }
 
-        element.trigger("onpage", [this.current, target, element]);
-        Utils.exec(o.onPage, [this.current, target, element]);
+        Utils.exec(o.onPage, [this.current, target[0]], element[0]);
+        element.fire("page", {
+            index: this.current,
+            page: target[0]
+        });
     },
 
     changeAttribute: function(attributeName){

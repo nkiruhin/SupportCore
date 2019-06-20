@@ -1,6 +1,22 @@
+var BottomSheetDefaultConfig = {
+    mode: "list",
+    toggle: null,
+    onOpen: Metro.noop,
+    onClose: Metro.noop,
+    onBottomSheetCreate: Metro.noop
+};
+
+Metro.bottomSheetSetup = function(options){
+    BottomSheetDefaultConfig = $.extend({}, BottomSheetDefaultConfig, options);
+};
+
+if (typeof window.metroBottomSheetSetup !== undefined) {
+    Metro.bottomSheetSetup(window.metroBottomSheetSetup);
+}
+
 var BottomSheet = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, BottomSheetDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.toggle = null;
@@ -9,14 +25,6 @@ var BottomSheet = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        mode: "list",
-        toggle: null,
-        onOpen: Metro.noop,
-        onClose: Metro.noop,
-        onBottomSheetCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -40,6 +48,7 @@ var BottomSheet = {
         this._createEvents();
 
         Utils.exec(o.onBottomSheetCreate, [element], element[0]);
+        element.fire("bottomsheetcreate");
     },
 
     _createStructure: function(){
@@ -59,7 +68,7 @@ var BottomSheet = {
 
         if (Utils.isValue(this.toggle)) {
             this.toggle.on(Metro.events.click, function(){
-                that.toggleView();
+                that.toggle();
             });
         }
 
@@ -81,6 +90,7 @@ var BottomSheet = {
 
         this.element.addClass("opened");
         Utils.exec(o.onOpen, [element], element[0]);
+        element.fire("open");
     },
 
     close: function(){
@@ -88,6 +98,7 @@ var BottomSheet = {
 
         element.removeClass("opened");
         Utils.exec(o.onClose, [element], element[0]);
+        element.fire("close");
     },
 
     toggle: function(mode){

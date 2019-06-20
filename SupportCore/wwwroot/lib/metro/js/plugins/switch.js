@@ -1,24 +1,32 @@
+var SwitchDefaultConfig = {
+    material: false,
+    transition: true,
+    caption: "",
+    captionPosition: "right",
+    clsSwitch: "",
+    clsCheck: "",
+    clsCaption: "",
+    onSwitchCreate: Metro.noop
+};
+
+Metro.switchSetup = function (options) {
+    SwitchDefaultConfig = $.extend({}, SwitchDefaultConfig, options);
+};
+
+if (typeof window.metroSwitchSetup !== undefined) {
+    Metro.switchSetup(window.metroSwitchSetup);
+}
+
 var Switch = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, SwitchDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onSwitchCreate, [this.element]);
-
         return this;
-    },
-    options: {
-        material: false,
-        caption: "",
-        captionPosition: "right",
-        clsSwitch: "",
-        clsCheck: "",
-        clsCaption: "",
-        onSwitchCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -48,6 +56,10 @@ var Switch = {
         check.appendTo(container);
         caption.appendTo(container);
 
+        if (o.transition === true) {
+            container.addClass("transition-on");
+        }
+
         if (o.captionPosition === 'left') {
             container.addClass("caption-left");
         }
@@ -63,6 +75,9 @@ var Switch = {
         } else {
             this.enable();
         }
+
+        Utils.exec(o.onSwitchCreate, null, element[0]);
+        element.fire("switchcreate");
     },
 
     disable: function(){

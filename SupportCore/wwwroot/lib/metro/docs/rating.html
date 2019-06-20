@@ -39,7 +39,7 @@
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
-        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-load="initDocSearchEngine()"></div>
+        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-html-load="initDocSearchEngine()"></div>
 
             <div class="d-none d-block-xl cell-xl-2 order-2 border-left bd-light toc-wrapper">
                 <h5>Table of contents</h5>
@@ -242,7 +242,11 @@
                     If you need create static rating, use attribute <code>data-static="true"</code> to set it.
                 </p>
                 <div class="example">
-                    <input data-role="rating" data-value="3" data-message="(3856)" data-static="true">
+                    <label>value=3</label>
+                    <input data-role="rating" data-value="3" data-message="(3856)" data-static="true" class="d-block">
+
+                    <label>value=3.5</label>
+                    <input data-role="rating" data-value="3.5" data-message="(3856)" data-static="true" class="d-block" data-stared-color="cyan">
                 </div>
                 <pre><code class="html">
                     &lt;input data-role="rating"

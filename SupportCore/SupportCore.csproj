@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreModuleHostingModel>inprocess</AspNetCoreModuleHostingModel>
-    <Version>2.2.3</Version>
+    <Version>2.2.5</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -377,8 +377,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.1.3" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.3" />
+    <PackageReference Include="MailKit" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.5" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
   </ItemGroup>
 

@@ -1,6 +1,30 @@
+var PopoverDefaultConfig = {
+    popoverText: "",
+    popoverHide: 3000,
+    popoverTimeout: 10,
+    popoverOffset: 10,
+    popoverTrigger: Metro.popoverEvents.HOVER,
+    popoverPosition: Metro.position.TOP,
+    hideOnLeave: false,
+    closeButton: true,
+    clsPopover: "",
+    clsPopoverContent: "",
+    onPopoverShow: Metro.noop,
+    onPopoverHide: Metro.noop,
+    onPopoverCreate: Metro.noop
+};
+
+Metro.popoverSetup = function (options) {
+    PopoverDefaultConfig = $.extend({}, PopoverDefaultConfig, options);
+};
+
+if (typeof window.metroPopoverSetup !== undefined) {
+    Metro.popoverSetup(window.metroPopoverSetup);
+}
+
 var Popover = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, PopoverDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.popover = null;
@@ -14,22 +38,6 @@ var Popover = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        popoverText: "",
-        popoverHide: 3000,
-        popoverTimeout: 10,
-        popoverOffset: 10,
-        popoverTrigger: Metro.popoverEvents.HOVER,
-        popoverPosition: Metro.position.TOP,
-        hideOnLeave: false,
-        closeButton: true,
-        clsPopover: "",
-        clsPopoverContent: "",
-        onPopoverShow: Metro.noop,
-        onPopoverHide: Metro.noop,
-        onPopoverCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -70,6 +78,9 @@ var Popover = {
                 that.createPopover();
 
                 Utils.exec(o.onPopoverShow, [that.popover], element[0]);
+                element.fire("popovershow", {
+                    popover: that.popover
+                });
 
                 if (o.popoverHide > 0) {
                     setTimeout(function(){
@@ -175,10 +186,13 @@ var Popover = {
         this.popovered = true;
 
         Utils.exec(o.onPopoverCreate, [popover], element[0]);
+        element.fire("popovercreate", {
+            popover: popover
+        });
     },
 
     removePopover: function(){
-        var that = this;
+        var that = this, element = this.element;
         var timeout = this.options.onPopoverHide === Metro.noop ? 0 : 300;
         var popover = this.popover;
 
@@ -187,6 +201,9 @@ var Popover = {
         }
 
         Utils.exec(this.options.onPopoverHide, [popover], this.elem);
+        element.fire("popoverhide", {
+            popover: popover
+        });
 
         setTimeout(function(){
             popover.hide(0, function(){
@@ -208,6 +225,9 @@ var Popover = {
             that.createPopover();
 
             Utils.exec(o.onPopoverShow, [that.popover], element[0]);
+            element.fire("popovershow", {
+                popover: that.popover
+            });
 
             if (o.popoverHide > 0) {
                 setTimeout(function(){

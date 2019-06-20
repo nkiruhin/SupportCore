@@ -1,6 +1,23 @@
+var NavigationViewDefaultConfig = {
+    compact: "md",
+    expanded: "lg",
+    toggle: null,
+    activeState: false,
+    onMenuItemClick: Metro.noop,
+    onNavViewCreate: Metro.noop
+};
+
+Metro.navigationViewSetup = function (options) {
+    NavigationViewDefaultConfig = $.extend({}, NavigationViewDefaultConfig, options);
+};
+
+if (typeof window.metroNavigationViewSetup !== undefined) {
+    Metro.navigationViewSetup(window.metroNavigationSetup);
+}
+
 var NavigationView = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, NavigationViewDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.pane = null;
@@ -11,15 +28,6 @@ var NavigationView = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        compact: "md",
-        expanded: "lg",
-        toggle: null,
-        activeState: false,
-        onMenuItemClick: Metro.noop,
-        onNavViewCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -42,7 +50,8 @@ var NavigationView = {
         this._createView();
         this._createEvents();
 
-        Utils.exec(o.onNavViewCreate, [element]);
+        Utils.exec(o.onNavViewCreate, null, element[0]);
+        element.fire("navviewcreate");
     },
 
     _calcMenuHeight: function(){
@@ -72,7 +81,7 @@ var NavigationView = {
     },
 
     _createView: function(){
-        var element = this.element, o = this.options;
+        var that = this, element = this.element, o = this.options;
         var pane, content, toggle;
 
         element
@@ -89,6 +98,14 @@ var NavigationView = {
         this.pane = pane.length > 0 ? pane : null;
         this.content = content.length > 0 ? content : null;
         this.paneToggle = toggle.length > 0 ? toggle : null;
+
+        setTimeout(function(){
+            if (that.pane.width() === 48) {
+                element.addClass("js-compact");
+            } else {
+                element.removeClass("js-compact");
+            }
+        }, 200);
     },
 
     _createEvents: function(){
@@ -105,8 +122,11 @@ var NavigationView = {
             }
         });
 
-        element.on(Metro.events.click, ".navview-menu li > a", function(e){
+        element.on(Metro.events.click, ".navview-menu li > a", function(){
             Utils.exec(o.onMenuItemClick, null, this);
+            element.fire("menuitemclick", {
+                item: this
+            });
         });
 
         if (this.paneToggle !== null) {
@@ -125,6 +145,15 @@ var NavigationView = {
             }
 
             that._calcMenuHeight();
+
+            element.removeClass("js-compact");
+
+            setTimeout(function(){
+                if (that.pane.width() === 48) {
+                    element.addClass("js-compact");
+                }
+            }, 200);
+
         })
     },
 
@@ -145,23 +174,23 @@ var NavigationView = {
 
         if (that.pane.hasClass("open")) {
             that.close();
-            console.log("1");
-            return ;
-        }
+        } else
 
         if ((pane_compact || element.hasClass("expand")) && !element.hasClass("compacted")) {
             element.toggleClass("expand");
-            console.log("2");
-            return ;
-        }
+        } else
 
         if (element.hasClass("compacted") || !pane_compact) {
             element.toggleClass("compacted");
-            console.log("3");
-            return ;
         }
 
-        console.log("0");
+        setTimeout(function(){
+            if (that.pane.width() === 48) {
+                element.addClass("js-compact");
+            } else {
+                element.removeClass("js-compact");
+            }
+        }, 200);
 
         return true;
     },

@@ -39,7 +39,7 @@
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
-        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-load="initDocSearchEngine()"></div>
+        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-html-load="initDocSearchEngine()"></div>
 
             <div class="d-none d-block-xl cell-xl-2 order-2 border-left bd-light toc-wrapper">
                 <h5>Table of contents</h5>
@@ -467,6 +467,48 @@
                 </div>
                 <pre class=""><code>
                     &lt;table class="table compact"&gt;
+                        ...
+                    &lt;/table&gt;
+                </code></pre>
+
+                <h3 id="_subcompact_table">Subcompact table</h3>
+                <p>
+                    Add <span class="tally">.subcompact</span> to make tables more compact.
+                </p>
+                <div class="example">
+                    <table class="table table-border cell-border subcompact">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Username</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>Bill</td>
+                            <td>Gates</td>
+                            <td>@billy</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Steve</td>
+                            <td>Jobs</td>
+                            <td>@stevy</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Larry</td>
+                            <td>Page</td>
+                            <td>@larry</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <pre class=""><code>
+                    &lt;table class="table subcompact"&gt;
                         ...
                     &lt;/table&gt;
                 </code></pre>

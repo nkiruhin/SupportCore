@@ -1,29 +1,33 @@
+var NotifyDefaultConfig = {
+    container: null,
+    width: 220,
+    timeout: METRO_TIMEOUT,
+    duration: METRO_ANIMATION_DURATION,
+    distance: "100vh",
+    animation: "swing",
+    onClick: Metro.noop,
+    onClose: Metro.noop,
+    onShow: Metro.noop,
+    onAppend: Metro.noop,
+    onNotifyCreate: Metro.noop
+
+};
+
 var Notify = {
 
+    container: null,
+
     options: {
-        container: null,
-        width: 220,
-        timeout: METRO_TIMEOUT,
-        duration: METRO_ANIMATION_DURATION,
-        distance: "100vh",
-        animation: "swing",
-        onClick: Metro.noop,
-        onClose: Metro.noop,
-        onShow: Metro.noop,
-        onAppend: Metro.noop,
-        onNotifyCreate: Metro.noop
     },
 
     notifies: [],
 
     setup: function(options){
         var body = $("body"), container;
-        this.options = $.extend({}, this.options, options);
+        this.options = $.extend({}, NotifyDefaultConfig, options);
 
-        if (this.options.container === null) {
-            container = $("<div>").addClass("notify-container");
-            body.prepend(container);
-            this.options.container = container;
+        if (Notify.container === null) {
+            Notify.container = Notify._createContainer();
         }
 
         return this;
@@ -35,9 +39,17 @@ var Notify = {
             timeout: METRO_TIMEOUT,
             duration: METRO_ANIMATION_DURATION,
             distance: "100vh",
-            animation: "swing"
+            animation: "linear"
         };
-        this.options = $.extend({}, this.options, reset_options);
+        this.options = $.extend({}, NotifyDefaultConfig, reset_options);
+    },
+
+    _createContainer: function(){
+
+        var container = $("<div>").addClass("notify-container");
+        $("body").prepend(container);
+
+        return container;
     },
 
     create: function(message, title, options){
@@ -85,8 +97,13 @@ var Notify = {
         });
 
         // Show
-        notify.hide(function(){
-            notify.appendTo(o.container);
+        if (Notify.container === null) {
+            Notify.container = Notify._createContainer();
+        }
+        notify.appendTo(Notify.container);
+
+        notify.hide(0, function(){
+
             Utils.exec(Utils.isValue(options.onAppend) ? options.onAppend : o.onAppend, null, notify[0]);
 
             notify.css({
@@ -116,9 +133,10 @@ var Notify = {
     },
 
     kill: function(notify, callback){
+        var that = this, o = this.options;
         notify.off(Metro.events.click);
-        notify.fadeOut('slow', function(){
-            Utils.exec(Utils.isValue(callback) ? callback : this.options.onClose, null, notify[0]);
+        notify.fadeOut(o.duration, function(){
+            Utils.exec(Utils.isValue(callback) ? callback : that.options.onClose, null, notify[0]);
             notify.remove();
         });
     },

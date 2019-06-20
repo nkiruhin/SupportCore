@@ -1,6 +1,32 @@
-var Listview = {
+var ListViewDefaultConfig = {
+    selectable: false,
+    checkStyle: 1,
+    effect: "slide",
+    duration: 100,
+    view: Metro.listView.LIST,
+    selectCurrent: true,
+    structure: {},
+    onNodeInsert: Metro.noop,
+    onNodeDelete: Metro.noop,
+    onNodeClean: Metro.noop,
+    onCollapseNode: Metro.noop,
+    onExpandNode: Metro.noop,
+    onGroupNodeClick: Metro.noop,
+    onNodeClick: Metro.noop,
+    onListViewCreate: Metro.noop
+};
+
+Metro.listViewSetup = function (options) {
+    ListViewDefaultConfig = $.extend({}, ListViewDefaultConfig, options);
+};
+
+if (typeof window.metroListViewSetup !== undefined) {
+    Metro.listViewSetup(window.metroListViewSetup);
+}
+
+var ListView = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, ListViewDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
@@ -8,24 +34,6 @@ var Listview = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        selectable: false,
-        checkStyle: 1,
-        effect: "slide",
-        duration: 100,
-        view: Metro.listView.LIST,
-        selectCurrent: true,
-        structure: {},
-        onNodeInsert: Metro.noop,
-        onNodeDelete: Metro.noop,
-        onNodeClean: Metro.noop,
-        onCollapseNode: Metro.noop,
-        onExpandNode: Metro.noop,
-        onGroupNodeClick: Metro.noop,
-        onNodeClick: Metro.noop,
-        onListviewCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -48,7 +56,8 @@ var Listview = {
         this._createView();
         this._createEvents();
 
-        Utils.exec(o.onListviewCreate, [element]);
+        Utils.exec(o.onListViewCreate, null, element[0]);
+        element.fire("listviewcreate");
     },
 
     _createIcon: function(data){
@@ -158,7 +167,10 @@ var Listview = {
                 element.find(".node").removeClass("current-select");
                 node.toggleClass("current-select");
             }
-            Utils.exec(o.onNodeClick, [node, element])
+            Utils.exec(o.onNodeClick, [node], element[0]);
+            element.fire("nodeclick", {
+                node: node
+            });
         });
 
         element.on(Metro.events.click, ".node-toggle", function(){
@@ -170,7 +182,10 @@ var Listview = {
             var node = $(this).closest("li");
             element.find(".node-group").removeClass("current-group");
             node.addClass("current-group");
-            Utils.exec(o.onGroupNodeClick, [node, element])
+            Utils.exec(o.onGroupNodeClick, [node], element[0]);
+            element.fire("groupnodeclick", {
+                node: node
+            });
         });
 
         element.on(Metro.events.dblclick, ".node-group > .data > .caption", function(){
@@ -201,6 +216,8 @@ var Listview = {
         var element = this.element, o = this.options;
         var func;
 
+        node=$(node);
+
         if (!node.hasClass("node-group")) {
             return ;
         }
@@ -209,10 +226,16 @@ var Listview = {
 
         if (o.effect === "slide") {
             func = node.hasClass("expanded") !== true ? "slideUp" : "slideDown";
-            Utils.exec(o.onCollapseNode, [node, element]);
+            Utils.exec(o.onCollapseNode, [node], element[0]);
+            element.fire("collapsenode", {
+                node: node
+            });
         } else {
             func = node.hasClass("expanded") !== true ? "fadeOut" : "fadeIn";
-            Utils.exec(o.onExpandNode, [node, element]);
+            Utils.exec(o.onExpandNode, [node], element[0]);
+            element.fire("expandnode", {
+                node: node
+            });
         }
 
         node.children("ul")[func](o.duration);
@@ -234,6 +257,8 @@ var Listview = {
         if (node === null) {
             target = element;
         } else {
+
+            node=$(node);
 
             if (!node.hasClass("node-group")) {
                 return ;
@@ -257,7 +282,12 @@ var Listview = {
         new_node.prepend(cb);
         cb.checkbox();
 
-        Utils.exec(o.onNodeInsert, [new_node, element]);
+        Utils.exec(o.onNodeInsert, [new_node, node, target], element[0]);
+        element.fire("nodeinsert", {
+            newNode: new_node,
+            parentNode: node,
+            list: target
+        });
 
         return new_node;
     },
@@ -274,35 +304,66 @@ var Listview = {
         node.addClass("expanded");
         node.append($("<ul>").addClass("listview").addClass("view-"+o.view));
 
-        Utils.exec(o.onNodeInsert, [node, element]);
+        Utils.exec(o.onNodeInsert, [node, null, element], element[0]);
+        element.fire("nodeinsert", {
+            newNode: node,
+            parentNode: null,
+            list: element
+        });
 
         return node;
     },
 
     insertBefore: function(node, data){
         var element = this.element, o = this.options;
+        var new_node, parent_node, list;
+
+        node=$(node);
 
         if (!node.length) {return;}
 
-        var new_node = this._createNode(data);
+        new_node = this._createNode(data);
         new_node.addClass("node").insertBefore(node);
-        Utils.exec(o.onNodeInsert, [new_node, element]);
+        parent_node = new_node.closest(".node");
+        list = new_node.closest("ul");
+
+        Utils.exec(o.onNodeInsert, [new_node, parent_node, list], element[0]);
+        element.fire("nodeinsert", {
+            newNode: new_node,
+            parentNode: parent_node,
+            list: list
+        });
+
         return new_node;
     },
 
     insertAfter: function(node, data){
         var element = this.element, o = this.options;
+        var new_node, parent_node, list;
+
+        node=$(node);
 
         if (!node.length) {return;}
 
-        var new_node = this._createNode(data);
+        new_node = this._createNode(data);
         new_node.addClass("node").insertAfter(node);
-        Utils.exec(o.onNodeInsert, [new_node, element]);
+        parent_node = new_node.closest(".node");
+        list = new_node.closest("ul");
+
+        Utils.exec(o.onNodeInsert, [new_node, parent_node, list], element[0]);
+        element.fire("nodeinsert", {
+            newNode: new_node,
+            parentNode: parent_node,
+            list: list
+        });
+
         return new_node;
     },
 
     del: function(node){
         var element = this.element, o = this.options;
+
+        node=$(node);
 
         if (!node.length) {return;}
 
@@ -314,18 +375,26 @@ var Listview = {
             parent_node.removeClass("expanded");
             parent_node.children(".node-toggle").remove();
         }
-        Utils.exec(o.onNodeDelete, [node, element]);
+        Utils.exec(o.onNodeDelete, [node], element[0]);
+        element.fire("nodedelete", {
+            node: node
+        });
     },
 
     clean: function(node){
         var element = this.element, o = this.options;
+
+        node=$(node);
 
         if (!node.length) {return;}
 
         node.children("ul").remove();
         node.removeClass("expanded");
         node.children(".node-toggle").remove();
-        Utils.exec(o.onNodeClean, [node, element]);
+        Utils.exec(o.onNodeClean, [node], element[0]);
+        element.fire("nodeclean", {
+            node: node
+        });
     },
 
     getSelected: function(){
@@ -370,4 +439,4 @@ var Listview = {
     }
 };
 
-Metro.plugin('listview', Listview);
+Metro.plugin('listview', ListView);

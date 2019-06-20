@@ -17,6 +17,8 @@ module.exports = function(grunt) {
         'less/schemes/builder/*.less',
         'Gruntfile.js'
     ];
+    var time = new Date(), day = time.getDate(), month = time.getMonth()+1, year = time.getFullYear(), hour = time.getHours(), mins = time.getMinutes(), sec = time.getSeconds();
+    var timestamp = (day < 10 ? "0"+day:day) + "/" + (month < 10 ? "0"+month:month) + "/" + (year) + " " + (hour<10?"0"+hour:hour) + ":" + (mins<10?"0"+mins:mins) + ":" + (sec<10?"0"+sec:sec);
 
     require('load-grunt-tasks')(grunt);
 
@@ -25,6 +27,7 @@ module.exports = function(grunt) {
         tasks.push('cssmin');
     }
 
+    tasks.push('replace');
     tasks.push('copy');
 
     if (watching) {
@@ -32,10 +35,11 @@ module.exports = function(grunt) {
     }
 
     grunt.initConfig({
+        docsDir: 'G:\\Projects\\Metro4-Docs\\public_html\\metro',
         pkg: grunt.file.readJSON('package.json'),
         banner: '/*\n' +
         ' * Metro 4 Components Library v<%= pkg.version %> <%= pkg.version_suffix %> (<%= pkg.homepage %>)\n' +
-        ' * Copyright <%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
+        ' * Copyright 2012-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
         ' * Licensed under <%= pkg.license %>\n' +
         ' */\n',
 
@@ -140,7 +144,7 @@ module.exports = function(grunt) {
                 map: false,
                 processors: [
                     require('autoprefixer')({
-                        browsers: ['last 2 versions']
+                        overrideBrowserslist: ['last 2 versions']
                     })
                 ]
             },
@@ -191,6 +195,43 @@ module.exports = function(grunt) {
                 cwd: 'build',
                 src: '**/*',
                 dest: 'docs/metro'
+            }
+        },
+
+        replace: {
+            build: {
+                options: {
+                    patterns: [
+                        {
+                            match: 'build',
+                            replacement: "<%= pkg.build %>"
+                        },
+                        {
+                            match: 'version',
+                            replacement: "<%= pkg.version %>"
+                        },
+                        {
+                            match: 'status',
+                            replacement: "<%= pkg.version_suffix %>"
+                        },
+                        {
+                            match: 'compile',
+                            replacement: timestamp
+                        }
+                    ]
+                },
+                files: [
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['build/js/*.js'], dest: 'build/js/'
+                    },
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: ['build/css/*.css'], dest: 'build/css/'
+                    }
+                ]
             }
         },
 

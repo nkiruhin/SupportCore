@@ -1,6 +1,25 @@
+var DropdownDefaultConfig = {
+    dropFilter: null,
+    effect: 'slide',
+    toggleElement: null,
+    noClose: false,
+    duration: 100,
+    onDrop: Metro.noop,
+    onUp: Metro.noop,
+    onDropdownCreate: Metro.noop
+};
+
+Metro.dropdownSetup = function (options) {
+    DropdownDefaultConfig = $.extend({}, DropdownDefaultConfig, options);
+};
+
+if (typeof window.metroDropdownSetup !== undefined) {
+    Metro.dropdownSetup(window.metroDropdownSetup);
+}
+
 var Dropdown = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, DropdownDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this._toggle = null;
@@ -9,19 +28,7 @@ var Dropdown = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onDropdownCreate, [this.element]);
-
         return this;
-    },
-
-    options: {
-        effect: 'slide',
-        toggleElement: null,
-        noClose: false,
-        duration: 100,
-        onDrop: Metro.noop,
-        onUp: Metro.noop,
-        onDropdownCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -40,12 +47,25 @@ var Dropdown = {
 
     _create: function(){
         var that = this, element = this.element, o = this.options;
-        var toggle, parent = element.parent();
-        var element_roles = Utils.isValue(element.attr("data-role")) ? Utils.strToArray(element.attr("data-role")) : [];
+        this._createStructure();
+        this._createEvents();
 
+        Utils.exec(o.onDropdownCreate, null, element);
+        element.fire("dropdowncreate");
+
+        if (element.hasClass("open")) {
+            setTimeout(function(){
+                that.open(true);
+            }, 500)
+        }
+    },
+
+    _createStructure: function(){
+        var that = this, element = this.element, o = this.options;
+        var toggle;
         toggle = o.toggleElement !== null ? $(o.toggleElement) : element.siblings('.dropdown-toggle').length > 0 ? element.siblings('.dropdown-toggle') : element.prev();
 
-        this.displayOrigin = element.css("display");
+        this.displayOrigin = Utils.getStyleOne(element, "display");
 
         if (element.hasClass("v-menu")) {
             element.addClass("for-dropdown");
@@ -53,10 +73,12 @@ var Dropdown = {
 
         element.css("display", "none");
 
-        if (element_roles.length === 0 || element_roles.indexOf("dropdown") === -1) {
-            element_roles.push("dropdown");
-            element.attr("data-role", element_roles.join(", "));
-        }
+        this._toggle = toggle;
+    },
+
+    _createEvents: function(){
+        var that = this, element = this.element, o = this.options;
+        var toggle = this._toggle, parent = element.parent();
 
         toggle.on(Metro.events.click, function(e){
             parent.siblings(parent[0].tagName).removeClass("active-container");
@@ -67,7 +89,13 @@ var Dropdown = {
             } else {
                 $('[data-role=dropdown]').each(function(i, el){
                     if (!element.parents('[data-role=dropdown]').is(el) && !$(el).hasClass('keep-open') && $(el).css('display') !== 'none') {
-                        that._close(el);
+                        if (!Utils.isValue(o.dropFilter)) {
+                            that._close(el);
+                        } else {
+                            if ($(el).closest(o.dropFilter).length > 0) {
+                                that._close(el);
+                            }
+                        }
                     }
                 });
                 if (element.hasClass('horizontal')) {
@@ -93,8 +121,6 @@ var Dropdown = {
             e.stopPropagation();
         });
 
-        this._toggle = toggle;
-
         if (o.noClose === true) {
             element.addClass("keep-open").on(Metro.events.click, function (e) {
                 //e.preventDefault();
@@ -107,11 +133,9 @@ var Dropdown = {
         });
     },
 
-    _close: function(el){
+    _close: function(el, immediate){
 
-        if (Utils.isJQueryObject(el) === false) {
-            el = $(el);
-        }
+        el = $(el);
 
         var dropdown  = el.data("dropdown");
         var toggle = dropdown._toggle;
@@ -120,16 +144,21 @@ var Dropdown = {
 
         toggle.removeClass('active-toggle').removeClass("active-control");
         dropdown.element.parent().removeClass("active-container");
-        el[func](options.duration, function(){
+
+        if (immediate) {
+            func = 'hide'
+        }
+
+        el[func](immediate ? 0 : options.duration, function(){
             el.trigger("onClose", null, el);
         });
-        Utils.exec(options.onUp, [el]);
+
+        Utils.exec(options.onUp, null, el[0]);
+        el.fire("up");
     },
 
-    _open: function(el){
-        if (Utils.isJQueryObject(el) === false) {
-            el = $(el);
-        }
+    _open: function(el, immediate){
+        el = $(el);
 
         var dropdown  = el.data("dropdown");
         var toggle = dropdown._toggle;
@@ -137,18 +166,25 @@ var Dropdown = {
         var func = options.effect === "slide" ? "slideDown" : "fadeIn";
 
         toggle.addClass('active-toggle').addClass("active-control");
-        el[func](options.duration, function(){
+
+        if (immediate) {
+            func = 'show'
+        }
+
+        el[func](immediate ? 0 : options.duration, function(){
             el.trigger("onOpen", null, el);
         });
-        Utils.exec(options.onDrop, [el]);
+
+        Utils.exec(options.onDrop, null, el[0]);
+        el.fire("drop");
     },
 
-    close: function(){
-        this._close(this.element);
+    close: function(immediate){
+        this._close(this.element, immediate);
     },
 
-    open: function(){
-        this._open(this.element);
+    open: function(immediate){
+        this._open(this.element, immediate);
     },
 
     changeAttribute: function(attributeName){
@@ -164,9 +200,8 @@ $(document).on(Metro.events.click, function(e){
     $('[data-role*=dropdown]').each(function(){
         var el = $(this);
 
-        if (el.css('display')==='block' && el.hasClass('keep-open') === false) {
-            var dropdown = el.data('dropdown');
-            dropdown.close();
+        if (el.css('display')!=='none' && !el.hasClass('keep-open') && !el.hasClass('stay-open') && !el.hasClass('ignore-document-click')) {
+            el.data('dropdown').close();
         }
     });
 });

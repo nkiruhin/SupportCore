@@ -1,6 +1,62 @@
+var CarouselDefaultConfig = {
+    autoStart: false,
+    width: "100%",
+    height: "16/9", // 3/4, 21/9
+    effect: "slide", // slide, fade, switch, slowdown, custom
+    effectFunc: "linear",
+    direction: "left", //left, right
+    duration: METRO_ANIMATION_DURATION,
+    period: 5000,
+    stopOnMouse: true,
+
+    controls: true,
+    bullets: true,
+    bulletsStyle: "square", // square, circle, rect, diamond
+    bulletsSize: "default", // default, mini, small, large
+
+    controlsOnMouse: false,
+    controlsOutside: false,
+    bulletsPosition: "default", // default, left, right
+
+    controlPrev: '&#x23F4',
+    controlNext: '&#x23F5',
+    clsCarousel: "",
+    clsSlides: "",
+    clsSlide: "",
+    clsControls: "",
+    clsControlNext: "",
+    clsControlPrev: "",
+    clsBullets: "",
+    clsBullet: "",
+    clsBulletOn: "",
+    clsThumbOn: "",
+
+    onStop: Metro.noop,
+    onStart: Metro.noop,
+    onPlay: Metro.noop,
+    onSlideClick: Metro.noop,
+    onBulletClick: Metro.noop,
+    onThumbClick: Metro.noop,
+    onMouseEnter: Metro.noop,
+    onMouseLeave: Metro.noop,
+    onNextClick: Metro.noop,
+    onPrevClick: Metro.noop,
+    onSlideShow: Metro.noop,
+    onSlideHide: Metro.noop,
+    onCarouselCreate: Metro.noop
+};
+
+Metro.carouselSetup = function (options) {
+    CarouselDefaultConfig = $.extend({}, CarouselDefaultConfig, options);
+};
+
+if (typeof window.metroCarouselSetup !== undefined) {
+    Metro.carouselSetup(window.metroCarouselSetup);
+}
+
 var Carousel = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, CarouselDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.height = 0;
@@ -16,54 +72,6 @@ var Carousel = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        autoStart: false,
-        width: "100%",
-        height: "16/9", // 3/4, 21/9
-        effect: "slide", // slide, fade, switch, slowdown, custom
-        effectFunc: "linear",
-        direction: "left", //left, right
-        duration: METRO_ANIMATION_DURATION,
-        period: 5000,
-        stopOnMouse: true,
-
-        controls: true,
-        bullets: true,
-        bulletsStyle: "square", // square, circle, rect, diamond
-        bulletsSize: "default", // default, mini, small, large
-
-        controlsOnMouse: false,
-        controlsOutside: false,
-        bulletsPosition: "default", // default, left, right
-
-        controlPrev: '&#x23F4',
-        controlNext: '&#x23F5',
-        clsCarousel: "",
-        clsSlides: "",
-        clsSlide: "",
-        clsControls: "",
-        clsControlNext: "",
-        clsControlPrev: "",
-        clsBullets: "",
-        clsBullet: "",
-        clsBulletOn: "",
-        clsThumbOn: "",
-
-        onStop: Metro.noop,
-        onStart: Metro.noop,
-        onPlay: Metro.noop,
-        onSlideClick: Metro.noop,
-        onBulletClick: Metro.noop,
-        onThumbClick: Metro.noop,
-        onMouseEnter: Metro.noop,
-        onMouseLeave: Metro.noop,
-        onNextClick: Metro.noop,
-        onPrevClick: Metro.noop,
-        onSlideShow: Metro.noop,
-        onSlideHide: Metro.noop,
-        onCarouselCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -104,28 +112,33 @@ var Carousel = {
         slides.addClass(o.clsSlides);
 
         if (slides.length === 0) {
-            Utils.exec(this.options.onCarouselCreate, [this.element]);
-            return ;
-        }
-
-        this._createSlides();
-        this._createControls();
-        this._createBullets();
-        this._createEvents();
-        this._resize();
-
-        if (o.controlsOnMouse === true) {
-            element.find("[class*=carousel-switch]").hide();
-            element.find(".carousel-bullets").hide();
-        }
-
-        if (o.autoStart === true) {
-            this._start();
         } else {
-            Utils.exec(o.onSlideShow, [this.slides[this.currentIndex][0], undefined], this.slides[this.currentIndex][0]);
+
+            this._createSlides();
+            this._createControls();
+            this._createBullets();
+            this._createEvents();
+            this._resize();
+
+            if (o.controlsOnMouse === true) {
+                element.find("[class*=carousel-switch]").hide();
+                element.find(".carousel-bullets").hide();
+            }
+
+            if (o.autoStart === true) {
+                this._start();
+            } else {
+                Utils.exec(o.onSlideShow, [this.slides[this.currentIndex][0], undefined], this.slides[this.currentIndex][0]);
+                element.fire("slideshow", {
+                    current: this.slides[this.currentIndex][0],
+                    prev: undefined
+                });
+            }
+
         }
 
-        Utils.exec(this.options.onCarouselCreate, [this.element]);
+        Utils.exec(o.onCarouselCreate, [element]);
+        element.fire("carouselcreate");
     },
 
     _start: function(){
@@ -146,6 +159,7 @@ var Carousel = {
             that._slideTo(t, true);
         }, period);
         Utils.exec(o.onStart, [element], element[0]);
+        element.fire("start");
     },
 
     _stop: function(){
@@ -280,21 +294,30 @@ var Carousel = {
             var bullet = $(this);
             if (that.isAnimate === false) {
                 that._slideToSlide(bullet.data('slide'));
-                Utils.exec(o.onBulletClick, [bullet,  element, e])
+                Utils.exec(o.onBulletClick, [bullet,  element, e]);
+                element.fire("bulletclick", {
+                    bullet: bullet
+                });
             }
         });
 
         element.on(Metro.events.click, ".carousel-switch-next", function(e){
             if (that.isAnimate === false) {
                 that._slideTo("next", false);
-                Utils.exec(o.onNextClick, [element, e])
+                Utils.exec(o.onNextClick, [element, e]);
+                element.fire("nextclick", {
+                    button: this
+                });
             }
         });
 
         element.on(Metro.events.click, ".carousel-switch-prev", function(e){
             if (that.isAnimate === false) {
                 that._slideTo("prev", false);
-                Utils.exec(o.onPrevClick, [element, e])
+                Utils.exec(o.onPrevClick, [element, e]);
+                element.fire("prevclick", {
+                    button: this
+                });
             }
         });
 
@@ -305,7 +328,7 @@ var Carousel = {
                     element.find(".carousel-bullets").fadeIn();
                 }
                 that._stop();
-                Utils.exec(o.onMouseEnter, [element, e])
+                Utils.exec(o.onMouseEnter, [element, e]);
             });
             element.on(Metro.events.leave, function (e) {
                 if (o.controlsOnMouse === true) {
@@ -330,7 +353,10 @@ var Carousel = {
 
         element.on(Metro.events.click, ".slide", function(e){
             var slide = $(this);
-            Utils.exec(o.onSlideClick, [slide, element, e])
+            Utils.exec(o.onSlideClick, [slide, element, e]);
+            element.fire("slideclick", {
+                slide: slide
+            });
         });
 
         $(window).on(Metro.events.resize + "-" + element.attr("id"), function(){
@@ -434,10 +460,18 @@ var Carousel = {
 
         setTimeout(function(){
             Utils.exec(o.onSlideShow, [next[0], current[0]], next[0]);
+            element.fire("slideshow", {
+                current: next[0],
+                prev: current[0]
+            });
         }, duration);
 
         setTimeout(function(){
             Utils.exec(o.onSlideHide, [current[0], next[0]], current[0]);
+            element.fire("slidehide", {
+                current: current[0],
+                next: next[0]
+            });
         }, duration);
 
         if (interval === true) {
@@ -467,12 +501,14 @@ var Carousel = {
 
     stop: function () {
         clearInterval(this.interval);
-        Utils.exec(this.options.onStop, [this.element])
+        Utils.exec(this.options.onStop, [this.element]);
+        this.element.fire("stop");
     },
 
     play: function(){
         this._start();
-        Utils.exec(this.options.onPlay, [this.element])
+        Utils.exec(this.options.onPlay, [this.element]);
+        this.element.fire("play");
     },
 
     changeAttribute: function(attributeName){

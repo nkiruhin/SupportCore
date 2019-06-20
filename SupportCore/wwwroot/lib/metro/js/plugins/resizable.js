@@ -1,6 +1,28 @@
+var ResizableDefaultConfig = {
+    canResize: true,
+    resizeElement: ".resize-element",
+    minWidth: 0,
+    minHeight: 0,
+    maxWidth: 0,
+    maxHeight: 0,
+    preserveRatio: false,
+    onResizeStart: Metro.noop,
+    onResizeStop: Metro.noop,
+    onResize: Metro.noop,
+    onResizableCreate: Metro.noop
+};
+
+Metro.resizeableSetup = function (options) {
+    ResizableDefaultConfig = $.extend({}, ResizableDefaultConfig, options);
+};
+
+if (typeof window.metroResizeableSetup !== undefined) {
+    Metro.resizeableSetup(window.metroResizeableSetup);
+}
+
 var Resizable = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, ResizableDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.resizer = null;
@@ -8,22 +30,7 @@ var Resizable = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onResizableCreate, [this.element]);
-
         return this;
-    },
-    options: {
-        canResize: true,
-        resizeElement: ".resize-element",
-        minWidth: 0,
-        minHeight: 0,
-        maxWidth: 0,
-        maxHeight: 0,
-        preserveRatio: false,
-        onResizeStart: Metro.noop,
-        onResizeStop: Metro.noop,
-        onResize: Metro.noop,
-        onResizableCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -41,8 +48,13 @@ var Resizable = {
     },
 
     _create: function(){
+        var element = this.element, o = this.options;
+
         this._createStructure();
         this._createEvents();
+
+        Utils.exec(o.onResizableCreate, null, element[0]);
+        element.fire("resizeablecreate");
     },
 
     _createStructure: function(){
@@ -53,6 +65,8 @@ var Resizable = {
         } else {
             this.resizer = $("<span>").addClass("resize-element").appendTo(element);
         }
+
+        element.data("canResize", o.canResize);
     },
 
     _createEvents: function(){
@@ -60,7 +74,7 @@ var Resizable = {
 
         this.resizer.on(Metro.events.start + "-resize-element", function(e){
 
-            if (o.canResize === false) {
+            if (element.data('canResize') === false) {
                 return ;
             }
 
@@ -69,7 +83,10 @@ var Resizable = {
             var startHeight = parseInt(element.outerHeight());
             var size = {width: startWidth, height: startHeight};
 
-            Utils.exec(o.onResizeStart, [element, size]);
+            Utils.exec(o.onResizeStart, [size], element[0]);
+            element.fire("resizestart", {
+                size: size
+            });
 
             $(document).on(Metro.events.move + "-resize-element", function(e){
                 var moveXY = Utils.pageXY(e);
@@ -86,7 +103,10 @@ var Resizable = {
 
                 element.css(size);
 
-                Utils.exec(o.onResize, [element, size]);
+                Utils.exec(o.onResize, [size], element[0]);
+                element.fire("resize", {
+                    size: size
+                });
             });
 
             $(document).on(Metro.events.stop + "-resize-element", function(){
@@ -98,7 +118,10 @@ var Resizable = {
                     height: parseInt(element.outerHeight())
                 };
 
-                Utils.exec(o.onResizeStop, [element, size]);
+                Utils.exec(o.onResizeStop, [size], element[0]);
+                element.fire("resizestop", {
+                    size: size
+                });
             });
 
             e.preventDefault();

@@ -121,7 +121,7 @@ function SimpleTableReady() {
         //"serverSide": true,
         "processing": true,
         "order": [[0, 'desc']],
-         responsive: true,
+         //responsive: true,
         //"scrollY": "200px",
         //"scrollCollapse": true,
         "language": {

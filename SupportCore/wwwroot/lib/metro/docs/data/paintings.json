@@ -1,7 +1,7 @@
 {
   "header": {
-    "template": "<figure class='text-center'><div class='img-container thumbnail'><img src='$img_src'></div><figcaption class='painting-name'>$painting_name</figcaption><figcaption class='painting-author text-bold'>$painting_author</figcaption><figcaption class='painting-price' data-format='money'>$painting_price</figcaption></figure>"
   },
+  "template": "<figure class='text-center'><div class='img-container thumbnail'><img src='<%this.img_src%>'></div><figcaption class='painting-name'><%this.painting_name%></figcaption><figcaption class='painting-author text-bold'><%this.painting_author%></figcaption><figcaption class='painting-price' data-format='money'><%this.painting_price%></figcaption></figure>",
   "data": [
     {
       "img_src": "images/paintings/picasso.jpg",

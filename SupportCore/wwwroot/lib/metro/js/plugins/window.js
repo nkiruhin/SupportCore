@@ -1,6 +1,65 @@
+var WindowDefaultConfig = {
+    hidden: false,
+    width: "auto",
+    height: "auto",
+    btnClose: true,
+    btnMin: true,
+    btnMax: true,
+    clsCaption: "",
+    clsContent: "",
+    clsWindow: "",
+    draggable: true,
+    dragElement: ".window-caption .icon, .window-caption .title",
+    dragArea: "parent",
+    shadow: false,
+    icon: "",
+    title: "Window",
+    content: "default",
+    resizable: true,
+    overlay: false,
+    overlayColor: 'transparent',
+    overlayAlpha: .5,
+    modal: false,
+    position: "absolute",
+    checkEmbed: true,
+    top: "auto",
+    left: "auto",
+    place: "auto",
+    closeAction: Metro.actions.REMOVE,
+    customButtons: null,
+    clsCustomButton: "",
+    minWidth: 0,
+    minHeight: 0,
+    maxWidth: 0,
+    maxHeight: 0,
+    onDragStart: Metro.noop,
+    onDragStop: Metro.noop,
+    onDragMove: Metro.noop,
+    onCaptionDblClick: Metro.noop,
+    onCloseClick: Metro.noop,
+    onMaxClick: Metro.noop,
+    onMinClick: Metro.noop,
+    onResizeStart: Metro.noop,
+    onResizeStop: Metro.noop,
+    onResize: Metro.noop,
+    onWindowCreate: Metro.noop,
+    onShow: Metro.noop,
+    onWindowDestroy: Metro.noop,
+    onCanClose: Metro.noop_true,
+    onClose: Metro.noop
+};
+
+Metro.windowSetup = function (options) {
+    WindowDefaultConfig = $.extend({}, WindowDefaultConfig, options);
+};
+
+if (typeof window.metroWindowSetup !== undefined) {
+    Metro.windowSetup(window.metroWindowSetup);
+}
+
 var Window = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, WindowDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.win = null;
@@ -14,63 +73,10 @@ var Window = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onWindowCreate, [this.win, this.element]);
-
         return this;
     },
 
     dependencies: ['draggable', 'resizeable'],
-
-    options: {
-        hidden: false,
-        width: "auto",
-        height: "auto",
-        btnClose: true,
-        btnMin: true,
-        btnMax: true,
-        clsCaption: "",
-        clsContent: "",
-        clsWindow: "",
-        draggable: true,
-        dragElement: ".window-caption .icon, .window-caption .title",
-        dragArea: "parent",
-        shadow: false,
-        icon: "",
-        title: "Window",
-        content: "default",
-        resizable: true,
-        overlay: false,
-        overlayColor: 'transparent',
-        overlayAlpha: .5,
-        modal: false,
-        position: "absolute",
-        checkEmbed: true,
-        top: "auto",
-        left: "auto",
-        place: "auto",
-        closeAction: Metro.actions.REMOVE,
-        customButtons: null,
-        clsCustomButton: "",
-        minWidth: 0,
-        minHeight: 0,
-        maxWidth: 0,
-        maxHeight: 0,
-        onDragStart: Metro.noop,
-        onDragStop: Metro.noop,
-        onDragMove: Metro.noop,
-        onCaptionDblClick: Metro.noop,
-        onCloseClick: Metro.noop,
-        onMaxClick: Metro.noop,
-        onMinClick: Metro.noop,
-        onResizeStart: Metro.noop,
-        onResizeStop: Metro.noop,
-        onResize: Metro.noop,
-        onWindowCreate: Metro.noop,
-        onShow: Metro.noop,
-        onWindowDestroy: Metro.noop,
-        onCanClose: Metro.noop_true,
-        onClose: Metro.noop
-    },
 
     _setOptionsFromDOM: function(){
         var element = this.element, o = this.options;
@@ -114,13 +120,21 @@ var Window = {
 
         this.win = win;
 
+        Utils.exec(o.onWindowCreate, [this.win[0]], element[0]);
+        element.fire("windowcreate", {
+            win: win[0]
+        });
+
         setTimeout(function(){
             that._setPosition();
 
             if (o.hidden !== true) {
                 that.win.removeClass("no-visible");
             }
-            Utils.exec(o.onShow, [win], win[0]);
+            Utils.exec(o.onShow, [win[0]], element[0]);
+            element.fire("show", {
+                win: win[0]
+            });
         }, 100);
     },
 
@@ -195,11 +209,11 @@ var Window = {
                 o.content = Utils.embedUrl(o.content);
             }
 
-            if (!Utils.isJQueryObject(o.content) && Utils.isFunc(o.content)) {
+            if (!Utils.isQ(o.content) && Utils.isFunc(o.content)) {
                 o.content = Utils.exec(o.content);
             }
 
-            if (Utils.isJQueryObject(o.content)) {
+            if (Utils.isQ(o.content)) {
                 o.content.appendTo(content);
             } else {
                 content.html(o.content);
@@ -354,14 +368,20 @@ var Window = {
     },
 
     maximized: function(e){
-        var win = this.win,  o = this.options;
+        var win = this.win,  element = this.element, o = this.options;
         var target = $(e.currentTarget);
         win.removeClass("minimized");
         win.toggleClass("maximized");
         if (target.hasClass("window-caption")) {
-            Utils.exec(o.onCaptionDblClick, [win]);
+            Utils.exec(o.onCaptionDblClick, [win[0]], element[0]);
+            element.fire("captiondblclick", {
+                win: win[0]
+            });
         } else {
-            Utils.exec(o.onMaxClick, [win]);
+            Utils.exec(o.onMaxClick, [win[0]], element[0]);
+            element.fire("maxclick", {
+                win: win[0]
+            });
         }
     },
 
@@ -369,7 +389,10 @@ var Window = {
         var win = this.win,  element = this.element, o = this.options;
         win.removeClass("maximized");
         win.toggleClass("minimized");
-        Utils.exec(o.onMinClick, [win], element[0]);
+        Utils.exec(o.onMinClick, [win[0]], element[0]);
+        element.fire("minclick", {
+            win: win[0]
+        });
     },
 
     close: function(){
@@ -386,15 +409,26 @@ var Window = {
             timeout = 500;
         }
 
-        Utils.exec(o.onClose, [win], element[0]);
+        Utils.exec(o.onClose, [win[0]], element[0]);
+        element.fire("close", {
+            win: win[0]
+        });
 
         timer = setTimeout(function(){
             timer = null;
             if (o.modal === true) {
                 win.siblings(".overlay").remove();
             }
-            Utils.exec(o.onCloseClick, [win], element[0]);
-            Utils.exec(o.onWindowDestroy, [win], element[0]);
+            Utils.exec(o.onCloseClick, [win[0]], element[0]);
+            element.fire("closeclick", {
+                win: win[0]
+            });
+
+            Utils.exec(o.onWindowDestroy, [win[0]], element[0]);
+            element.fire("windowdestroy", {
+                win: win[0]
+            });
+
             if (o.closeAction === Metro.actions.REMOVE) {
                 win.remove();
             } else {
@@ -482,14 +516,14 @@ var Window = {
         }
     },
 
-    setContent: function(){
+    setContent: function(c){
         var element = this.element, win = this.win;
-        var content = element.attr("data-content");
+        var content = Utils.isValue(c) ? c : element.attr("data-content");
         var result;
 
-        if (!Utils.isJQueryObject(content) && Utils.isFunc(content)) {
+        if (!Utils.isQ(content) && Utils.isFunc(content)) {
             result = Utils.exec(content);
-        } else if (Utils.isJQueryObject(content)) {
+        } else if (Utils.isQ(content)) {
             result = content.html();
         } else {
             result = content;
@@ -498,15 +532,15 @@ var Window = {
         win.find(".window-content").html(result);
     },
 
-    setTitle: function(){
+    setTitle: function(t){
         var element = this.element, win = this.win;
-        var title = element.attr("data-title");
+        var title = Utils.isValue(t) ? t : element.attr("data-title");
         win.find(".window-caption .title").html(title);
     },
 
-    setIcon: function(){
+    setIcon: function(i){
         var element = this.element, win = this.win;
-        var icon = element.attr("data-icon");
+        var icon = Utils.isValue(i) ? i : element.attr("data-icon");
         win.find(".window-caption .icon").html(icon);
     },
 
@@ -561,9 +595,9 @@ var Window = {
         }
     },
 
-    changePlace: function () {
+    changePlace: function (p) {
         var element = this.element, win = this.win;
-        var place = element.attr("data-place");
+        var place = Utils.isValue(p) ? p : element.attr("data-place");
         win.addClass(place);
     },
 

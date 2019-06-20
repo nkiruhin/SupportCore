@@ -45,7 +45,7 @@
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
-        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-load="initDocSearchEngine()"></div>
+        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-html-load="initDocSearchEngine()"></div>
 
             <div class="d-none d-block-xl cell-xl-2 order-2 border-left bd-light toc-wrapper">
                 <h5>Table of contents</h5>
@@ -327,7 +327,10 @@
                         <code>clsOpenIcon</code>,
                         <code>data</code>,
                         <code>cls</code>,
-                        <code>target</code>.
+                        <code>target</code>,
+                        <code>row</code>,
+                        <code>html</code>.
+
                 </p>
                 <pre><code>
                     {
@@ -383,6 +386,10 @@
                         <td>Event size. Can be from 1 to 10</td>
                     </tr>
                     <tr>
+                        <td>row</td>
+                        <td>Nested row from 1 to ...</td>
+                    </tr>
+                    <tr>
                         <td>shift</td>
                         <td>Event shift (shift the event to the right of the previous one). Can be from 1 to 10</td>
                     </tr>
@@ -421,6 +428,10 @@
                     <tr>
                         <td>clsOpenIcon</td>
                         <td>Additional class for open event icon</td>
+                    </tr>
+                    <tr>
+                        <td>html</td>
+                        <td>Create event with custom html</td>
                     </tr>
                     </tbody>
                 </table>

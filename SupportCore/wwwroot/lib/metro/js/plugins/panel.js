@@ -1,6 +1,43 @@
+var PanelDefaultConfig = {
+    id: null,
+    titleCaption: "",
+    titleIcon: "",
+    collapsible: false,
+    collapsed: false,
+    collapseDuration: METRO_ANIMATION_DURATION,
+    width: "auto",
+    height: "auto",
+    draggable: false,
+
+    customButtons: null,
+    clsCustomButton: "",
+
+    clsPanel: "",
+    clsTitle: "",
+    clsTitleCaption: "",
+    clsTitleIcon: "",
+    clsContent: "",
+    clsCollapseToggle: "",
+
+    onCollapse: Metro.noop,
+    onExpand: Metro.noop,
+    onDragStart: Metro.noop,
+    onDragStop: Metro.noop,
+    onDragMove: Metro.noop,
+    onPanelCreate: Metro.noop
+};
+
+Metro.panelSetup = function (options) {
+    PanelDefaultConfig = $.extend({}, PanelDefaultConfig, options);
+};
+
+if (typeof window.metroPanelSetup !== undefined) {
+    Metro.panelSetup(window.metroPanelSetup);
+}
+
 var Panel = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, PanelDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
@@ -11,34 +48,6 @@ var Panel = {
     },
 
     dependencies: ['draggable', 'collapse'],
-
-    options: {
-        titleCaption: "",
-        titleIcon: "",
-        collapsible: false,
-        collapsed: false,
-        collapseDuration: METRO_ANIMATION_DURATION,
-        width: "auto",
-        height: "auto",
-        draggable: false,
-
-        customButtons: null,
-        clsCustomButton: "",
-
-        clsPanel: "",
-        clsTitle: "",
-        clsTitleCaption: "",
-        clsTitleIcon: "",
-        clsContent: "",
-        clsCollapseToggle: "",
-
-        onCollapse: Metro.noop,
-        onExpand: Metro.noop,
-        onDragStart: Metro.noop,
-        onDragStop: Metro.noop,
-        onDragMove: Metro.noop,
-        onPanelCreate: Metro.noop
-    },
 
     _setOptionsFromDOM: function(){
         var element = this.element, o = this.options;
@@ -54,23 +63,73 @@ var Panel = {
         });
     },
 
-    _create: function(){
+    _addCustomButtons: function(buttons){
         var element = this.element, o = this.options;
-        var prev = element.prev();
-        var parent = element.parent();
-        var panel = $("<div>").addClass("panel").addClass(o.clsPanel);
-        var id = Utils.uniqueId();
-        var original_classes = element[0].className;
-        var title, buttons;
+        var title = element.closest(".panel").find(".panel-title");
+        var buttonsContainer, customButtons = [];
 
-
-        if (prev.length === 0) {
-            parent.prepend(panel);
+        if (typeof buttons === "string" && buttons.indexOf("{") > -1) {
+            customButtons = JSON.parse(buttons);
+        } else if (typeof buttons === "string" && Utils.isObject(buttons)) {
+            customButtons = Utils.isObject(buttons);
+        } else if (typeof buttons === "object" && Utils.objectLength(buttons) > 0) {
+            customButtons = buttons;
         } else {
-            panel.insertAfter(prev);
+            console.log("Unknown format for custom buttons", buttons);
+            return ;
         }
 
+        if (title.length === 0) {
+            console.log("No place for custom buttons");
+            return ;
+        }
+
+        buttonsContainer = title.find(".custom-buttons");
+
+        if (buttonsContainer.length === 0) {
+            buttonsContainer = $("<div>").addClass("custom-buttons").appendTo(title);
+        } else {
+            buttonsContainer.find(".btn-custom").off(Metro.events.click);
+            buttonsContainer.html("");
+        }
+
+        $.each(customButtons, function(){
+            var item = this;
+            var customButton = $("<span>");
+
+            customButton
+                .addClass("button btn-custom")
+                .addClass(o.clsCustomButton)
+                .addClass(item.cls)
+                .attr("tabindex", -1)
+                .html(item.html);
+
+            customButton.data("action", item.onclick);
+
+            buttonsContainer.prepend(customButton);
+        });
+
+        title.on(Metro.events.click, ".btn-custom", function(e){
+            if (Utils.isRightMouse(e)) return;
+            var button = $(this);
+            var action = button.data("action");
+            Utils.exec(action, [button], this);
+        });
+
+        return this;
+    },
+
+    _create: function(){
+        var element = this.element, o = this.options;
+        var panel = $("<div>").addClass("panel").addClass(o.clsPanel);
+        var id = o.id ? o.id : Utils.elementId("panel");
+        var original_classes = element[0].className;
+        var title;
+
+
         panel.attr("id", id).addClass(original_classes);
+        panel.insertBefore(element);
+        element.appendTo(panel);
 
         element[0].className = '';
         element.addClass("panel-content").addClass(o.clsContent).appendTo(panel);
@@ -104,44 +163,7 @@ var Panel = {
         }
 
         if (title && Utils.isValue(o.customButtons)) {
-            var customButtons = [];
-
-            if (Utils.isObject(o.customButtons) !== false) {
-                o.customButtons = Utils.isObject(o.customButtons);
-            }
-
-            if (typeof o.customButtons === "string" && o.customButtons.indexOf("{") > -1) {
-                customButtons = JSON.parse(o.customButtons);
-            } else if (typeof o.customButtons === "object" && Utils.objectLength(o.customButtons) > 0) {
-                customButtons = o.customButtons;
-            } else {
-                console.log("Unknown format for custom buttons");
-            }
-
-            buttons = $("<div>").addClass("custom-buttons").appendTo(title);
-
-            $.each(customButtons, function(){
-                var item = this;
-                var customButton = $("<span>");
-
-                customButton
-                    .addClass("button btn-custom")
-                    .addClass(o.clsCustomButton)
-                    .addClass(item.cls)
-                    .attr("tabindex", -1)
-                    .html(item.html);
-
-                customButton.data("action", item.onclick);
-
-                buttons.prepend(customButton);
-            });
-
-            title.on(Metro.events.click, ".btn-custom", function(e){
-                if (Utils.isRightMouse(e)) return;
-                var button = $(this);
-                var action = button.data("action");
-                Utils.exec(action, [button], this);
-            });
+            this._addCustomButtons(o.customButtons);
         }
 
         if (o.draggable === true) {
@@ -172,7 +194,12 @@ var Panel = {
 
         this.panel = panel;
 
-        Utils.exec(o.onPanelCreate, [this.element]);
+        Utils.exec(o.onPanelCreate, null,element[0]);
+        element.fire("panelcreate");
+    },
+
+    customButtons: function(buttons){
+        return this._addCustomButtons(buttons);
     },
 
     collapse: function(){
@@ -192,8 +219,6 @@ var Panel = {
     },
 
     changeAttribute: function(attributeName){
-        switch (attributeName) {
-        }
     }
 };
 

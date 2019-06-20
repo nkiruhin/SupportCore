@@ -1,6 +1,22 @@
+var ImageCompareDefaultConfig = {
+    width: "100%",
+    height: "auto",
+    onResize: Metro.noop,
+    onSliderMove: Metro.noop,
+    onImageCompareCreate: Metro.noop
+};
+
+Metro.imageCompareSetup = function (options) {
+    ImageCompareDefaultConfig = $.extend({}, ImageCompareDefaultConfig, options);
+};
+
+if (typeof window.metroImageCompareSetup !== undefined) {
+    Metro.imageCompareSetup(window.metroImageCompareSetup);
+}
+
 var ImageCompare = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, ImageCompareDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
@@ -8,14 +24,6 @@ var ImageCompare = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        width: "100%",
-        height: "auto",
-        onResize: Metro.noop,
-        onSliderMove: Metro.noop,
-        onImageCompareCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -38,7 +46,8 @@ var ImageCompare = {
         this._createStructure();
         this._createEvents();
 
-        Utils.exec(o.onImageCompareCreate, [element], element[0]);
+        Utils.exec(o.onImageCompareCreate, null, element[0]);
+        element.fire("imagecomparecreate");
     },
 
     _createStructure: function(){
@@ -111,7 +120,11 @@ var ImageCompare = {
                 slider.css({
                     left: left_pos
                 });
-                Utils.exec(o.onSliderMove, [x, left_pos, slider[0]], element[0]);
+                Utils.exec(o.onSliderMove, [x, left_pos], slider[0]);
+                element.fire("slidermove", {
+                    x: x,
+                    l: left_pos
+                });
             });
             $(document).on(Metro.events.stop + "-" + element.attr("id"), function(){
                 $(document).off(Metro.events.move + "-" + element.attr("id"));
@@ -155,6 +168,10 @@ var ImageCompare = {
             });
 
             Utils.exec(o.onResize, [element_width, element_height], element[0]);
+            element.fire("resize", {
+                width: element_width,
+                height: element_height
+            });
         });
     },
 

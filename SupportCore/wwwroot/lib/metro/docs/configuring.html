@@ -39,7 +39,7 @@
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
-        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-load="initDocSearchEngine()"></div>
+        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-html-load="initDocSearchEngine()"></div>
 
             <div class="d-none d-block-xl cell-xl-2 order-2 border-left bd-light toc-wrapper">
                 <h5>Table of contents</h5>
@@ -114,6 +114,21 @@
                         <td><code>metro4:timeout</code></td>
                         <td>integer</td>
                         <td>Value in milliseconds, used for notify and toasts</td>
+                    </tr>
+                    <tr>
+                        <td><code>metro4:about</code></td>
+                        <td>true</td>
+                        <td>Show welcome text in console</td>
+                    </tr>
+                    <tr>
+                        <td><code>metro4:cloak</code></td>
+                        <td>default</td>
+                        <td>Cloak effect. Works when you add class <code>.m4-cloak</code> to body. Value must be <code>default</code> or <code>fade</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>metro4:cloak_duration</code></td>
+                        <td>100</td>
+                        <td>Cloak effect duration.</td>
                     </tr>
                     </tbody>
                 </table>

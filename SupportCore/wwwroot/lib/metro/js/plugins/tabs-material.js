@@ -1,9 +1,34 @@
+var MaterialTabsDefaultConfig = {
+    deep: false,
+    fixedTabs: false,
+
+    clsComponent: "",
+    clsTab: "",
+    clsTabActive: "",
+    clsMarker: "",
+
+    onBeforeTabOpen: Metro.noop_true,
+    onTabOpen: Metro.noop,
+    onTabsScroll: Metro.noop,
+    onTabsCreate: Metro.noop
+};
+
+Metro.materialTabsSetup = function (options) {
+    MaterialTabsDefaultConfig = $.extend({}, MaterialTabsDefaultConfig, options);
+};
+
+if (typeof window.metroMaterialTabsSetup !== undefined) {
+    Metro.materialTabsSetup(window.metroMaterialTabsSetup);
+}
+
 var MaterialTabs = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, MaterialTabsDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.marker = null;
+        this.scroll = 0;
+        this.scrollDir = "left";
 
         this._setOptionsFromDOM();
         this._create();
@@ -11,22 +36,8 @@ var MaterialTabs = {
         return this;
     },
 
-    options: {
-        deep: false,
-        fixedTabs: false,
-
-        clsComponent: "",
-        clsTab: "",
-        clsTabActive: "",
-        clsMarker: "",
-
-        onBeforeTabOpen: Metro.noop_true,
-        onTabOpen: Metro.noop,
-        onTabsCreate: Metro.noop
-    },
-
     _setOptionsFromDOM: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
 
         $.each(element.data(), function(key, value){
             if (key in o) {
@@ -40,19 +51,18 @@ var MaterialTabs = {
     },
 
     _create: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
 
         this._createStructure();
         this._createEvents();
 
-        Utils.exec(o.onTabsCreate, [element]);
+        Utils.exec(o.onTabsCreate, null, element[0]);
+        element.fire("tabscreate");
     },
 
     _applyColor: function(to, color, option){
 
-        if (!Utils.isJQueryObject(to)) {
-            to = $(to);
-        }
+        to = $(to);
 
         if (Utils.isValue(color)) {
             if (Utils.isColor(color)) {
@@ -64,7 +74,7 @@ var MaterialTabs = {
     },
 
     _createStructure: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
         var tabs = element.find("li"), active_tab = element.find("li.active");
 
         element.addClass("tabs-material").addClass(o.clsComponent);
@@ -107,27 +117,29 @@ var MaterialTabs = {
             }
         });
 
-        var addMouseWheel = function (){
-            $(element).mousewheel(function(event, delta, deltaX, deltaY){
-                var scroll_value = delta * METRO_SCROLL_MULTIPLE;
-                element.scrollLeft(element.scrollLeft() - scroll_value);
-                return false;
-            });
-        };
+        element.on(Metro.events.scroll, function(){
+            var oldScroll = this.scroll;
 
-        if (!$('html').hasClass("metro-touch-device")) {
-            addMouseWheel();
-        }
+            this.scrollDir = this.scroll < element[0].scrollLeft ? "left" : "right";
+            this.scroll = element[0].scrollLeft;
+
+            Utils.exec(o.onTabsScroll, [element[0].scrollLeft, oldScroll, this.scrollDir], element[0]);
+
+            element.fire("tabsscroll", {
+                scrollLeft: element[0].scrollLeft,
+                oldScroll: oldScroll,
+                scrollDir: that.scrollDir
+            });
+
+        });
     },
 
     openTab: function(tab, tab_next){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
         var tabs = element.find("li"), element_scroll = element.scrollLeft();
         var magic = 32, shift, width = element.width(), tab_width, target, tab_left;
 
-        if (!Utils.isJQueryObject(tab)) {
-            tab = $(tab);
-        }
+        tab = $(tab);
 
         $.each(tabs, function(){
             var target = $(this).find("a").attr("href");
@@ -164,7 +176,12 @@ var MaterialTabs = {
             if (target.trim() !== "#" && $(target).length > 0) $(target).show();
         }
 
-        Utils.exec(o.onTabOpen, [tab, target, tab_next], tab[0]);
+        Utils.exec(o.onTabOpen, [tab[0], target, tab_next], element[0]);
+        element.fire("tabopen", {
+            tab: tab[0],
+            target: target,
+            tab_next: tab_next
+        });
     },
 
     changeAttribute: function(attributeName){

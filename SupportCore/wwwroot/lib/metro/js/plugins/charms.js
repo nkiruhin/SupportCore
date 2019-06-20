@@ -1,6 +1,24 @@
+var CharmsDefaultConfig = {
+    position: "right",
+    opacity: 1,
+    clsCharms: "",
+    onCharmCreate: Metro.noop,
+    onOpen: Metro.noop,
+    onClose: Metro.noop,
+    onToggle: Metro.noop
+};
+
+Metro.charmsSetup = function (options) {
+    CharmsDefaultConfig = $.extend({}, CharmsDefaultConfig, options);
+};
+
+if (typeof window.metroCharmsSetup !== undefined) {
+    Metro.charmsSetup(window.metroCharmsSetup);
+}
+
 var Charms = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, CharmsDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.origin = {
@@ -11,15 +29,6 @@ var Charms = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        position: "right",
-        opacity: 1,
-        clsCharms: "",
-        onCharmCreate: Metro.noop,
-        onOpen: Metro.noop,
-        onClose: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -43,6 +52,7 @@ var Charms = {
         this._createEvents();
 
         Utils.exec(o.onCharmCreate, [element]);
+        element.fire("charmcreate");
     },
 
     _createStructure: function(){
@@ -72,7 +82,8 @@ var Charms = {
 
         element.addClass("open");
 
-        Utils.exec(o.onOpen, [element]);
+        Utils.exec(o.onOpen, null, element[0]);
+        element.fire("open");
     },
 
     close: function(){
@@ -80,19 +91,21 @@ var Charms = {
 
         element.removeClass("open");
 
-        Utils.exec(o.onClose, [element]);
+        Utils.exec(o.onClose, null, element[0]);
+        element.fire("close");
     },
 
     toggle: function(){
         var element = this.element, o = this.options;
 
-        element.toggleClass("open");
-
         if (element.hasClass("open") === true) {
-            Utils.exec(o.onOpen, [element]);
+            this.close();
         } else {
-            Utils.exec(o.onClose, [element]);
+            this.open();
         }
+
+        Utils.exec(o.onToggle, null, element[0]);
+        element.fire("toggle");
     },
 
     opacity: function(v){

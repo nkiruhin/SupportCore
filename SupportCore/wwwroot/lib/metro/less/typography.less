@@ -54,6 +54,7 @@ body {
 }
 
 .display1, .display2, .display3, .display4 {
+    .px2rem(margin-top, 20px);
     .px2rem(margin-bottom, 20px);
     line-height: 1.2;
 }
@@ -99,10 +100,12 @@ body {
 .text-leader {
     .px2rem(font-size, 24px);
     font-weight: 300;
+    line-height: 1.2;
 }
 .text-leader2 {
     .px2rem(font-size, 20px);
     font-weight: 300;
+    line-height: 1.2;
 }
 
 .text-muted {
@@ -116,7 +119,7 @@ body {
 .alt-header, .h5, h5,
 .sub-alt-header, .h6, h6 {
     color: inherit;
-    margin-bottom: .5rem;
+    margin: 1rem 0;
     line-height: 1.1;
 
     & > small, & > .small {
@@ -244,13 +247,11 @@ del {
 }
 
 * + p {
-    .px2rem(margin-top, 16px);
+    margin-top: 1rem;
 }
 
 dl, ul, ol {
-    margin-top: 0;
-    .px2rem(margin-bottom, 16px);
-    .px2rem(margin-left, 16px);
+    margin: 1rem;
     list-style-position: inside;
 
     dl, ul, ol {
@@ -265,7 +266,7 @@ ul, menu, dir {
 }
 
 ol {
-    list-style: decimal;
+    list-style-type: decimal;
 }
 
 li.no-style {
@@ -282,24 +283,24 @@ ul {
 }
 
 ol {
-    list-style: upper-roman;
+    list-style-type: upper-roman;
 
     ol {
-        list-style: decimal;
+        list-style-type: decimal;
         ol {
-            list-style: lower-alpha;
+            list-style-type: lower-alpha;
         }
     }
 }
 
 ol {
-    &.decimal {list-style: decimal;}
-    &.roman-upper {list-style: upper-roman;}
-    &.roman-lower {list-style: lower-roman;}
-    &.alpha-upper {list-style: upper-alpha;}
-    &.alpha-lower {list-style: lower-alpha;}
-    &.latin-upper {list-style: upper-latin;}
-    &.latin-lower {list-style: lower-latin;}
+    &.decimal {list-style-type: decimal;}
+    &.roman-upper {list-style-type: upper-roman;}
+    &.roman-lower {list-style-type: lower-roman;}
+    &.alpha-upper {list-style-type: upper-alpha;}
+    &.alpha-lower {list-style-type: lower-alpha;}
+    &.latin-upper {list-style-type: upper-latin;}
+    &.latin-lower {list-style-type: lower-latin;}
 }
 
 ul, ol {
@@ -385,7 +386,7 @@ blockquote {
         }
     }
 
-    &.place-right {
+    &.right-side {
         border: 0;
         border-right: 4px @light solid;
         padding-right: .625rem;
@@ -463,6 +464,10 @@ pre code {
 .reduce-3 {font-size: .7em!important;}
 .reduce-4 {font-size: .6em!important;}
 .reduce-5 {font-size: .5em!important;}
+.reduce-6 {font-size: .4em!important;}
+.reduce-7 {font-size: .3em!important;}
+.reduce-8 {font-size: .2em!important;}
+.reduce-9 {font-size: .1em!important;}
 
 .enlarge {font-size: 1em!important;}
 
@@ -471,6 +476,13 @@ pre code {
 .enlarge-3 {font-size: 1.3em!important;}
 .enlarge-4 {font-size: 1.4em!important;}
 .enlarge-5 {font-size: 1.5em!important;}
+.enlarge-6 {font-size: 1.6em!important;}
+.enlarge-7 {font-size: 1.7em!important;}
+.enlarge-8 {font-size: 1.8em!important;}
+.enlarge-9 {font-size: 1.9em!important;}
+.enlarge-2x {font-size: 2em!important;}
+.enlarge-3x {font-size: 3em!important;}
+.enlarge-4x {font-size: 4em!important;}
 
 .align-size {font-size: 1em!important;}
 
@@ -506,6 +518,10 @@ pre code {
         .reduce-3-@{m} {font-size: .7em!important;}
         .reduce-4-@{m} {font-size: .6em!important;}
         .reduce-5-@{m} {font-size: .5em!important;}
+        .reduce-6-@{m} {font-size: .4em!important;}
+        .reduce-7-@{m} {font-size: .3em!important;}
+        .reduce-8-@{m} {font-size: .2em!important;}
+        .reduce-9-@{m} {font-size: .1em!important;}
 
         .enlarge-@{m} {font-size: 1em!important;}
 
@@ -514,6 +530,13 @@ pre code {
         .enlarge-3-@{m} {font-size: 1.3em!important;}
         .enlarge-4-@{m} {font-size: 1.4em!important;}
         .enlarge-5-@{m} {font-size: 1.5em!important;}
+        .enlarge-6-@{m} {font-size: 1.6em!important;}
+        .enlarge-7-@{m} {font-size: 1.7em!important;}
+        .enlarge-8-@{m} {font-size: 1.8em!important;}
+        .enlarge-9-@{m} {font-size: 1.9em!important;}
+        .enlarge-2x-@{m} {font-size: 2em!important;}
+        .enlarge-3x-@{m} {font-size: 3em!important;}
+        .enlarge-4x-@{m} {font-size: 4em!important;}
     }
 
     .generate-text-media-options(@name, @i + 1);

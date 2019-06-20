@@ -1,6 +1,28 @@
+var SorterDefaultConfig = {
+    thousandSeparator: ",",
+    decimalSeparator: ",",
+    sortTarget: null,
+    sortSource: null,
+    sortDir: "asc",
+    sortStart: true,
+    saveInitial: true,
+    onSortStart: Metro.noop,
+    onSortStop: Metro.noop,
+    onSortItemSwitch: Metro.noop,
+    onSorterCreate: Metro.noop
+};
+
+Metro.sorterSetup = function (options) {
+    SorterDefaultConfig = $.extend({}, SorterDefaultConfig, options);
+};
+
+if (typeof window.metroSorterSetup !== undefined) {
+    Metro.sorterSetup(window.metroSorterSetup);
+}
+
 var Sorter = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, SorterDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.initial = [];
@@ -9,20 +31,6 @@ var Sorter = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        thousandSeparator: ",",
-        decimalSeparator: ",",
-        sortTarget: null,
-        sortSource: null,
-        sortDir: "asc",
-        sortStart: true,
-        saveInitial: true,
-        onSortStart: Metro.noop,
-        onSortStop: Metro.noop,
-        onSortItemSwitch: Metro.noop,
-        onSorterCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -44,7 +52,8 @@ var Sorter = {
 
         this._createStructure();
 
-        Utils.exec(o.onSorterCreate, [element]);
+        Utils.exec(o.onSorterCreate, null, element[0]);
+        element.fire("sortercreate");
     },
 
     _createStructure: function(){
@@ -118,7 +127,10 @@ var Sorter = {
 
         prev = $("<div>").attr("id", id).insertBefore($(element.find(o.sortTarget)[0]));
 
-        Utils.exec(o.onSortStart, [element], element[0]);
+        Utils.exec(o.onSortStart, [items], element[0]);
+        element.fire("sortstart", {
+            items: items
+        });
 
         items.sort(function(a, b){
             var c1 = that._getItemContent(a);
@@ -134,7 +146,12 @@ var Sorter = {
             }
 
             if (result !== 0) {
-                Utils.exec(o.onSortItemSwitch, [a, b], element[0]);
+                Utils.exec(o.onSortItemSwitch, [a, b, result], element[0]);
+                element.fire("sortitemswitch", {
+                    a: a,
+                    b: b,
+                    result: result
+                });
             }
 
             return result;
@@ -154,7 +171,8 @@ var Sorter = {
 
         $("#"+id).remove();
 
-        Utils.exec(o.onSortStop, [element], element[0]);
+        Utils.exec(o.onSortStop, [items], element[0]);
+        element.fire("sortstop");
     },
 
     reset: function(){

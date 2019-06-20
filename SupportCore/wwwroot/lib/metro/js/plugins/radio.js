@@ -1,6 +1,25 @@
+var RadioDefaultConfig = {
+    transition: true,
+    style: 1,
+    caption: "",
+    captionPosition: "right",
+    clsRadio: "",
+    clsCheck: "",
+    clsCaption: "",
+    onRadioCreate: Metro.noop
+};
+
+Metro.radioSetup = function (options) {
+    RadioDefaultConfig = $.extend({}, RadioDefaultConfig, options);
+};
+
+if (typeof window.metroRadioSetup !== undefined) {
+    Metro.radioSetup(window.metroRadioSetup);
+}
+
 var Radio = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, RadioDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.origin = {
@@ -10,18 +29,7 @@ var Radio = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onRadioCreate, [this.element]);
-
         return this;
-    },
-    options: {
-        style: 1,
-        caption: "",
-        captionPosition: "right",
-        clsRadio: "",
-        clsCheck: "",
-        clsCaption: "",
-        onRadioCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -51,6 +59,10 @@ var Radio = {
         check.appendTo(radio);
         caption.appendTo(radio);
 
+        if (o.transition === true) {
+            radio.addClass("transition-on");
+        }
+
         if (o.captionPosition === 'left') {
             radio.addClass("caption-left");
         }
@@ -67,6 +79,9 @@ var Radio = {
         } else {
             this.enable();
         }
+
+        Utils.exec(o.onRadioCreate, null, element[0]);
+        element.fire("radiocreate");
     },
 
     disable: function(){

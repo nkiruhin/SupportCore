@@ -294,6 +294,11 @@
                 "less": ["charms"],
                 "js": ["plugins/charms"]
             },
+            "chat_comp":{
+                "name": "Chat",
+                "less": ["chats"],
+                "js": ["plugins/chat"]
+            },
             "checkbox_comp":{
                 "name": "Checkbox",
                 "less": ["checkbox"],
@@ -566,6 +571,14 @@
             "sidenav_simple_comp":{
                 "name": "Sidenav simple",
                 "less": ["sidenav-simple"]
+            },
+            "skill_box_comp":{
+                "name": "Skill Box",
+                "less": ["skill-box"]
+            },
+            "social_box_comp":{
+                "name": "Social Box",
+                "less": ["social-box"]
             },
             "slider_comp":{
                 "name": "Slider",

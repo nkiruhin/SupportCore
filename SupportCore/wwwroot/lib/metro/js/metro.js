@@ -22,6 +22,18 @@ var meta_scroll_multiple = $("meta[name='metro4:scroll_multiple']").attr("conten
 var meta_cloak = $("meta[name='metro4:cloak']").attr("content"); //default or fade
 var meta_cloak_duration = $("meta[name='metro4:cloak_duration']").attr("content"); //100
 
+/* Added by Ken Kitay https://github.com/kens-code*/
+var meta_about = $("meta[name='metro4:about']").attr("content");
+if (window.METRO_SHOW_ABOUT === undefined) {
+    window.METRO_SHOW_ABOUT = meta_about !== undefined ? JSON.parse(meta_about) : true;
+}
+/* --- end ---*/
+
+var meta_compile = $("meta[name='metro4:compile']").attr("content");
+if (window.METRO_SHOW_COMPILE_TIME === undefined) {
+    window.METRO_SHOW_COMPILE_TIME = meta_compile !== undefined ? JSON.parse(meta_compile) : true;
+}
+
 if (window.METRO_INIT === undefined) {
     window.METRO_INIT = meta_init !== undefined ? JSON.parse(meta_init) : true;
 }
@@ -92,7 +104,8 @@ var isTouch = (('ontouchstart' in window) || (navigator.MaxTouchPoints > 0) || (
 var Metro = {
 
     version: "@@version",
-    versionFull: "@@version.@@build @@status",
+    compileTime: "@@compile",
+    buildNumber: "@@build",
     isTouchable: isTouch,
     fullScreenEnabled: document.fullscreenEnabled,
     sheet: null,
@@ -161,6 +174,11 @@ var Metro = {
         stop: isTouch ? 'touchend.metro' : 'mouseup.metro',
         move: isTouch ? 'touchmove.metro' : 'mousemove.metro',
         enter: isTouch ? 'touchstart.metro' : 'mouseenter.metro',
+
+        startAll: 'mousedown.metro touchstart.metro',
+        stopAll: 'mouseup.metro touchend.metro',
+        moveAll: 'mousemove.metro touchmove.metro',
+
         leave: 'mouseleave.metro',
         focus: 'focus.metro',
         blur: 'blur.metro',
@@ -174,8 +192,6 @@ var Metro = {
         cut: 'cut.metro',
         paste: 'paste.metro',
         scroll: 'scroll.metro',
-        scrollStart: 'scrollstart.metro',
-        scrollStop: 'scrollstop.metro',
         mousewheel: 'mousewheel.metro',
         inputchange: "change.metro input.metro propertychange.metro cut.metro paste.metro copy.metro",
         dragstart: "dragstart.metro",
@@ -247,22 +263,33 @@ var Metro = {
         HIDE: 2
     },
 
-    hotkeys: [],
+    hotkeys: {},
 
-    about: function(f){
-        console.log("Metro 4 - v" + (f === true ? this.versionFull : this.version));
+    about: function(){
+        console.log("Metro 4 - v" + Metro.version +". "+ Metro.showCompileTime());
     },
 
-    aboutDlg: function(f){
-        alert("Metro 4 - v" + (f === true ? this.versionFull : this.version));
+    showCompileTime: function(){
+        return "Built at: " + Metro.compileTime;
     },
 
-    ver: function(f){
-        return (f === true ? this.versionFull : this.version);
+    aboutDlg: function(){
+        alert("Metro 4 - v" + Metro.version +". "+ Metro.showCompileTime());
+    },
+
+    ver: function(){
+        return Metro.version;
+    },
+
+    build: function(){
+        return Metro.build;
+    },
+
+    compile: function(){
+        return Metro.compileTime;
     },
 
     observe: function(){
-        'use strict';
         var observer, observerCallback;
         var observerConfig = {
             childList: true,
@@ -273,39 +300,45 @@ var Metro = {
             mutations.map(function(mutation){
 
                 if (mutation.type === 'attributes' && mutation.attributeName !== "data-role") {
-                    var element = $(mutation.target);
-                    var mc = element.data('metroComponent');
-                    if (mc !== undefined) {
-                        $.each(mc, function(){
-                            'use strict';
-                            var plug = element.data(this);
-                            if (plug) plug.changeAttribute(mutation.attributeName);
-                        });
+                    if (mutation.attributeName === 'data-hotkey') {
+
+                        Metro.initHotkeys([mutation.target], true);
+
+                    } else {
+                        var element = $(mutation.target);
+                        var mc = element.data('metroComponent');
+                        if (mc !== undefined) {
+                            $.each(mc, function(){
+                                var plug = element.data(this);
+                                if (plug) plug.changeAttribute(mutation.attributeName);
+                            });
+                        }
                     }
                 } else
 
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                    var i, obj, widgets = {}, plugins = {};
-                    var nodes = mutation.addedNodes;
+                    var i, widgets = [];
+                    var $node, node, nodes = mutation.addedNodes;
 
-                    for(i = 0; i < nodes.length; i++) {
+                    if (nodes.length) {
+                        for(i = 0; i < nodes.length; i++) {
+                            node = nodes[i];
+                            $node = $(node);
 
-                        var node = mutation.addedNodes[i];
+                            if ($node.attr("data-role") !== undefined) {
+                                widgets.push(node);
+                            }
 
-                        if (node.tagName === 'SCRIPT' || node.tagName === 'STYLE') {
-                            continue ;
+                            $.each($node.find("[data-role]"), function(){
+                                var o = this;
+                                if (widgets.indexOf(o) !== -1) {
+                                    return;
+                                }
+                                widgets.push(o);
+                            });
                         }
-                        obj = $(mutation.addedNodes[i]);
 
-                        plugins = obj.find("[data-role]");
-                        if (obj.data('role') !== undefined) {
-                            widgets = $.merge(plugins, obj);
-                        } else {
-                            widgets = plugins;
-                        }
-                        if (widgets.length) {
-                            Metro.initWidgets(widgets);
-                        }
+                        if (widgets.length) Metro.initWidgets(widgets, "observe");
                     }
 
                 } else  {
@@ -328,7 +361,7 @@ var Metro = {
             html.addClass("metro-no-touch-device");
         }
 
-        this.sheet = Utils.newCssSheet();
+        Metro.sheet = Utils.newCssSheet();
 
 
         window.METRO_MEDIA = [];
@@ -338,12 +371,12 @@ var Metro = {
             }
         });
 
-        this.observe();
+        Metro.observe();
 
-        this.initHotkeys(hotkeys);
-        this.initWidgets(widgets);
+        Metro.initHotkeys(hotkeys);
+        Metro.initWidgets(widgets, "init");
 
-        this.about(true);
+        if (METRO_SHOW_ABOUT) Metro.about(true);
 
         if (METRO_CLOAK_REMOVE !== "fade") {
             $(".m4-cloak").removeClass("m4-cloak");
@@ -355,70 +388,59 @@ var Metro = {
             })
         }
 
-        return this;
+        return Metro;
     },
 
-    initHotkeys: function(hotkeys){
+    initHotkeys: function(hotkeys, redefine){
         $.each(hotkeys, function(){
-            'use strict';
             var element = $(this);
-            var hotkey = element.data('hotkey') ? element.data('hotkey').toLowerCase() : false;
+            var hotkey = element.attr('data-hotkey') ? element.attr('data-hotkey').toLowerCase() : false;
+            var fn = element.attr('data-hotkey-func') ? element.attr('data-hotkey-func') : false;
+
+            //console.log(element);
 
             if (hotkey === false) {
                 return;
             }
 
-            if (element.data('hotKeyBonded') === true ) {
+            if (element.data('hotKeyBonded') === true && !Utils.bool(redefine)) {
                 return;
             }
 
-            Metro.hotkeys.push(hotkey);
-
-            $(document).on(Metro.events.keyup, null, hotkey, function(e){
-                if (element === undefined) return;
-
-                if (element[0].tagName === 'A' &&
-                    element.attr('href') !== undefined &&
-                    element.attr('href').trim() !== '' &&
-                    element.attr('href').trim() !== '#') {
-                    document.location.href = element.attr('href');
-                } else {
-                    element.click();
-                }
-                return METRO_HOTKEYS_BUBBLE_UP;
-            });
+            Metro.hotkeys[hotkey] = [this, fn];
 
             element.data('hotKeyBonded', true);
         });
     },
 
-    initWidgets: function(widgets) {
-        var that = this;
-
+    initWidgets: function(widgets, a) {
         $.each(widgets, function () {
-            'use strict';
             var $this = $(this), w = this;
             var roles = $this.data('role').split(/\s*,\s*/);
             roles.map(function (func) {
                 if ($.fn[func] !== undefined && $this.attr("data-role-"+func) === undefined) {
-                    $.fn[func].call($this);
-                    $this.attr("data-role-"+func, true);
+                    try {
+                        $.fn[func].call($this);
+                        $this.attr("data-role-"+func, true);
 
-                    var mc = $this.data('metroComponent');
+                        var mc = $this.data('metroComponent');
 
-                    if (mc === undefined) {
-                        mc = [func];
-                    } else {
-                        mc.push(func);
+                        if (mc === undefined) {
+                            mc = [func];
+                        } else {
+                            mc.push(func);
+                        }
+                        $this.data('metroComponent', mc);
+                    } catch (e) {
+                        console.log(e.message + " in " + e.stack);
+                        throw e;
                     }
-                    $this.data('metroComponent', mc);
                 }
             });
         });
     },
 
     plugin: function(name, object){
-        'use strict';
         $.fn[name] = function( options ) {
             return this.each(function() {
                 $.data( this, name, Object.create(object).init(options, this ));
@@ -428,8 +450,9 @@ var Metro = {
 
     destroyPlugin: function(element, name){
         var p, mc;
-        element = Utils.isJQueryObject(element) ? element[0] : element;
-        p = $(element).data(name);
+        var el = $(element);
+
+        p = el.data(name);
 
         if (!Utils.isValue(p)) {
             throw new Error("Component can not be destroyed: the element is not a Metro 4 component.");
@@ -440,20 +463,19 @@ var Metro = {
         }
 
         p['destroy']();
-        mc = $(element).data("metroComponent");
+        mc = el.data("metroComponent");
         Utils.arrayDelete(mc, name);
-        $(element).data("metroComponent", mc);
-        $.removeData(element, name);
-        $(element).removeAttr("data-role-"+name);
+        el.data("metroComponent", mc);
+        $.removeData(el[0], name);
+        el.removeAttr("data-role-"+name);
     },
 
     destroyPluginAll: function(element){
-        element = Utils.isJQueryObject(element) ? element[0] : element;
-        var mc = $(element).data("metroComponent");
+        var el = $(element);
+        var mc = el.data("metroComponent");
 
         if (mc !== undefined && mc.length > 0) $.each(mc, function(){
-            'use strict';
-            Metro.destroyPlugin(element, this);
+            Metro.destroyPlugin(el[0], this);
         });
     },
 

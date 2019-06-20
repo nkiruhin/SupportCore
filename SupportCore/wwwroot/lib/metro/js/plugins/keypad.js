@@ -1,6 +1,45 @@
+var KeypadDefaultConfig = {
+    keySize: 32,
+    keys: "1, 2, 3, 4, 5, 6, 7, 8, 9, 0",
+    copyInlineStyles: false,
+    target: null,
+    length: 0,
+    shuffle: false,
+    shuffleCount: 3,
+    position: Metro.position.BOTTOM_LEFT, //top-left, top, top-right, right, bottom-right, bottom, bottom-left, left
+    dynamicPosition: false,
+    serviceButtons: true,
+    showValue: true,
+    open: false,
+    sizeAsKeys: false,
+
+    clsKeypad: "",
+    clsInput: "",
+    clsKeys: "",
+    clsKey: "",
+    clsServiceKey: "",
+    clsBackspace: "",
+    clsClear: "",
+
+    onChange: Metro.noop,
+    onClear: Metro.noop,
+    onBackspace: Metro.noop,
+    onShuffle: Metro.noop,
+    onKey: Metro.noop,
+    onKeypadCreate: Metro.noop
+};
+
+Metro.keypadSetup = function (options) {
+    KeypadDefaultConfig = $.extend({}, KeypadDefaultConfig, options);
+};
+
+if (typeof window.metroKeypadSetup !== undefined) {
+    Metro.keypadSetup(window.metroKeypadSetup);
+}
+
 var Keypad = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, KeypadDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.value = "";
@@ -15,37 +54,6 @@ var Keypad = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        keySize: 32,
-        keys: "1, 2, 3, 4, 5, 6, 7, 8, 9, 0",
-        copyInlineStyles: false,
-        target: null,
-        length: 0,
-        shuffle: false,
-        shuffleCount: 3,
-        position: Metro.position.BOTTOM_LEFT, //top-left, top, top-right, right, bottom-right, bottom, bottom-left, left
-        dynamicPosition: false,
-        serviceButtons: true,
-        showValue: true,
-        open: false,
-        sizeAsKeys: false,
-
-        clsKeypad: "",
-        clsInput: "",
-        clsKeys: "",
-        clsKey: "",
-        clsServiceKey: "",
-        clsBackspace: "",
-        clsClear: "",
-
-        onChange: Metro.noop,
-        onClear: Metro.noop,
-        onBackspace: Metro.noop,
-        onShuffle: Metro.noop,
-        onKey: Metro.noop,
-        onKeypadCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -63,14 +71,17 @@ var Keypad = {
     },
 
     _create: function(){
+        var element = this.element, o = this.options;
+
         this._createKeypad();
-        if (this.options.shuffle === true) {
+        if (o.shuffle === true) {
             this.shuffle();
         }
         this._createKeys();
         this._createEvents();
 
-        Utils.exec(this.options.onKeypadCreate, [this.element]);
+        Utils.exec(o.onKeypadCreate, null,element[0]);
+        element.fire("keypadcreate");
     },
 
     _createKeypad: function(){
@@ -234,15 +245,21 @@ var Keypad = {
                     that._setKeysPosition();
                 }
 
-                Utils.exec(o.onKey, [key.data('key'), that.value, element]);
+                Utils.exec(o.onKey, [key.data('key'), that.value], element[0]);
+                element.fire("key", {
+                    key: key.data("key"),
+                    val: that.value
+                });
             } else {
                 if (key.data('key') === '&times;') {
                     that.value = "";
-                    Utils.exec(o.onClear, [element]);
+                    Utils.exec(o.onClear, null, element[0]);
+                    element.fire("clear");
                 }
                 if (key.data('key') === '&larr;') {
                     that.value = (that.value.substring(0, that.value.length - 1));
-                    Utils.exec(o.onBackspace, [that.value, element]);
+                    Utils.exec(o.onBackspace, [that.value], element[0]);
+                    element.fire("backspace");
                 }
             }
 
@@ -255,7 +272,7 @@ var Keypad = {
             }
 
             element.trigger('change');
-            Utils.exec(o.onChange, [that.value, element]);
+            Utils.exec(o.onChange, [that.value], element[0]);
 
             e.preventDefault();
             e.stopPropagation();
@@ -277,10 +294,15 @@ var Keypad = {
     },
 
     shuffle: function(){
-        for (var i = 0; i < this.options.shuffleCount; i++) {
+        var element = this.element, o = this.options;
+        for (var i = 0; i < o.shuffleCount; i++) {
             this.keys_to_work = this.keys_to_work.shuffle();
         }
-        Utils.exec(this.options.onShuffle, [this.keys_to_work, this.keys, this.element]);
+        Utils.exec(o.onShuffle, [this.keys_to_work, this.keys], element[0]);
+        element.fire("shuffle", {
+            keys: this.keys,
+            keysToWork: this.keys_to_work
+        });
     },
 
     shuffleKeys: function(count){

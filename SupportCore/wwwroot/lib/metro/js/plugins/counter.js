@@ -1,6 +1,26 @@
+var CounterDefaultConfig = {
+    delay: 10,
+    step: 1,
+    value: 0,
+    timeout: null,
+    delimiter: ",",
+    onStart: Metro.noop,
+    onStop: Metro.noop,
+    onTick: Metro.noop,
+    onCounterCreate: Metro.noop
+};
+
+Metro.counterSetup = function (options) {
+    CounterDefaultConfig = $.extend({}, CounterDefaultConfig, options);
+};
+
+if (typeof window.metroCounterSetup !== undefined) {
+    Metro.counterSetup(window.metroCounterSetup);
+}
+
 var Counter = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, CounterDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.numbers = [];
@@ -10,18 +30,6 @@ var Counter = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        delay: 10,
-        step: 1,
-        value: 0,
-        timeout: null,
-        delimiter: ",",
-        onStart: Metro.noop,
-        onStop: Metro.noop,
-        onTick: Metro.noop,
-        onCounterCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -44,6 +52,7 @@ var Counter = {
         this._calcArray();
 
         Utils.exec(o.onCounterCreate, [element], this.elem);
+        element.fire("countercreate");
 
         if (o.timeout !== null && Utils.isInt(o.timeout)) {
             setTimeout(function () {
@@ -71,19 +80,23 @@ var Counter = {
         var tick = function(){
             if (that.numbers.length === 0) {
                 Utils.exec(o.onStop, [element], element[0]);
+                element.fire("stop");
                 return ;
             }
             var n = that.numbers.shift();
             Utils.exec(o.onTick, [n, element], element[0]);
+            element.fire("tick");
             element.html(Number(n).format(0, 0, o.delimiter));
             if (that.numbers.length > 0) {
                 setTimeout(tick, o.delay);
             } else {
                 Utils.exec(o.onStop, [element], element[0]);
+                element.fire("stop");
             }
         };
 
         Utils.exec(o.onStart, [element], element[0]);
+        element.fire("start");
 
         setTimeout(tick, o.delay);
     },

@@ -42,7 +42,7 @@
 <div class="container-fluid">
 
     <div class="row flex-xl-nowrap">
-        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-load="initDocSearchEngine()"></div>
+        <div class="cell-md-3 cell-xl-2 pr-0 border-right bd-light" id="sidenav" data-role="htmlcontainer" data-html-source="sidenav.html" data-insert-mode="replace"  data-on-html-load="initDocSearchEngine()"></div>
 
             <div class="d-none d-block-xl cell-xl-2 order-2 border-left bd-light toc-wrapper">
                 <h5>Table of contents</h5>
@@ -311,10 +311,8 @@
                 </p>
                 <pre><code>
                     {
-                      "header": {
-                        "template": ""
-                      },
-                      "data": []
+                      "template": "..."
+                      "data": [...]
                     }
                 </code></pre>
 
@@ -654,7 +652,7 @@
                     </tr>
                     <tr>
                         <td><code>listItemsCountTitle</code></td>
-                        <td><code>data-items-count-title</code></td>
+                        <td><code>data-list-items-count-title</code></td>
                         <td>Show entries:</td>
                         <td>Title for items counter.</td>
                     </tr>

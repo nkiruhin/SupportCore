@@ -1,6 +1,26 @@
+var CheckboxDefaultConfig = {
+    transition: true,
+    style: 1,
+    caption: "",
+    captionPosition: "right",
+    indeterminate: false,
+    clsCheckbox: "",
+    clsCheck: "",
+    clsCaption: "",
+    onCheckboxCreate: Metro.noop
+};
+
+Metro.checkboxSetup = function (options) {
+    CheckboxDefaultConfig = $.extend({}, CheckboxDefaultConfig, options);
+};
+
+if (typeof window.metroCheckboxSetup !== undefined) {
+    Metro.checkboxSetup(window.metroCheckboxSetup);
+}
+
 var Checkbox = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, CheckboxDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.origin = {
@@ -10,19 +30,7 @@ var Checkbox = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onCheckboxCreate, [this.element]);
-
         return this;
-    },
-    options: {
-        style: 1,
-        caption: "",
-        captionPosition: "right",
-        indeterminate: false,
-        clsCheckbox: "",
-        clsCheck: "",
-        clsCaption: "",
-        onCheckboxCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -59,6 +67,10 @@ var Checkbox = {
         check.appendTo(checkbox);
         caption.appendTo(checkbox);
 
+        if (o.transition === true) {
+            checkbox.addClass("transition-on");
+        }
+
         if (o.captionPosition === 'left') {
             checkbox.addClass("caption-left");
         }
@@ -79,6 +91,9 @@ var Checkbox = {
         } else {
             this.enable();
         }
+
+        Utils.exec(o.onCheckboxCreate, [element]);
+        element.fire("checkboxcreate");
     },
 
     indeterminate: function(){

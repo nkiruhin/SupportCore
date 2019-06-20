@@ -1,6 +1,6 @@
 /*
- * Metro 4 Components Library v4.2.39  (https://metroui.org.ua)
- * Copyright 2019 Sergey Pimenov
+ * Metro 4 Components Library v4.2.45  (https://metroui.org.ua)
+ * Copyright 2012-2019 Sergey Pimenov
  * Licensed under MIT
  */
 #spider-navigator {
@@ -59,11 +59,13 @@ pre {
 .toc-wrapper > h5,
 #sidenav > h5 {
   color: #989898;
+  margin-top: 0;
 }
 .toc-wrapper .toc-nav,
 #sidenav .toc-nav {
   list-style: none;
   font-size: 90%;
+  margin-top: 0;
 }
 .toc-wrapper .toc-nav li,
 #sidenav .toc-nav li {

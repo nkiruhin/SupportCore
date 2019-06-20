@@ -1,6 +1,24 @@
+var DraggableDefaultConfig = {
+    dragElement: 'self',
+    dragArea: "parent",
+    onCanDrag: Metro.noop_true,
+    onDragStart: Metro.noop,
+    onDragStop: Metro.noop,
+    onDragMove: Metro.noop,
+    onDraggableCreate: Metro.noop
+};
+
+Metro.draggableSetup = function (options) {
+    DraggableDefaultConfig = $.extend({}, DraggableDefaultConfig, options);
+};
+
+if (typeof window.metroDraggableSetup !== undefined) {
+    Metro.draggableSetup(window.metroDraggableSetup);
+}
+
 var Draggable = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, DraggableDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.drag = false;
@@ -15,18 +33,9 @@ var Draggable = {
         this._create();
 
         Utils.exec(this.options.onDraggableCreate, [this.element]);
+        this.element.fire("draggablecreate");
 
         return this;
-    },
-
-    options: {
-        dragElement: 'self',
-        dragArea: "parent",
-        onCanDrag: Metro.noop_true,
-        onDragStart: Metro.noop,
-        onDragStop: Metro.noop,
-        onDragMove: Metro.noop,
-        onDraggableCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -60,17 +69,19 @@ var Draggable = {
             o.dragArea = "body";
         }
 
-        this.dragArea = o.dragArea === 'parent' ? element.parent() : $(o.dragArea);
+        setImmediate(function(){
+            that.dragArea = o.dragArea === 'parent' ? element.parent() : $(o.dragArea);
+            if (o.dragArea !== 'parent') {
+                element.appendTo(that.dragArea);
+                element.css({
+                    top: offset.top,
+                    left: offset.left
+                });
+            }
+        });
 
-        if (o.dragArea !== 'parent') {
-            element.appendTo(this.dragArea);
-            element.css({
-                top: offset.top,
-                left: offset.left
-            });
-        }
 
-        dragElement.on(Metro.events.start, function(e){
+        dragElement.on(Metro.events.startAll, function(e){
 
             var coord = o.dragArea !== "parent" ? element.offset() : element.position(),
                 shiftX = Utils.pageXY(e).x - coord.left,
@@ -113,29 +124,38 @@ var Draggable = {
 
             moveElement(e);
 
-            Utils.exec(o.onDragStart, [position, element]);
-
-            $(document).on(Metro.events.move+".draggable", function(e){
-                moveElement(e);
-                Utils.exec(o.onDragMove, [position], elem);
-                e.preventDefault();
+            Utils.exec(o.onDragStart, [position], element[0]);
+            element.fire("dragstart", {
+                position: position
             });
 
-            $(document).on(Metro.events.stop+".draggable", function(e){
+            $(document).on(Metro.events.moveAll, function(e){
+                moveElement(e);
+                Utils.exec(o.onDragMove, [position], elem);
+                element.fire("dragmove", {
+                    position: position
+                });
+                //e.preventDefault();
+            });
+
+            $(document).on(Metro.events.stopAll, function(){
                 element.css({
                     cursor: that.backup.cursor,
                     zIndex: that.backup.zIndex
                 }).removeClass("draggable");
 
                 if (that.drag) {
-                    $(document).off(Metro.events.move+".draggable");
-                    $(document).off(Metro.events.stop+".draggable");
+                    $(document).off(Metro.events.moveAll);
+                    $(document).off(Metro.events.stopAll);
                 }
 
                 that.drag = false;
                 that.move = false;
 
                 Utils.exec(o.onDragStop, [position], elem);
+                element.fire("dragstop", {
+                    position: position
+                });
             });
         });
     },

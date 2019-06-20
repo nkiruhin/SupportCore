@@ -1,6 +1,32 @@
+var SidebarDefaultConfig = {
+    shadow: true,
+    position: "left",
+    size: 290,
+    shift: null,
+    staticShift: null,
+    toggle: null,
+    duration: METRO_ANIMATION_DURATION,
+    static: null,
+    menuItemClick: true,
+    onOpen: Metro.noop,
+    onClose: Metro.noop,
+    onToggle: Metro.noop,
+    onStaticSet: Metro.noop,
+    onStaticLoss: Metro.noop,
+    onSidebarCreate: Metro.noop
+};
+
+Metro.sidebarSetup = function (options) {
+    SidebarDefaultConfig = $.extend({}, SidebarDefaultConfig, options);
+};
+
+if (typeof window.metroSidebarSetup !== undefined) {
+    Metro.selectSetup(window.metroSidebarSetup);
+}
+
 var Sidebar = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, SidebarDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.toggle_element = null;
@@ -9,24 +35,6 @@ var Sidebar = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        shadow: true,
-        position: "left",
-        size: 290,
-        shift: null,
-        staticShift: null,
-        toggle: null,
-        duration: METRO_ANIMATION_DURATION,
-        static: null,
-        menuItemClick: true,
-        onOpen: Metro.noop,
-        onClose: Metro.noop,
-        onToggle: Metro.noop,
-        onStaticSet: Metro.noop,
-        onStaticLoss: Metro.noop,
-        onSidebarCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -51,7 +59,8 @@ var Sidebar = {
         $(window).resize();
         this._checkStatic();
 
-        Utils.exec(o.onSidebarCreate, [element], element[0]);
+        Utils.exec(o.onSidebarCreate, null, element[0]);
+        element.fire("sidebarcreate");
     },
 
     _createStructure: function(){
@@ -139,11 +148,13 @@ var Sidebar = {
                     $(this).css({left: 0}, o.duration);
                 });
             }
-            Utils.exec(o.onStaticSet, [element], element[0]);
+            Utils.exec(o.onStaticSet, null, element[0]);
+            element.fire("staticset");
         }
         if (!Utils.mediaExist(o.static)) {
             element.removeClass("static");
-            Utils.exec(o.onStaticLoss, [element], element[0]);
+            Utils.exec(o.onStaticLoss, null, element[0]);
+            element.fire("staticloss");
         }
     },
 
@@ -166,7 +177,8 @@ var Sidebar = {
             }, o.duration);
         }
 
-        Utils.exec(o.onOpen, [element], element[0]);
+        Utils.exec(o.onOpen, null, element[0]);
+        element.fire("open");
     },
 
     close: function(){
@@ -184,7 +196,8 @@ var Sidebar = {
             }, o.duration);
         }
 
-        Utils.exec(o.onClose, [element], element[0]);
+        Utils.exec(o.onClose, null, element[0]);
+        element.fire("close");
     },
 
     toggle: function(){
@@ -193,7 +206,8 @@ var Sidebar = {
         } else {
             this.open();
         }
-        Utils.exec(this.options.onToggle, [this.element], this.element[0]);
+        Utils.exec(this.options.onToggle, null, this.element[0]);
+        this.element.fire("toggle");
     },
 
     changeAttribute: function(attributeName){

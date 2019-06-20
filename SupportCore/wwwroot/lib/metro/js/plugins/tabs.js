@@ -1,6 +1,30 @@
+var TabsDefaultConfig = {
+    expand: false,
+    expandPoint: null,
+    tabsPosition: "top",
+    tabsType: "default",
+
+    clsTabs: "",
+    clsTabsList: "",
+    clsTabsListItem: "",
+    clsTabsListItemActive: "",
+
+    onTab: Metro.noop,
+    onBeforeTab: Metro.noop_true,
+    onTabsCreate: Metro.noop
+};
+
+Metro.tabsSetup = function (options) {
+    TabsDefaultConfig = $.extend({}, TabsDefaultConfig, options);
+};
+
+if (typeof window.metroTabsSetup !== undefined) {
+    Metro.tabsSetup(window.metroTabsSetup);
+}
+
 var Tabs = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, TabsDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this._targets = [];
@@ -8,25 +32,7 @@ var Tabs = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onTabsCreate, [this.element], this.elem);
-
         return this;
-    },
-
-    options: {
-        expand: false,
-        expandPoint: null,
-        tabsPosition: "top",
-        tabsType: "default",
-
-        clsTabs: "",
-        clsTabsList: "",
-        clsTabsListItem: "",
-        clsTabsListItemActive: "",
-
-        onTab: Metro.noop,
-        onBeforeTab: Metro.noop_true,
-        onTabsCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -44,12 +50,15 @@ var Tabs = {
     },
 
     _create: function(){
-        var element = this.element;
+        var element = this.element, o = this.options;
         var tab = element.find(".active").length > 0 ? $(element.find(".active")[0]) : undefined;
 
         this._createStructure();
         this._createEvents();
         this._open(tab);
+
+        Utils.exec(o.onTabsCreate, null, element[0]);
+        element.fire("tabscreate");
     },
 
     _createStructure: function(){
@@ -222,7 +231,10 @@ var Tabs = {
 
         tab.addClass(o.clsTabsListItemActive);
 
-        Utils.exec(o.onTab, [tab, element], tab[0]);
+        Utils.exec(o.onTab, [tab[0]], element[0]);
+        element.fire("tab", {
+            tab: tab[0]
+        })
     },
 
     next: function(){

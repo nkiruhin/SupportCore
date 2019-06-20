@@ -1,6 +1,49 @@
+var CubeDefaultConfig = {
+    rules: null,
+    color: null,
+    flashColor: null,
+    flashInterval: 1000,
+    numbers: false,
+    offBefore: true,
+    attenuation: .3,
+    stopOnBlur: false,
+    cells: 4,
+    margin: 8,
+    showAxis: false,
+    axisStyle: "arrow", //line
+    cellClick: false,
+    autoRestart: 5000,
+
+    clsCube: "",
+    clsCell: "",
+    clsSide: "",
+    clsSideLeft: "",
+    clsSideRight: "",
+    clsSideTop: "",
+    clsSideLeftCell: "",
+    clsSideRightCell: "",
+    clsSideTopCell: "",
+    clsAxis: "",
+    clsAxisX: "",
+    clsAxisY: "",
+    clsAxisZ: "",
+
+    custom: Metro.noop,
+    onTick: Metro.noop,
+    onCubeCreate: Metro.noop
+};
+
+Metro.cubeSetup = function (options) {
+    CubeDefaultConfig = $.extend({}, CubeDefaultConfig, options);
+};
+
+if (typeof window.metroCubeSetup !== undefined) {
+    Metro.cubeSetup(window.metroCubeSetup);
+}
+
 var Cube = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, CubeDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.id = null;
@@ -51,41 +94,6 @@ var Cube = {
         }
     ],
 
-    options: {
-        rules: null,
-        color: null,
-        flashColor: null,
-        flashInterval: 1000,
-        numbers: false,
-        offBefore: true,
-        attenuation: .3,
-        stopOnBlur: false,
-        cells: 4,
-        margin: 8,
-        showAxis: false,
-        axisStyle: "arrow", //line
-        cellClick: false,
-        autoRestart: 5000,
-
-        clsCube: "",
-        clsCell: "",
-        clsSide: "",
-        clsSideLeft: "",
-        clsSideRight: "",
-        clsSideTop: "",
-        clsSideLeftCell: "",
-        clsSideRightCell: "",
-        clsSideTopCell: "",
-        clsAxis: "",
-        clsAxisX: "",
-        clsAxisY: "",
-        clsAxisZ: "",
-
-        custom: Metro.noop,
-        onTick: Metro.noop,
-        onCubeCreate: Metro.noop
-    },
-
     _setOptionsFromDOM: function(){
         var that = this, element = this.element, o = this.options;
 
@@ -113,6 +121,7 @@ var Cube = {
         this._createEvents();
 
         Utils.exec(o.onCubeCreate, [element]);
+        element.fire("cubecreate");
     },
 
     _parseRules: function(rules){
@@ -315,6 +324,9 @@ var Cube = {
 
         var interval = setTimeout(function(){
             Utils.exec(o.onTick, [index], element[0]);
+            element.fire("tick", {
+                index: index
+            });
             clearInterval(interval);
             Utils.arrayDelete(that.intervals, interval);
         }, speed);

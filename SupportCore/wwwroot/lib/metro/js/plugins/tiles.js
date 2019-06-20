@@ -1,6 +1,27 @@
+var TileDefaultConfig = {
+    size: "medium",
+    cover: "",
+    coverPosition: "center",
+    effect: "",
+    effectInterval: 3000,
+    effectDuration: 500,
+    target: null,
+    canTransform: true,
+    onClick: Metro.noop,
+    onTileCreate: Metro.noop
+};
+
+Metro.tileSetup = function (options) {
+    TileDefaultConfig = $.extend({}, TileDefaultConfig, options);
+};
+
+if (typeof window.metroTileSetup !== undefined) {
+    Metro.tileSetup(window.metroTileSetup);
+}
+
 var Tile = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, TileDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.effectInterval = false;
@@ -13,18 +34,6 @@ var Tile = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        size: "medium",
-        cover: "",
-        effect: "",
-        effectInterval: 3000,
-        effectDuration: 500,
-        target: null,
-        canTransform: true,
-        onClick: Metro.noop,
-        onTileCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -47,7 +56,8 @@ var Tile = {
         this._createTile();
         this._createEvents();
 
-        Utils.exec(o.onTileCreate, [element]);
+        Utils.exec(o.onTileCreate, null, element[0]);
+        element.fire("tilecreate");
     },
 
     _createTile: function(){
@@ -72,7 +82,7 @@ var Tile = {
                 var slide = $(this);
 
                 if (slide.data("cover") !== undefined) {
-                    that._setCover(slide, slide.data("cover"));
+                    that._setCover(slide, slide.data("cover"), slide.data("cover-position"));
                 }
             })
         }
@@ -84,7 +94,7 @@ var Tile = {
                 that.slides.push(this);
 
                 if (slide.data("cover") !== undefined) {
-                    that._setCover(slide, slide.data("cover"));
+                    that._setCover(slide, slide.data("cover"), slide.data("cover-position"));
                 }
 
                 if (i > 0) {
@@ -162,11 +172,15 @@ var Tile = {
         this.effectInterval = false;
     },
 
-    _setCover: function(to, src){
+    _setCover: function(to, src, pos){
+        if (!Utils.isValue(pos)) {
+            pos = this.options.coverPosition;
+        }
         to.css({
             backgroundImage: "url("+src+")",
             backgroundSize: "cover",
-            backgroundRepeat: "no-repeat"
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: pos
         });
     },
 
@@ -200,7 +214,10 @@ var Tile = {
                     }, 100);
                 }
 
-                Utils.exec(o.onClick, [tile]);
+                Utils.exec(o.onClick, [side], element[0]);
+                element.fire("click", {
+                    side: side
+                });
             }
         });
 

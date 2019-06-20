@@ -1,6 +1,42 @@
+var DatePickerDefaultConfig = {
+    gmt: 0,
+    format: "%Y-%m-%d",
+    inputFormat: null,
+    locale: METRO_LOCALE,
+    value: null,
+    distance: 3,
+    month: true,
+    day: true,
+    year: true,
+    minYear: null,
+    maxYear: null,
+    scrollSpeed: 4,
+    copyInlineStyles: true,
+    clsPicker: "",
+    clsPart: "",
+    clsMonth: "",
+    clsDay: "",
+    clsYear: "",
+    okButtonIcon: "<span class='default-icon-check'></span>",
+    cancelButtonIcon: "<span class='default-icon-cross'></span>",
+    onSet: Metro.noop,
+    onOpen: Metro.noop,
+    onClose: Metro.noop,
+    onScroll: Metro.noop,
+    onDatePickerCreate: Metro.noop
+};
+
+Metro.datePickerSetup = function (options) {
+    DatePickerDefaultConfig = $.extend({}, DatePickerDefaultConfig, options);
+};
+
+if (typeof window.metroDatePickerSetup !== undefined) {
+    Metro.datePickerSetup(window.metroDatePickerSetup);
+}
+
 var DatePicker = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, DatePickerDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.picker = null;
@@ -8,38 +44,16 @@ var DatePicker = {
         this.value = new Date();
         this.locale = Metro.locales[METRO_LOCALE]['calendar'];
         this.offset = (new Date()).getTimezoneOffset() / 60 + 1;
+        this.listTimer = {
+            day: null,
+            month: null,
+            year: null
+        };
 
         this._setOptionsFromDOM();
         this._create();
 
         return this;
-    },
-
-    options: {
-        gmt: 0,
-        format: "%Y-%m-%d",
-        locale: METRO_LOCALE,
-        value: null,
-        distance: 3,
-        month: true,
-        day: true,
-        year: true,
-        minYear: null,
-        maxYear: null,
-        scrollSpeed: 5,
-        copyInlineStyles: true,
-        clsPicker: "",
-        clsPart: "",
-        clsMonth: "",
-        clsDay: "",
-        clsYear: "",
-        okButtonIcon: "<span class='default-icon-check'></span>",
-        cancelButtonIcon: "<span class='default-icon-cross'></span>",
-        onSet: Metro.noop,
-        onOpen: Metro.noop,
-        onClose: Metro.noop,
-        onScroll: Metro.noop,
-        onDatePickerCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -58,14 +72,28 @@ var DatePicker = {
 
     _create: function(){
         var element = this.element, o = this.options;
+        var now = new Date();
 
         if (o.distance < 1) {
             o.distance = 1;
         }
 
-        if (o.value !== null && Utils.isDate(o.value)) {
-            this.value = (new Date(o.value)).addHours(this.offset);
+        if (Utils.isValue(element.val())) {
+            o.value = element.val();
         }
+
+        if (Utils.isValue(o.value)) {
+            if (Utils.isValue(o.inputFormat)) {
+                this.value = (""+o.value).toDate(o.inputFormat);
+            } else {
+                if (Utils.isDate(o.value)) {
+                    this.value = new Date(o.value);
+                }
+            }
+        }
+
+        // this.value.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+        // this.value = this.value.addHours(this.offset);
 
         if (Metro.locales[o.locale] === undefined) {
             o.locale = METRO_LOCALE;
@@ -86,6 +114,7 @@ var DatePicker = {
         this._set();
 
         Utils.exec(o.onDatePickerCreate, [element]);
+        element.fire("datepickercreate");
     },
 
     _createStructure: function(){
@@ -222,41 +251,37 @@ var DatePicker = {
             e.stopPropagation();
         });
 
-        this._addScrollEvents();
-    },
+        var scrollLatency = 150;
+        $.each(["month", "day", "year"], function(){
+            var part = this, list = picker.find(".sel-"+part);
 
-    _addScrollEvents: function(){
-        var picker = this.picker, o = this.options;
-        var lists = ['month', 'day', 'year'];
-        $.each(lists, function(){
-            var list_name = this;
-            var list = picker.find(".sel-" + list_name);
+            list.on("scroll", function(){
+                if (that.isOpen) {
+                    if (that.listTimer[part]) {
+                        clearTimeout(that.listTimer[part]);
+                        that.listTimer[part] = null;
+                    }
 
-            if (list.length === 0) return ;
+                    if (!that.listTimer[part]) that.listTimer[part] = setTimeout(function () {
 
-            list.on(Metro.events.scrollStart, function(){
-                list.find(".active").removeClass("active");
-            });
-            list.on(Metro.events.scrollStop, {latency: 50}, function(){
-                var target = Math.round((Math.ceil(list.scrollTop()) / 40));
-                var target_element = list.find(".js-"+list_name+"-"+target);
-                var scroll_to = target_element.position().top - (o.distance * 40) + list.scrollTop() - 1;
+                        var target, targetElement, scrollTop, delta;
 
-                list.animate({
-                    scrollTop: scroll_to
-                }, 100, function(){
-                    target_element.addClass("active");
-                    Utils.exec(o.onScroll, [target_element, list, picker], list[0]);
-                });
-            });
-        });
-    },
+                        that.listTimer[part] = null;
 
-    _removeScrollEvents: function(){
-        var picker = this.picker;
-        var lists = ['month', 'day', 'year'];
-        $.each(lists, function(){
-            picker.find(".sel-" + this).off("scrollstart scrollstop");
+                        target = Math.round((Math.ceil(list.scrollTop()) / 40));
+
+                        targetElement = list.find(".js-" + part + "-" + target);
+                        scrollTop = targetElement.position().top - (o.distance * 40) + list.scrollTop() - 1;
+
+                        list.find(".active").removeClass("active");
+
+                        list[0].scrollTop = scrollTop;
+                        targetElement.addClass("active");
+                        Utils.exec(o.onScroll, [targetElement, list, picker], list[0]);
+
+                    }, scrollLatency);
+                }
+            })
         });
     },
 
@@ -288,19 +313,21 @@ var DatePicker = {
         element.val(this.value.format(o.format, o.locale)).trigger("change");
 
         Utils.exec(o.onSet, [this.value, element.val(), element, picker], element[0]);
-
+        element.fire("set", {
+            value: this.value
+        });
     },
 
     open: function(){
-        var element = this.element, o = this.options;
+        var that = this, element = this.element, o = this.options;
         var picker = this.picker;
         var m = this.value.getMonth(), d = this.value.getDate() - 1, y = this.value.getFullYear();
-        var m_list, d_list, y_list;
+        var m_list, d_list, y_list, list, item, point;
         var select_wrapper = picker.find(".select-wrapper");
         var select_wrapper_in_viewport, select_wrapper_rect;
 
         select_wrapper.parent().removeClass("for-top for-bottom");
-        select_wrapper.show();
+        select_wrapper.show(0);
         picker.find("li").removeClass("active");
 
         select_wrapper_in_viewport = Utils.inViewport(select_wrapper);
@@ -313,6 +340,19 @@ var DatePicker = {
         if (!select_wrapper_in_viewport && select_wrapper_rect.top < 0) {
             select_wrapper.parent().addClass("for-top");
         }
+
+        // $.each(["month", "day", "year"], function(){
+        //     switch (this) {
+        //         case 'month': point = that.value.getMonth(); break;
+        //         case 'day': point = that.value.getDate()-1; break;
+        //         case 'year': point = that.value.getFullYear(); break;
+        //     }
+        //     if (o[this] === true) {
+        //         list = picker.find(".sel-"+this);
+        //         item = list.find("li.js-"+this+(this === 'year' ? '-real' : '')+"-"+point);
+        //         list.scrollTop(item.addClass("active").position().top - (40 * o.distance));
+        //     }
+        // });
 
         if (o.month === true) {
             m_list = picker.find(".sel-month");
@@ -336,23 +376,35 @@ var DatePicker = {
         this.isOpen = true;
 
         Utils.exec(o.onOpen, [this.value, element, picker], element[0]);
+        element.fire("open", {
+            value: this.value
+        });
     },
 
     close: function(){
         var picker = this.picker, o = this.options, element = this.element;
-        picker.find(".select-wrapper").hide();
+        picker.find(".select-wrapper").hide(0);
         this.isOpen = false;
         Utils.exec(o.onClose, [this.value, element, picker], element[0]);
+        element.fire("close", {
+            value: this.value
+        });
     },
 
-    val: function(t){
-        if (t === undefined) {
+    val: function(value){
+        var o = this.options;
+
+        if (!Utils.isValue(value)) {
             return this.element.val();
         }
-        if (Utils.isDate(t) === false) {
-            return false;
+
+        if (Utils.isValue(o.inputFormat)) {
+            this.value = (""+value).toDate(o.inputFormat);
+        } else {
+            this.value = new Date(value);
         }
-        this.value = (new Date(t)).addHours(this.offset);
+
+        // this.value = (new Date(t)).addHours(this.offset);
         this._set();
     },
 
@@ -374,8 +426,8 @@ var DatePicker = {
     },
 
     changeAttribute: function(attributeName){
-        switch (attributeName) {
-            case "data-value": this.changeValueAttribute(); break;
+        if (attributeName === "data-value") {
+            this.changeValueAttribute();
         }
     },
 
@@ -384,7 +436,9 @@ var DatePicker = {
         var picker = this.picker;
         var parent = element.parent();
 
-        this._removeScrollEvents();
+        $.each(["moth", "day", "year"], function(){
+            picker.find(".sel-"+this).off("scroll");
+        });
 
         picker.off(Metro.events.start, ".select-block ul");
         picker.off(Metro.events.click);

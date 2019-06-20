@@ -1,6 +1,23 @@
+var CollapseDefaultConfig = {
+    collapsed: false,
+    toggleElement: false,
+    duration: 100,
+    onExpand: Metro.noop,
+    onCollapse: Metro.noop,
+    onCollapseCreate: Metro.noop
+};
+
+Metro.collapseSetup = function (options) {
+    CollapseDefaultConfig = $.extend({}, CollapseDefaultConfig, options);
+};
+
+if (typeof window.metroCollapseSetup !== undefined) {
+    Metro.collapseSetup(window.metroCollapseSetup);
+}
+
 var Collapse = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, CollapseDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.toggle = null;
@@ -8,18 +25,7 @@ var Collapse = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onCollapseCreate, [this.element]);
-
         return this;
-    },
-
-    options: {
-        collapsed: false,
-        toggleElement: false,
-        duration: METRO_ANIMATION_DURATION,
-        onExpand: Metro.noop,
-        onCollapse: Metro.noop,
-        onCollapseCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -60,51 +66,61 @@ var Collapse = {
         });
 
         this.toggle = toggle;
+
+        Utils.exec(this.options.onCollapseCreate, [this.element]);
+        element.fire("collapsecreate");
     },
 
-    _close: function(el){
-
-        if (Utils.isJQueryObject(el) === false) {
-            el = $(el);
-        }
-
-        var dropdown  = el.data("collapse");
+    _close: function(el, immediate){
+        var elem = $(el);
+        var dropdown  = elem.data("collapse");
         var options = dropdown.options;
+        var func = immediate ? 'show' : 'slideUp';
+        var dur = immediate ? 0 : options.duration;
 
         this.toggle.removeClass("active-toggle");
 
-        el.slideUp(options.duration, function(){
+        elem[func](dur, function(){
             el.trigger("onCollapse", null, el);
             el.data("collapsed", true);
             el.addClass("collapsed");
-            Utils.exec(options.onCollapse, [el]);
+            Utils.exec(options.onCollapse, null, elem[0]);
+            elem.fire("collapse");
         });
     },
 
-    _open: function(el){
-        if (Utils.isJQueryObject(el) === false) {
-            el = $(el);
-        }
-
-        var dropdown  = el.data("collapse");
+    _open: function(el, immediate){
+        var elem = $(el);
+        var dropdown  = elem.data("collapse");
         var options = dropdown.options;
+        var func = immediate ? 'show' : 'slideDown';
+        var dur = immediate ? 0 : options.duration;
 
         this.toggle.addClass("active-toggle");
 
-        el.slideDown(options.duration, function(){
+        elem[func](dur, function(){
             el.trigger("onExpand", null, el);
             el.data("collapsed", false);
             el.removeClass("collapsed");
-            Utils.exec(options.onExpand, [el]);
+            Utils.exec(options.onExpand, null, elem[0]);
+            elem.fire("expand");
         });
     },
 
-    collapse: function(){
-        this._close(this.element);
+    collapse: function(immediate){
+        this._close(this.element, immediate);
     },
 
-    expand: function(){
-        this._open(this.element);
+    expand: function(immediate){
+        this._open(this.element, immediate);
+    },
+
+    close: function(immediate){
+        this._close(this.element, immediate);
+    },
+
+    open: function(immediate){
+        this._open(this.element, immediate);
     },
 
     isCollapsed: function(){

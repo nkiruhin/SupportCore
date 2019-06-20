@@ -1,36 +1,43 @@
+var TextareaDefaultConfig = {
+    charsCounter: null,
+    charsCounterTemplate: "$1",
+    defaultValue: "",
+    prepend: "",
+    append: "",
+    copyInlineStyles: true,
+    clearButton: true,
+    clearButtonIcon: "<span class='default-icon-cross'></span>",
+    autoSize: true,
+    clsPrepend: "",
+    clsAppend: "",
+    clsComponent: "",
+    clsTextarea: "",
+    onChange: Metro.noop,
+    onTextareaCreate: Metro.noop
+};
+
+Metro.textareaSetup = function (options) {
+    TextareaDefaultConfig = $.extend({}, TextareaDefaultConfig, options);
+};
+
+if (typeof window.metroTextareaSetup !== undefined) {
+    Metro.textareaSetup(window.metroTextareaSetup);
+}
+
 var Textarea = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, TextareaDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onTextareaCreate, [this.element]);
-
         return this;
-    },
-    options: {
-        charsCounter: null,
-        charsCounterTemplate: "$1",
-        defaultValue: "",
-        prepend: "",
-        append: "",
-        copyInlineStyles: true,
-        clearButton: true,
-        clearButtonIcon: "<span class='default-icon-cross'></span>",
-        autoSize: true,
-        clsPrepend: "",
-        clsAppend: "",
-        clsComponent: "",
-        clsTextarea: "",
-        onChange: Metro.noop,
-        onTextareaCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
 
         $.each(element.data(), function(key, value){
             if (key in o) {
@@ -44,8 +51,13 @@ var Textarea = {
     },
 
     _create: function(){
+        var element = this.element, o = this.options;
+
         this._createStructure();
         this._createEvents();
+
+        Utils.exec(o.onTextareaCreate, null, element[0]);
+        element.fire("textareacreate");
     },
 
     _createStructure: function(){
@@ -148,6 +160,10 @@ var Textarea = {
                 }
             }
             Utils.exec(o.onChange, [element.val(), that.length()], element[0]);
+            element.fire("change", {
+                val: element.val(),
+                length: that.length()
+            });
         })
     },
 

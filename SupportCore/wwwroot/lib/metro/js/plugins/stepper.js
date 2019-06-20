@@ -1,6 +1,28 @@
+var StepperDefaultConfig = {
+    view: Metro.stepperView.SQUARE, // square, cycle, diamond
+    steps: 3,
+    step: 1,
+    stepClick: false,
+    clsStepper: "",
+    clsStep: "",
+    clsComplete: "",
+    clsCurrent: "",
+    onStep: Metro.noop,
+    onStepClick: Metro.noop,
+    onStepperCreate: Metro.noop
+};
+
+Metro.stepperSetup = function (options) {
+    StepperDefaultConfig = $.extend({}, StepperDefaultConfig, options);
+};
+
+if (typeof window.metroStepperSetup !== undefined) {
+    Metro.stepperSetup(window.metroStepperSetup);
+}
+
 var Stepper = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, StepperDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.current = 0;
@@ -9,20 +31,6 @@ var Stepper = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        view: Metro.stepperView.SQUARE, // square, cycle, diamond
-        steps: 3,
-        step: 1,
-        stepClick: false,
-        clsStepper: "",
-        clsStep: "",
-        clsComplete: "",
-        clsCurrent: "",
-        onStep: Metro.noop,
-        onStepClick: Metro.noop,
-        onStepperCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -49,7 +57,8 @@ var Stepper = {
         this._createStepper();
         this._createEvents();
 
-        Utils.exec(o.onStepperCreate, [element]);
+        Utils.exec(o.onStepperCreate, null, element[0]);
+        element.fire("steppercreate");
     },
 
     _createStepper: function(){
@@ -73,7 +82,10 @@ var Stepper = {
             var step = $(this).data("step");
             if (o.stepClick === true) {
                 that.toStep(step);
-                Utils.exec(o.onStepClick, [step, element]);
+                Utils.exec(o.onStepClick, [step], element[0]);
+                element.fire("stepclick", {
+                    step: step
+                });
             }
         });
     },
@@ -131,7 +143,10 @@ var Stepper = {
         target.addClass("current").addClass(o.clsCurrent);
         target.prevAll().addClass("complete").addClass(o.clsComplete);
 
-        Utils.exec(o.onStep, [this.current, element]);
+        Utils.exec(o.onStep, [this.current], element[0]);
+        element.fire("step", {
+            step: this.current
+        });
     },
 
     changeAttribute: function(attributeName){

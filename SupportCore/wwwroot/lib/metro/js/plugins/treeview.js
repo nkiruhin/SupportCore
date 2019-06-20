@@ -1,6 +1,29 @@
-var Treeview = {
+var TreeViewDefaultConfig = {
+    effect: "slide",
+    duration: 100,
+    onNodeClick: Metro.noop,
+    onNodeDblClick: Metro.noop,
+    onNodeDelete: Metro.noop,
+    onNodeInsert: Metro.noop,
+    onNodeClean: Metro.noop,
+    onCheckClick: Metro.noop,
+    onRadioClick: Metro.noop,
+    onExpandNode: Metro.noop,
+    onCollapseNode: Metro.noop,
+    onTreeViewCreate: Metro.noop
+};
+
+Metro.treeViewSetup = function (options) {
+    TreeViewDefaultConfig = $.extend({}, TreeViewDefaultConfig, options);
+};
+
+if (typeof window.metroTreeViewSetup !== undefined) {
+    Metro.treeViewSetup(window.metroTreeViewSetup);
+}
+
+var TreeView = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, TreeViewDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
@@ -8,21 +31,6 @@ var Treeview = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        effect: "slide",
-        duration: 100,
-        onNodeClick: Metro.noop,
-        onNodeDblClick: Metro.noop,
-        onNodeDelete: Metro.noop,
-        onNodeInsert: Metro.noop,
-        onNodeClean: Metro.noop,
-        onCheckClick: Metro.noop,
-        onRadioClick: Metro.noop,
-        onExpandNode: Metro.noop,
-        onCollapseNode: Metro.noop,
-        onTreeviewCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -50,7 +58,8 @@ var Treeview = {
             that._recheck(this);
         });
 
-        Utils.exec(o.onTreeviewCreate, [element], element[0]);
+        Utils.exec(o.onTreeViewCreate, null, element[0]);
+        element.fire("treeviewcreate");
     },
 
     _createIcon: function(data){
@@ -140,7 +149,10 @@ var Treeview = {
 
             that.current(node);
 
-            Utils.exec(o.onNodeClick, [node, element], node[0]);
+            Utils.exec(o.onNodeClick, [node[0]], element[0]);
+            element.fire("nodeclick", {
+                node: node[0]
+            });
 
             e.preventDefault();
         });
@@ -154,7 +166,10 @@ var Treeview = {
                 that.toggleNode(node);
             }
 
-            Utils.exec(o.onNodeDblClick, [node, element], node[0]);
+            Utils.exec(o.onNodeDblClick, [node[0]], element[0]);
+            element.fire("nodedblclick", {
+                node: node[0]
+            });
 
             e.preventDefault();
         });
@@ -166,7 +181,12 @@ var Treeview = {
 
             that.current(node);
 
-            Utils.exec(o.onRadioClick, [checked, check, node, element], this);
+            Utils.exec(o.onRadioClick, [checked, check[0], node[0]], element[0]);
+            element.fire("radioclick", {
+                checked: checked,
+                check: check[0],
+                node: node[0]
+            });
         });
 
         element.on(Metro.events.click, "input[type=checkbox]", function(e){
@@ -176,7 +196,12 @@ var Treeview = {
 
             that._recheck(check);
 
-            Utils.exec(o.onCheckClick, [checked, check, node, element], this);
+            Utils.exec(o.onCheckClick, [checked, check[0], node[0]], element[0]);
+            element.fire("checkclick", {
+                checked: checked,
+                check: check[0],
+                node: node[0]
+            });
         });
     },
 
@@ -184,9 +209,7 @@ var Treeview = {
         var element = this.element;
         var checked, node, checks;
 
-        if (!Utils.isJQueryObject(check)) {
-            check = $(check);
-        }
+        check = $(check);
 
         checked = check.is(":checked");
         node = check.closest("li");
@@ -238,12 +261,11 @@ var Treeview = {
         node.addClass("current");
     },
 
-    toggleNode: function(node){
+    toggleNode: function(n){
+        var node = $(n);
         var element = this.element, o = this.options;
         var func;
         var toBeExpanded = !node.data("collapsed");//!node.hasClass("expanded");
-
-        console.log(toBeExpanded);
 
         node.toggleClass("expanded");
         node.data("collapsed", toBeExpanded);
@@ -253,10 +275,16 @@ var Treeview = {
         } else {
             func = toBeExpanded === true ? "fadeOut" : "fadeIn";
         }
-        if (toBeExpanded) {
-            Utils.exec(o.onExpandNode, [node, element]);
+        if (!toBeExpanded) {
+            Utils.exec(o.onExpandNode, [node[0]], element[0]);
+            element.fire("expandnode", {
+                node: node[0]
+            });
         } else {
-            Utils.exec(o.onCollapseNode, [node, element]);
+            Utils.exec(o.onCollapseNode, [node[0]], element[0]);
+            element.fire("collapsenode", {
+                node: node[0]
+            });
         }
 
         node.children("ul")[func](o.duration);
@@ -271,6 +299,7 @@ var Treeview = {
         if (node === null) {
             target = element;
         } else {
+            node = $(node);
             target = node.children("ul");
             if (target.length === 0) {
                 target = $("<ul>").appendTo(node);
@@ -284,7 +313,11 @@ var Treeview = {
 
         new_node.appendTo(target);
 
-        Utils.exec(o.onNodeInsert, [new_node, element], new_node[0]);
+        Utils.exec(o.onNodeInsert, [new_node[0], node ? node[0] : null], element[0]);
+        element.fire("nodeinsert", {
+            node: new_node[0],
+            parent: node ? node[0] : null
+        });
 
         return new_node;
     },
@@ -292,38 +325,69 @@ var Treeview = {
     insertBefore: function(node, data){
         var element = this.element, o = this.options;
         var new_node = this._createNode(data);
+
+        if (Utils.isNull(node)) {
+            return this.addTo(node, data);
+        }
+
+        node = $(node);
         new_node.insertBefore(node);
-        Utils.exec(o.onNodeInsert, [new_node, element], new_node[0]);
+        Utils.exec(o.onNodeInsert, [new_node[0], node[0]], element[0]);
+        element.fire("nodeinsert", {
+            node: new_node[0],
+            parent: node ? node[0] : null
+        });
         return new_node;
     },
 
     insertAfter: function(node, data){
         var element = this.element, o = this.options;
         var new_node = this._createNode(data);
+
+        if (Utils.isNull(node)) {
+            return this.addTo(node, data);
+        }
+
+        node = $(node);
         new_node.insertAfter(node);
-        Utils.exec(o.onNodeInsert, [new_node, element], new_node[0]);
+        Utils.exec(o.onNodeInsert, [new_node[0], node[0]], element[0]);
+        element.fire("nodeinsert", {
+            node: new_node[0],
+            parent: node[0]
+        });
         return new_node;
     },
 
     del: function(node){
         var element = this.element, o = this.options;
+        node = $(node);
         var parent_list = node.closest("ul");
         var parent_node = parent_list.closest("li");
+
+        Utils.exec(o.onNodeDelete, [node[0]], element[0]);
+        element.fire("nodedelete", {
+            node: node[0]
+        });
+
         node.remove();
+
         if (parent_list.children().length === 0 && !parent_list.is(element)) {
             parent_list.remove();
             parent_node.removeClass("expanded");
             parent_node.children(".node-toggle").remove();
         }
-        Utils.exec(o.onNodeDelete, [element], element[0]);
     },
 
     clean: function(node){
         var element = this.element, o = this.options;
+        node = $(node);
         node.children("ul").remove();
         node.removeClass("expanded");
         node.children(".node-toggle").remove();
-        Utils.exec(o.onNodeClean, [node, element], node[0]);
+        Utils.exec(o.onNodeClean, [node[0]], element[0]);
+        element.fire("nodeclean", {
+            node: node[0]
+        });
     },
 
     changeAttribute: function(attributeName){
@@ -333,4 +397,4 @@ var Treeview = {
     }
 };
 
-Metro.plugin('treeview', Treeview);
+Metro.plugin('treeview', TreeView);

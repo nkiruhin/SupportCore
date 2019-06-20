@@ -114,6 +114,7 @@
         width: 32px;
         height: 32px;
         font-size: 24px;
+        text-align: center;
     }
 }
 
@@ -123,11 +124,13 @@
         overflow: hidden;
         display: flex;
         flex-flow: column nowrap;
-        overflow-x: auto;
         padding-left: 40px;
         z-index: 1;
-        -webkit-overflow-scrolling: touch;
         position: relative;
+
+        white-space: nowrap;
+        overflow-x: scroll;
+        -webkit-overflow-scrolling: auto;
     }
 
     .streamer-timeline {
@@ -177,7 +180,8 @@
     }
 
     .stream-events {
-        height: 75px;
+        min-height: 75px;
+        height: auto;
         width: auto;
         position: relative;
         display: flex;
@@ -194,7 +198,8 @@
 
     .stream-event {
         width: @streamItemWidth - 2;
-        height: ~"calc(100% - 3px)";
+        //height: ~"calc(100% - 3px)";
+        height: 72px;
         border: 1px solid @grayWhite;
         margin: 2px 1px;
         background-color: @white;
@@ -237,7 +242,9 @@
             padding: 4px 0;
             display: flex;
             flex-flow: column nowrap;
-            width: ~"calc(100% - 48px)";
+            //width: ~"calc(100% - 48px)";
+            width: auto;
+            max-width: calc(100% - 48px);
             height: 100%;
 
             .title, .subtitle, .desc {
@@ -372,7 +379,8 @@ html.metro-touch-device {
 }
 
 .streamer-expand(){
-    .stream {
+
+    .streams, .stream {
         width: 200px;
     }
 

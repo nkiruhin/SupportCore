@@ -1,6 +1,76 @@
+var ListDefaultConfig = {
+    templateBeginToken: "<%",
+    templateEndToken: "%>",
+    paginationDistance: 5,
+    paginationShortMode: true,
+    thousandSeparator: ",",
+    decimalSeparator: ",",
+    sortTarget: "li",
+    sortClass: null,
+    sortDir: "asc",
+    sortInitial: false,
+    filterClass: null,
+    filter: null,
+    filterString: "",
+    filters: null,
+    source: null,
+    showItemsSteps: false,
+    showSearch: false,
+    showListInfo: false,
+    showPagination: false,
+    showActivity: true,
+    muteList: true,
+    items: -1,
+    itemsSteps: "all, 10,25,50,100",
+    itemsAllTitle: "Show all",
+    listItemsCountTitle: "Show entries:",
+    listSearchTitle: "Search:",
+    listInfoTitle: "Showing $1 to $2 of $3 entries",
+    paginationPrevTitle: "Prev",
+    paginationNextTitle: "Next",
+    activityType: "cycle",
+    activityStyle: "color",
+    activityTimeout: 100,
+    searchWrapper: null,
+    rowsWrapper: null,
+    infoWrapper: null,
+    paginationWrapper: null,
+    clsComponent: "",
+    clsList: "",
+    clsListItem: "",
+    clsListTop: "",
+    clsItemsCount: "",
+    clsSearch: "",
+    clsListBottom: "",
+    clsListInfo: "",
+    clsListPagination: "",
+    clsPagination: "",
+    onDraw: Metro.noop,
+    onDrawItem: Metro.noop,
+    onSortStart: Metro.noop,
+    onSortStop: Metro.noop,
+    onSortItemSwitch: Metro.noop,
+    onSearch: Metro.noop,
+    onRowsCountChange: Metro.noop,
+    onDataLoad: Metro.noop,
+    onDataLoaded: Metro.noop,
+    onDataLoadError: Metro.noop,
+    onFilterItemAccepted: Metro.noop,
+    onFilterItemDeclined: Metro.noop,
+    onListCreate: Metro.noop
+};
+
+Metro.listSetup = function (options) {
+    ListDefaultConfig = $.extend({}, ListDefaultConfig, options);
+};
+
+if (typeof window.metroListSetup !== undefined) {
+    Metro.listSetup(window.metroListSetup);
+}
+
 var List = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, ListDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.currentPage = 1;
@@ -16,6 +86,7 @@ var List = {
         this.wrapperPagination = null;
         this.filterIndex = null;
         this.filtersIndexes = [];
+        this.itemTemplate = null;
 
         this.sort = {
             dir: "asc",
@@ -29,79 +100,6 @@ var List = {
         this._create();
 
         return this;
-    },
-
-    options: {
-
-        thousandSeparator: ",",
-        decimalSeparator: ",",
-
-        sortTarget: "li",
-        sortClass: null,
-        sortDir: "asc",
-        sortInitial: false,
-
-        filterClass: null,
-        filter: null,
-        filterString: "",
-        filters: null,
-        source: null,
-
-        showItemsSteps: false,
-        showSearch: false,
-        showListInfo: false,
-        showPagination: false,
-        showAllPages: false,
-        showActivity: true,
-
-        muteList: true,
-
-        items: -1,
-        itemsSteps: "all, 10,25,50,100",
-
-        itemsAllTitle: "Show all",
-        listItemsCountTitle: "Show entries:",
-        listSearchTitle: "Search:",
-        listInfoTitle: "Showing $1 to $2 of $3 entries",
-        paginationPrevTitle: "Prev",
-        paginationNextTitle: "Next",
-
-        activityType: "cycle",
-        activityStyle: "color",
-        activityTimeout: 100,
-
-        searchWrapper: null,
-        rowsWrapper: null,
-        infoWrapper: null,
-        paginationWrapper: null,
-
-        clsComponent: "",
-        clsList: "",
-        clsListItem: "",
-
-        clsListTop: "",
-        clsItemsCount: "",
-        clsSearch: "",
-
-        clsListBottom: "",
-        clsListInfo: "",
-        clsListPagination: "",
-
-        clsPagination: "",
-
-        onDraw: Metro.noop,
-        onDrawItem: Metro.noop,
-        onSortStart: Metro.noop,
-        onSortStop: Metro.noop,
-        onSortItemSwitch: Metro.noop,
-        onSearch: Metro.noop,
-        onRowsCountChange: Metro.noop,
-        onDataLoad: Metro.noop,
-        onDataLoaded: Metro.noop,
-        onFilterItemAccepted: Metro.noop,
-        onFilterItemDeclined: Metro.noop,
-
-        onListCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -123,12 +121,23 @@ var List = {
 
         if (o.source !== null) {
             Utils.exec(o.onDataLoad, [o.source], element[0]);
+            element.fire("dataload", {
+                source: o.source
+            });
 
             $.get(o.source, function(data){
                 that._build(data);
                 Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
+                element.fire("dataloaded", {
+                    source: o.source,
+                    data: data
+                });
             }).fail(function( jqXHR, textStatus, errorThrown) {
-                console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
+                Utils.exec(o.onDataLoadError, [o.source, jqXHR, textStatus, errorThrown], element[0]);
+                element.fire("dataloaderror", {
+                    source: source,
+                    xhr: jqXHR
+                });
             });
         } else {
             that._build();
@@ -147,7 +156,8 @@ var List = {
         this._createStructure();
         this._createEvents();
 
-        Utils.exec(o.onListCreate, [element], element[0]);
+        Utils.exec(o.onListCreate, null, element[0]);
+        element.fire("listcreate");
     },
 
     _createItemsFromHTML: function(){
@@ -161,25 +171,33 @@ var List = {
     },
 
     _createItemsFromJSON: function(source){
-        var that = this;
+        var that = this, o = this.options;
 
         this.items = [];
 
+        if (Utils.isValue(source.template)) {
+            this.itemTemplate = source.template;
+        }
+
         if (Utils.isValue(source.header)) {
-            that.header = source.header;
+            this.header = source.header;
         }
 
         if (Utils.isValue(source.data)) {
             $.each(source.data, function(){
-                var row = this;
+                var item, row = this;
                 var li = document.createElement("li");
-                var inner = Utils.isValue(that.header.template) ? that.header.template : "";
 
-                $.each(row, function(k, v){
-                    inner = inner.replace("$"+k, v);
+                if (!Utils.isValue(that.itemTemplate)) {
+                    return ;
+                }
+
+                item = Metro.template(that.itemTemplate, row, {
+                    beginToken: o.templateBeginToken,
+                    endToken: o.templateEndToken
                 });
 
-                li.innerHTML = inner;
+                li.innerHTML = item;
                 that.items.push(li);
             });
         }
@@ -220,7 +238,10 @@ var List = {
                 o.items = parseInt(val);
                 that.currentPage = 1;
                 that._draw();
-                Utils.exec(o.onRowsCountChange, [val], element[0])
+                Utils.exec(o.onRowsCountChange, [val], element[0]);
+                element.fire("rowscountchange", {
+                    val: val
+                });
             }
         });
 
@@ -410,83 +431,19 @@ var List = {
     },
 
     _paging: function(length){
-        var that = this, element = this.element, o = this.options;
+        var element = this.element, o = this.options;
         var component = element.parent();
-        var pagination_wrapper = Utils.isValue(this.wrapperPagination) ? this.wrapperPagination : component.find(".list-pagination");
-        var i, prev, next;
-        var shortDistance = 5;
-        var pagination;
-
-        pagination_wrapper.html("");
-
-        pagination = $("<ul>").addClass("pagination").addClass(o.clsPagination).appendTo(pagination_wrapper);
-
-        if (this.items.length === 0) {
-            return ;
-        }
-
-        this.pagesCount = Math.ceil(length / o.items);
-
-        var add_item = function(item_title, item_type, data){
-            var li, a;
-
-            li = $("<li>").addClass("page-item").addClass(item_type);
-            a  = $("<a>").addClass("page-link").html(item_title);
-            a.data("page", data);
-            a.appendTo(li);
-
-            return li;
-        };
-
-        prev = add_item(o.paginationPrevTitle, "service prev-page", "prev");
-        pagination.append(prev);
-
-        pagination.append(add_item(1, that.currentPage === 1 ? "active" : "", 1));
-
-        if (o.showAllPages === true || this.pagesCount <= 7) {
-            for (i = 2; i < this.pagesCount; i++) {
-                pagination.append(add_item(i, i === that.currentPage ? "active" : "", i));
-            }
-        } else {
-            if (that.currentPage < shortDistance) {
-                for (i = 2; i <= shortDistance; i++) {
-                    pagination.append(add_item(i, i === that.currentPage ? "active" : "", i));
-                }
-
-                if (this.pagesCount > shortDistance) {
-                    pagination.append(add_item("...", "no-link", null));
-                }
-            } else if (that.currentPage <= that.pagesCount && that.currentPage > that.pagesCount - shortDistance + 1) {
-                if (this.pagesCount > shortDistance) {
-                    pagination.append(add_item("...", "no-link", null));
-                }
-
-                for (i = that.pagesCount - shortDistance + 1; i < that.pagesCount; i++) {
-                    pagination.append(add_item(i, i === that.currentPage ? "active" : "", i));
-                }
-            } else {
-                pagination.append(add_item("...", "no-link", null));
-
-                pagination.append(add_item(that.currentPage - 1, "", that.currentPage - 1));
-                pagination.append(add_item(that.currentPage, "active", that.currentPage));
-                pagination.append(add_item(that.currentPage + 1, "", that.currentPage + 1));
-
-                pagination.append(add_item("...", "no-link", null));
-            }
-        }
-
-        if (that.pagesCount > 1 || that.currentPage < that.pagesCount) pagination.append(add_item(that.pagesCount, that.currentPage === that.pagesCount ? "active" : "", that.pagesCount));
-
-        next = add_item(o.paginationNextTitle, "service next-page", "next");
-        pagination.append(next);
-
-        if (this.currentPage === 1) {
-            prev.addClass("disabled");
-        }
-
-        if (this.currentPage === this.pagesCount) {
-            next.addClass("disabled");
-        }
+        this.pagesCount = Math.ceil(length / o.items); // Костыль
+        createPagination({
+            length: length,
+            rows: o.items,
+            current: this.currentPage,
+            target: Utils.isValue(this.wrapperPagination) ? this.wrapperPagination : component.find(".list-pagination"),
+            claPagination: o.clsPagination,
+            prevTitle: o.paginationPrevTitle,
+            nextTitle: o.paginationNextTitle,
+            distance: o.paginationShortMode === true ? o.paginationDistance : 0
+        });
     },
 
     _filter: function(){
@@ -523,14 +480,24 @@ var List = {
 
                 if (result) {
                     Utils.exec(o.onFilterItemAccepted, [item], element[0]);
+                    element.fire("filteritemaccepted", {
+                        item: item
+                    });
                 } else {
                     Utils.exec(o.onFilterItemDeclined, [item], element[0]);
+                    element.fire("filteritemdeclined", {
+                        item: item
+                    });
                 }
 
                 return result;
             });
 
-            Utils.exec(o.onSearch, [that.filterString, items], element[0])
+            Utils.exec(o.onSearch, [that.filterString, items], element[0]);
+            element.fire("search", {
+                search: that.filterString,
+                items: items
+            });
         } else {
             items = this.items;
         }
@@ -554,6 +521,9 @@ var List = {
                 $(items[i]).addClass(o.clsListItem).appendTo(element);
             }
             Utils.exec(o.onDrawItem, [items[i]], element[0]);
+            element.fire("drawitem", {
+                item: items[i]
+            });
         }
 
         this._info(start + 1, stop + 1, items.length);
@@ -561,7 +531,8 @@ var List = {
 
         this.activity.hide();
 
-        Utils.exec(o.onDraw, [element], element[0]);
+        Utils.exec(o.onDraw, null, element[0]);
+        element.fire("draw");
 
         if (cb !== undefined) {
             Utils.exec(cb, [element], element[0])
@@ -647,6 +618,9 @@ var List = {
         }
 
         Utils.exec(o.onSortStart, [this.items], element[0]);
+        element.fire("sortstart", {
+            items: this.items
+        });
 
         this.items.sort(function(a, b){
             var c1 = that._getItemContent(a);
@@ -662,12 +636,20 @@ var List = {
 
             if (result !== 0) {
                 Utils.exec(o.onSortItemSwitch, [a, b, result], element[0]);
+                element.fire("sortitemswitch", {
+                    a: a,
+                    b: b,
+                    result: result
+                });
             }
 
             return result;
         });
 
         Utils.exec(o.onSortStop, [this.items], element[0]);
+        element.fire("sortstop", {
+            items: this.items
+        });
 
         if (redraw === true) {
             this._draw();
@@ -692,9 +674,16 @@ var List = {
         o.source = source;
 
         Utils.exec(o.onDataLoad, [o.source], element[0]);
+        element.fire("dataload", {
+            source: o.source
+        });
 
         $.get(o.source, function(data){
             Utils.exec(o.onDataLoaded, [o.source, data], element[0]);
+            element.fire("dataloaded", {
+                source: o.source,
+                data: data
+            });
 
             that._createItemsFromJSON(data);
 
@@ -728,7 +717,11 @@ var List = {
             that.sorting(o.sortClass, o.sortDir, true);
 
         }).fail(function( jqXHR, textStatus, errorThrown) {
-            console.log(textStatus); console.log(jqXHR); console.log(errorThrown);
+            Utils.exec(o.onDataLoadError, [o.source, jqXHR, textStatus, errorThrown], element[0]);
+            element.fire("dataloaderror", {
+                source: o.source,
+                xhr: jqXHR
+            });
         });
     },
 

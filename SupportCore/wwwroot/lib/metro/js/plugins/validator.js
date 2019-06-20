@@ -127,7 +127,7 @@ var ValidatorFuncs = {
     },
 
     reset_state: function(el){
-        var input = Utils.isJQueryObject(el) === false ? $(el) : el ;
+        var input = $(el);
         var is_control = ValidatorFuncs.is_control(input);
 
         if (is_control) {
@@ -137,10 +137,8 @@ var ValidatorFuncs = {
         }
     },
 
-    set_valid_state: function(input){
-        if (Utils.isJQueryObject(input) === false) {
-            input = $(input);
-        }
+    set_valid_state: function(el){
+        var input = $(el);
         var is_control = ValidatorFuncs.is_control(input);
 
         if (is_control) {
@@ -150,10 +148,8 @@ var ValidatorFuncs = {
         }
     },
 
-    set_invalid_state: function(input){
-        if (Utils.isJQueryObject(input) === false) {
-            input = $(input);
-        }
+    set_invalid_state: function(el){
+        var input = $(el);
         var is_control = ValidatorFuncs.is_control(input);
 
         if (is_control) {
@@ -278,9 +274,32 @@ var ValidatorFuncs = {
 
 Metro['validator'] = ValidatorFuncs;
 
+var ValidatorDefaultConfig = {
+    submitTimeout: 200,
+    interactiveCheck: false,
+    clearInvalid: 0,
+    requiredMode: true,
+    useRequiredClass: true,
+    onBeforeSubmit: Metro.noop_true,
+    onSubmit: Metro.noop,
+    onError: Metro.noop,
+    onValidate: Metro.noop,
+    onErrorForm: Metro.noop,
+    onValidateForm: Metro.noop,
+    onValidatorCreate: Metro.noop
+};
+
+Metro.validatorSetup = function (options) {
+    ValidatorDefaultConfig = $.extend({}, ValidatorDefaultConfig, options);
+};
+
+if (typeof window.metroValidatorSetup !== undefined) {
+    Metro.validatorSetup(window.metroValidatorSetup);
+}
+
 var Validator = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, ValidatorDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this._onsubmit = null;
@@ -294,21 +313,6 @@ var Validator = {
     },
 
     dependencies: ['utils', 'colors'],
-
-    options: {
-        submitTimeout: 200,
-        interactiveCheck: false,
-        clearInvalid: 0,
-        requiredMode: true,
-        useRequiredClass: true,
-        onBeforeSubmit: Metro.noop_true,
-        onSubmit: Metro.noop,
-        onError: Metro.noop,
-        onValidate: Metro.noop,
-        onErrorForm: Metro.noop,
-        onValidateForm: Metro.noop,
-        onValidatorCreate: Metro.noop
-    },
 
     _setOptionsFromDOM: function(){
         var element = this.element, o = this.options;
@@ -371,7 +375,8 @@ var Validator = {
             return that._reset();
         };
 
-        Utils.exec(this.options.onValidatorCreate, [element], this.elem);
+        Utils.exec(o.onValidatorCreate, null, element[0]);
+        element.fire("validatorcreate");
     },
 
     _reset: function(){
@@ -396,16 +401,28 @@ var Validator = {
 
         submit.removeAttr("disabled").removeClass("disabled");
 
-        result.val += Utils.exec(o.onBeforeSubmit, [element, formData], this.elem) === false ? 1 : 0;
+        result.val += Utils.exec(o.onBeforeSubmit, [formData], this.elem) === false ? 1 : 0;
 
         if (result.val === 0) {
-            Utils.exec(o.onValidateForm, [element, formData], form);
+            Utils.exec(o.onValidateForm, [formData], form);
+            element.fire("validateform", {
+                data: formData
+            });
+
             setTimeout(function(){
-                Utils.exec(o.onSubmit, [element, formData], form);
+                Utils.exec(o.onSubmit, [formData], form);
+                element.fire("formsubmit", {
+                    data: formData
+                });
                 if (that._onsubmit !==  null) Utils.exec(that._onsubmit, null, form);
             }, o.submitTimeout);
         } else {
-            Utils.exec(o.onErrorForm, [result.log, element, formData], form);
+            Utils.exec(o.onErrorForm, [result.log, formData], form);
+            element.fire("errorform", {
+                log: result.log,
+                data: formData
+            });
+
             if (o.clearInvalid > 0) {
                 setTimeout(function(){
                     $.each(inputs, function(){
@@ -424,8 +441,6 @@ var Validator = {
     },
 
     changeAttribute: function(attributeName){
-        switch (attributeName) {
-        }
     }
 };
 

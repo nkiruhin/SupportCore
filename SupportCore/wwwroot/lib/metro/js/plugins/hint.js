@@ -1,6 +1,25 @@
+var HintDefaultConfig = {
+    hintHide: 5000,
+    clsHint: "",
+    hintText: "",
+    hintPosition: Metro.position.TOP,
+    hintOffset: 4,
+    onHintShow: Metro.noop,
+    onHintHide: Metro.noop,
+    onHintCreate: Metro.noop
+};
+
+Metro.hintSetup = function (options) {
+    HintDefaultConfig = $.extend({}, HintDefaultConfig, options);
+};
+
+if (typeof window.metroHintSetup !== undefined) {
+    Metro.hintSetup(window.metroHintSetup);
+}
+
 var Hint = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, HintDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.hint = null;
@@ -12,20 +31,7 @@ var Hint = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onHintCreate, [this.element]);
-
         return this;
-    },
-
-    options: {
-        hintHide: 5000,
-        clsHint: "",
-        hintText: "",
-        hintPosition: Metro.position.TOP,
-        hintOffset: 4,
-        onHintCreate: Metro.noop,
-        onHintShow: Metro.noop,
-        onHintHide: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -61,6 +67,9 @@ var Hint = {
         $(window).on(Metro.events.scroll + "-hint", function(){
             if (that.hint !== null) that.setPosition();
         });
+
+        Utils.exec(o.onHintCreate, null, element[0]);
+        element.fire("hintcreate");
     },
 
     createHint: function(){
@@ -81,7 +90,10 @@ var Hint = {
         this.setPosition();
 
         hint.appendTo($('body'));
-        Utils.exec(o.onHintShow, [hint, element]);
+        Utils.exec(o.onHintShow, [element[0]], hint[0]);
+        element.fire("hintshow", {
+            element: element[0]
+        });
     },
 
     setPosition: function(){
@@ -122,7 +134,12 @@ var Hint = {
         var timeout = options.onHintHide === Metro.noop ? 0 : 300;
 
         if (hint !== null) {
-            Utils.exec(options.onHintHide, [hint, element]);
+
+            Utils.exec(options.onHintHide, [element[0]], hint[0]);
+            element.fire("hinthide", {
+                element: element[0]
+            });
+
             setTimeout(function(){
                 hint.hide(0, function(){
                     hint.remove();

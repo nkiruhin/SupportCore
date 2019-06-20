@@ -1,6 +1,76 @@
+var CalendarDefaultConfig = {
+    dayBorder: false,
+    excludeDay: null,
+    prevMonthIcon: "<span class='default-icon-chevron-left'></span>",
+    nextMonthIcon: "<span class='default-icon-chevron-right'></span>",
+    prevYearIcon: "<span class='default-icon-chevron-left'></span>",
+    nextYearIcon: "<span class='default-icon-chevron-right'></span>",
+    compact: false,
+    wide: false,
+    widePoint: null,
+    pickerMode: false,
+    show: null,
+    locale: METRO_LOCALE,
+    weekStart: METRO_WEEK_START,
+    outside: true,
+    buttons: 'cancel, today, clear, done',
+    yearsBefore: 100,
+    yearsAfter: 100,
+    headerFormat: "%A, %b %e",
+    showHeader: true,
+    showFooter: true,
+    showTimeField: true,
+    showWeekNumber: false,
+    clsCalendar: "",
+    clsCalendarHeader: "",
+    clsCalendarContent: "",
+    clsCalendarFooter: "",
+    clsCalendarMonths: "",
+    clsCalendarYears: "",
+    clsToday: "",
+    clsSelected: "",
+    clsExcluded: "",
+    clsCancelButton: "",
+    clsTodayButton: "",
+    clsClearButton: "",
+    clsDoneButton: "",
+    isDialog: false,
+    ripple: false,
+    rippleColor: "#cccccc",
+    exclude: null,
+    preset: null,
+    minDate: null,
+    maxDate: null,
+    weekDayClick: false,
+    weekNumberClick: false,
+    multiSelect: false,
+    special: null,
+    format: METRO_DATE_FORMAT,
+    inputFormat: null,
+    onCancel: Metro.noop,
+    onToday: Metro.noop,
+    onClear: Metro.noop,
+    onDone: Metro.noop,
+    onDayClick: Metro.noop,
+    onDayDraw: Metro.noop,
+    onWeekDayClick: Metro.noop,
+    onWeekNumberClick: Metro.noop,
+    onMonthChange: Metro.noop,
+    onYearChange: Metro.noop,
+    onCalendarCreate: Metro.noop
+};
+
+Metro.calendarSetup = function (options) {
+    CalendarDefaultConfig = $.extend({}, CalendarDefaultConfig, options);
+};
+
+if (typeof window.metroCalendarSetup !== undefined) {
+    Metro.calendarSetup(window.metroCalendarSetup);
+}
+
 var Calendar = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, CalendarDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.today = new Date();
@@ -28,68 +98,6 @@ var Calendar = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        dayBorder: false,
-        excludeDay: null,
-        prevMonthIcon: "<span class='default-icon-chevron-left'></span>",
-        nextMonthIcon: "<span class='default-icon-chevron-right'></span>",
-        prevYearIcon: "<span class='default-icon-chevron-left'></span>",
-        nextYearIcon: "<span class='default-icon-chevron-right'></span>",
-        compact: false,
-        wide: false,
-        widePoint: null,
-        pickerMode: false,
-        show: null,
-        locale: METRO_LOCALE,
-        weekStart: METRO_WEEK_START,
-        outside: true,
-        buttons: 'cancel, today, clear, done',
-        yearsBefore: 100,
-        yearsAfter: 100,
-        headerFormat: "%A, %b %e",
-        showHeader: true,
-        showFooter: true,
-        showTimeField: true,
-        showWeekNumber: false,
-        clsCalendar: "",
-        clsCalendarHeader: "",
-        clsCalendarContent: "",
-        clsCalendarFooter: "",
-        clsCalendarMonths: "",
-        clsCalendarYears: "",
-        clsToday: "",
-        clsSelected: "",
-        clsExcluded: "",
-        clsCancelButton: "",
-        clsTodayButton: "",
-        clsClearButton: "",
-        clsDoneButton: "",
-        isDialog: false,
-        ripple: false,
-        rippleColor: "#cccccc",
-        exclude: null,
-        preset: null,
-        minDate: null,
-        maxDate: null,
-        weekDayClick: false,
-        weekNumberClick: false,
-        multiSelect: false,
-        special: null,
-        format: METRO_DATE_FORMAT,
-        inputFormat: null,
-        onCancel: Metro.noop,
-        onToday: Metro.noop,
-        onClear: Metro.noop,
-        onDone: Metro.noop,
-        onDayClick: Metro.noop,
-        onDayDraw: Metro.noop,
-        onWeekDayClick: Metro.noop,
-        onWeekNumberClick: Metro.noop,
-        onMonthChange: Metro.noop,
-        onYearChange: Metro.noop,
-        onCalendarCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -179,6 +187,7 @@ var Calendar = {
         }
 
         Utils.exec(this.options.onCalendarCreate, [this.element]);
+        element.fire("calendarcreate");
     },
 
     _dates2array: function(val, category){
@@ -258,9 +267,15 @@ var Calendar = {
                 that._drawContent();
                 if (el.hasClass("prev-month") || el.hasClass("next-month")) {
                     Utils.exec(o.onMonthChange, [that.current, element], element[0]);
+                    element.fire("monthchange", {
+                        current: that.current
+                    });
                 }
                 if (el.hasClass("prev-year") || el.hasClass("next-year")) {
                     Utils.exec(o.onYearChange, [that.current, element], element[0]);
+                    element.fire("yearchange", {
+                        current: that.current
+                    });
                 }
             }, o.ripple ? 300 : 1);
 
@@ -271,6 +286,9 @@ var Calendar = {
         element.on(Metro.events.click, ".button.today", function(e){
             that.toDay();
             Utils.exec(o.onToday, [that.today, element]);
+            element.fire("today", {
+                today: that.today
+            });
 
             e.preventDefault();
             e.stopPropagation();
@@ -280,6 +298,7 @@ var Calendar = {
             that.selected = [];
             that._drawContent();
             Utils.exec(o.onClear, [element]);
+            element.fire("clear");
 
             e.preventDefault();
             e.stopPropagation();
@@ -288,6 +307,7 @@ var Calendar = {
         element.on(Metro.events.click, ".button.cancel", function(e){
             that._drawContent();
             Utils.exec(o.onCancel, [element]);
+            element.fire("cancel");
 
             e.preventDefault();
             e.stopPropagation();
@@ -296,6 +316,7 @@ var Calendar = {
         element.on(Metro.events.click, ".button.done", function(e){
             that._drawContent();
             Utils.exec(o.onDone, [that.selected, element]);
+            element.fire("done");
 
             e.preventDefault();
             e.stopPropagation();
@@ -323,6 +344,10 @@ var Calendar = {
                 }
 
                 Utils.exec(o.onWeekDayClick, [that.selected, day], element[0]);
+                element.fire("weekdayclick", {
+                    day: day,
+                    selected: that.selected
+                });
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -351,6 +376,11 @@ var Calendar = {
                 }
 
                 Utils.exec(o.onWeekNumberClick, [that.selected, weekNumber, weekNumElement], element[0]);
+                element.fire("weeknumberclick", {
+                    el: this,
+                    num: weekNumber,
+                    selected: that.selected
+                });
 
                 e.preventDefault();
                 e.stopPropagation();
@@ -402,6 +432,10 @@ var Calendar = {
             }
 
             Utils.exec(o.onDayClick, [that.selected, day, element]);
+            element.fire("dayclick", {
+                day: day,
+                selected: that.selected
+            });
 
             e.preventDefault();
             e.stopPropagation();
@@ -431,6 +465,9 @@ var Calendar = {
             that.current.month = $(this).index();
             that._drawContent();
             Utils.exec(o.onMonthChange, [that.current, element], element[0]);
+            element.fire("monthchange", {
+                current: that.current
+            });
             element.find(".calendar-months").removeClass("open");
             e.preventDefault();
             e.stopPropagation();
@@ -460,6 +497,9 @@ var Calendar = {
             that.current.year = $(this).text();
             that._drawContent();
             Utils.exec(o.onYearChange, [that.current, element], element[0]);
+            element.fire("yearchange", {
+                current: that.current
+            });
             element.find(".calendar-years").removeClass("open");
             e.preventDefault();
             e.stopPropagation();
@@ -634,6 +674,10 @@ var Calendar = {
                 }
 
                 Utils.exec(o.onDayDraw, [s], d[0]);
+                element.fire("daydraw", {
+                    cell: d[0],
+                    date: s
+                });
             }
 
             counter++;
@@ -686,6 +730,10 @@ var Calendar = {
             }
 
             Utils.exec(o.onDayDraw, [first], d[0]);
+            element.fire("daydraw", {
+                cell: d[0],
+                date: first
+            });
 
             counter++;
             if (counter % 7 === 0) {
@@ -723,6 +771,11 @@ var Calendar = {
                 }
 
                 Utils.exec(o.onDayDraw, [s], d[0]);
+                element.fire("daydraw", {
+                    cell: d[0],
+                    date: s
+                });
+
             }
         }
     },
@@ -829,7 +882,10 @@ var Calendar = {
     setMinDate: function(date){
         var that = this, element = this.element, o = this.options;
 
-        o.minDate = date !== null ? date : element.attr("data-min-date");
+        o.minDate = Utils.isValue(date) ? date : element.attr("data-min-date");
+        if (Utils.isValue(o.minDate) && Utils.isDate(o.minDate, o.inputFormat)) {
+            this.min = Utils.isValue(o.inputFormat) ? o.minDate.toDate(o.inputFormat) : (new Date(o.minDate));
+        }
 
         this._drawContent();
     },
@@ -837,7 +893,10 @@ var Calendar = {
     setMaxDate: function(date){
         var that = this, element = this.element, o = this.options;
 
-        o.maxDate = date !== null ? date : element.attr("data-max-date");
+        o.maxDate = Utils.isValue(date) ? date : element.attr("data-max-date");
+        if (Utils.isValue(o.maxDate) && Utils.isDate(o.maxDate, o.inputFormat)) {
+            this.max = Utils.isValue(o.inputFormat) ? o.maxDate.toDate(o.inputFormat) : (new Date(o.maxDate));
+        }
 
         this._drawContent();
     },

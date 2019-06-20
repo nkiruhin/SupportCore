@@ -7,6 +7,9 @@
             en: {
                 fontFamily: 'Font'
             },
+            es: {
+                fontFamily: 'Fuente'
+            },
             da: {
                 fontFamily: 'Skrifttype'
             },
@@ -27,7 +30,10 @@
             },
             pt_br: {
                 fontFamily: 'Fonte',
-            }
+            },
+            ko: {
+                fontFamily: '글꼴'
+            },
         }
     });
     // jshint camelcase:true
@@ -55,7 +61,11 @@
         plugins: {
             fontfamily: {
                 init: function (trumbowyg) {
-                    trumbowyg.o.plugins.fontfamily = trumbowyg.o.plugins.fontfamily || defaultOptions;
+                    trumbowyg.o.plugins.fontfamily = $.extend({},
+                      defaultOptions,
+                      trumbowyg.o.plugins.fontfamily || {}
+                    );
+
                     trumbowyg.addBtnDef('fontfamily', {
                         dropdown: buildDropdown(trumbowyg),
                         hasIcon: false,

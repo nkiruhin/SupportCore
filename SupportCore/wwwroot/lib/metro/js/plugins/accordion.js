@@ -1,6 +1,30 @@
+var AccordionDefaultConfig = {
+    showMarker: true,
+    material: false,
+    duration: METRO_ANIMATION_DURATION,
+    oneFrame: true,
+    showActive: true,
+    activeFrameClass: "",
+    activeHeadingClass: "",
+    activeContentClass: "",
+    onFrameOpen: Metro.noop,
+    onFrameBeforeOpen: Metro.noop_true,
+    onFrameClose: Metro.noop,
+    onFrameBeforeClose: Metro.noop_true,
+    onAccordionCreate: Metro.noop
+};
+
+Metro.accordionSetup = function(options){
+    AccordionDefaultConfig = $.extend({}, AccordionDefaultConfig, options);
+};
+
+if (typeof window.metroAccordionSetup !== undefined) {
+    Metro.accordionSetup(window.metroAccordionSetup);
+}
+
 var Accordion = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, AccordionDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
@@ -8,20 +32,6 @@ var Accordion = {
         this._create();
 
         return this;
-    },
-    options: {
-        material: false,
-        duration: METRO_ANIMATION_DURATION,
-        oneFrame: true,
-        showActive: true,
-        activeFrameClass: "",
-        activeHeadingClass: "",
-        activeContentClass: "",
-        onFrameOpen: Metro.noop,
-        onFrameBeforeOpen: Metro.noop_true,
-        onFrameClose: Metro.noop,
-        onFrameBeforeClose: Metro.noop_true,
-        onAccordionCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -45,10 +55,7 @@ var Accordion = {
         this._createEvents();
 
         Utils.exec(o.onAccordionCreate, [element]);
-
-        setImmediate(function(){
-            element.fire("accordioncreate");
-        });
+        element.fire("accordioncreate");
     },
 
     _createStructure: function(){
@@ -58,6 +65,10 @@ var Accordion = {
         var frame_to_open;
 
         element.addClass("accordion");
+
+        if (o.showMarker === true) {
+            element.addClass("marker-on");
+        }
 
         if (o.material === true) {
             element.addClass("material");
@@ -71,8 +82,14 @@ var Accordion = {
 
         this._hideAll();
 
-        if (o.showActive === true || o.oneFrame === true) {
-            this._openFrame(frame_to_open);
+        if (o.showActive === true) {
+            if (o.oneFrame === true) {
+                this._openFrame(frame_to_open);
+            } else {
+                $.each(active, function(){
+                    that._openFrame(this);
+                })
+            }
         }
     },
 
@@ -103,7 +120,7 @@ var Accordion = {
         var element = this.element, o = this.options;
         var frame = $(f);
 
-        if (Utils.exec(o.onFrameBeforeOpen, [frame], element[0]) === false) {
+        if (Utils.exec(o.onFrameBeforeOpen, [frame[0]], element[0]) === false) {
             return false;
         }
 
@@ -115,9 +132,11 @@ var Accordion = {
         frame.children(".heading").addClass(o.activeHeadingClass);
         frame.children(".content").addClass(o.activeContentClass).slideDown(o.duration);
 
-        Utils.exec(o.onFrameOpen, [frame], element[0]);
+        Utils.exec(o.onFrameOpen, [frame[0]], element[0]);
 
-        element.fire("frameopen", frame);
+        element.fire("frameopen", {
+            frame: frame[0]
+        });
     },
 
     _closeFrame: function(f){
@@ -128,7 +147,7 @@ var Accordion = {
             return ;
         }
 
-        if (Utils.exec(o.onFrameBeforeClose, [frame], element[0]) === false) {
+        if (Utils.exec(o.onFrameBeforeClose, [frame[0]], element[0]) === false) {
             return ;
         }
 
@@ -136,9 +155,11 @@ var Accordion = {
         frame.children(".heading").removeClass(o.activeHeadingClass);
         frame.children(".content").removeClass(o.activeContentClass).slideUp(o.duration);
 
-        Utils.callback(o.onFrameClose, [frame], element[0]);
+        Utils.callback(o.onFrameClose, [frame[0]], element[0]);
 
-        element.fire("frameclose", frame);
+        element.fire("frameclose", {
+            frame: frame[0]
+        });
     },
 
     _closeAll: function(){

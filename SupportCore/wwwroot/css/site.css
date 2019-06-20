@@ -43,10 +43,8 @@
     input[type=week],
     input[type=file],
     select,
-    textarea,
     .file,
     .input,
-    .textarea,
     .select,
     .tag-input,
     .spinner {

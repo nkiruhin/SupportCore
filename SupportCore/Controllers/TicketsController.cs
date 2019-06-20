@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -43,9 +44,9 @@ namespace SupportCore.Controllers
            
             //string Search = this.Request.Query["search[value]"];
             //int count = _context.Tickets.AsNoTracking().Count(); 
-            Func<Ticket, bool> filterExpresson; 
+            Expression<Func<Ticket, bool>> filterExpresson; 
             string Priority = "";
-            if (String.IsNullOrEmpty(glfilter.UserId))
+            if (string.IsNullOrEmpty(glfilter.UserId))
             {
                 if(HttpContext.User.IsInRole("Пользователь")) {
                     glfilter.PersonId = _context.Person.AsNoTracking().SingleOrDefault(p => p.AccountID == _userManager.GetUserId(HttpContext.User))?.Id;
@@ -57,7 +58,7 @@ namespace SupportCore.Controllers
             
             if (glfilter.StatusId == 100)//for due tickets
             {
-                if (!String.IsNullOrEmpty(glfilter.PersonId)) {
+                if (!string.IsNullOrEmpty(glfilter.PersonId)) {
                     filterExpresson = p => p.DueDate.Date < DateTime.Now.Date && p.PersonId == glfilter.PersonId && p.StatusId == 1 && p.IsInform;
                 } else { 
                     filterExpresson = p => p.DueDate.Date < DateTime.Now.Date && p.StaffId == glfilter.StaffId && p.StatusId == 1;
@@ -66,9 +67,8 @@ namespace SupportCore.Controllers
             {
                 filterExpresson = p => !p.IsAnswered&&(p.StaffId==glfilter.StaffId || String.IsNullOrEmpty(p.StaffId))&&p.StatusId == 1;
             }
-            else { 
-            filterExpresson = GetFilter(glfilter).Item1;
-            Priority = GetFilter(glfilter).Item2;
+            else {
+                filterExpresson = GetFilter(out Priority,glfilter);
             }
             int FieldIdPriority = _context.Fields.SingleOrDefault(n => n.Label == "priority").Id;
             var data = _context.Tickets.AsNoTracking().
@@ -87,8 +87,8 @@ namespace SupportCore.Controllers
                     d.Id,
                     dateCreate = d.DateCreate.ToString("g"),
                     d.Name,
-                    Person = d.Person?.Name,
-                    Staff = d.Stuff?.Name,
+                    Person = d.Person.Name,
+                    Staff = d.Stuff.Name,
                     Status = d.StatusId,
                     d.SourceId,
                     Closed = d.Closed.ToString("g"),
@@ -96,12 +96,12 @@ namespace SupportCore.Controllers
                     IsOverdue = d.DueDate.Date < DateTime.Now.Date && d.StatusId == 1 ? true : false,
                     IsCoAthors = d.CoAuthors.Count() == 0 ? false : true,
                     withFiles = d.Files.Count() == 0 ? false : true,
-                    withTasks = d.Tasks?.Count() == 0 ? false : true,
-                    Priority = d.FormEntryValue.SingleOrDefault(e => e.FieldId == FieldIdPriority)?.Value
+                    withTasks = d.Tasks.Count() == 0 ? false : true,
+                    Priority = d.FormEntryValue.SingleOrDefault(e => e.FieldId == FieldIdPriority).Value
                 })/*.Skip(start).Take(length).*/
                 .ToList();
             
-            if (!String.IsNullOrEmpty(Priority)) data = data.Where(d => d.Priority == Priority).ToList();
+            if (!string.IsNullOrEmpty(Priority)) data = data.Where(d => d.Priority == Priority).ToList();
             int recordsFiltered = data.Count();
             return Json(new {/*recordsFiltered = count, recordsTotal = count,*/ data, recordsFiltered });
         }
@@ -343,10 +343,11 @@ namespace SupportCore.Controllers
         }
 
         // Function for expression filter 
-        private Tuple<Func<Ticket, bool>,string> GetFilter(Filter filter=null)
+        private Expression<Func<Ticket, bool>> GetFilter(out string Priority, Filter filter = null)
         {
             if(filter==null) filter = _context.Filters.SingleOrDefault(n => n.UserId == _userManager.GetUserId(HttpContext.User));
-            bool exp(Ticket p) =>
+            Priority = filter.Priority;
+            Expression<Func<Ticket, bool>> exp = p =>
                  (String.IsNullOrEmpty(filter.PersonId) || p.PersonId == filter.PersonId) &&
                  (String.IsNullOrEmpty(filter.StaffId) || p.StaffId == filter.StaffId) &&
                  (filter.DateCreate1 == null || p.DateCreate >= filter.DateCreate1) &&
@@ -355,7 +356,7 @@ namespace SupportCore.Controllers
                  (filter.StatusId == 0 || p.StatusId == filter.StatusId) &&
                  (filter.CategoryId == 0 || p.CategoryId == filter.CategoryId)&&
                  (p.IsInform == filter.isInform || p.IsInform);
-            return new Tuple<Func<Ticket, bool>, string>(exp, filter.Priority);
+            return exp;
         }
 
         // GET: Tickets/Filter/

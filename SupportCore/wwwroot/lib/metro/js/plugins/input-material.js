@@ -1,6 +1,31 @@
+var MaterialInputDefaultConfig = {
+    label: "",
+    informer: "",
+    icon: "",
+
+    permanentLabel: false,
+
+    clsComponent: "",
+    clsInput: "",
+    clsLabel: "",
+    clsInformer: "",
+    clsIcon: "",
+    clsLine: "",
+
+    onInputCreate: Metro.noop
+};
+
+Metro.materialInputSetup = function (options) {
+    MaterialInputDefaultConfig = $.extend({}, MaterialInputDefaultConfig, options);
+};
+
+if (typeof window.metroMaterialInputSetup !== undefined) {
+    Metro.materialInputSetup(window.metroMaterialInputSetup);
+}
+
 var MaterialInput = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, MaterialInputDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.history = [];
@@ -9,27 +34,7 @@ var MaterialInput = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onInputCreate, [this.element], this.elem);
-
         return this;
-    },
-
-    options: {
-
-        label: "",
-        informer: "",
-        icon: "",
-
-        permanentLabel: false,
-
-        clsComponent: "",
-        clsInput: "",
-        clsLabel: "",
-        clsInformer: "",
-        clsIcon: "",
-        clsLine: "",
-
-        onInputCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -47,8 +52,13 @@ var MaterialInput = {
     },
 
     _create: function(){
+        var element = this.element, o = this.options;
+
         this._createStructure();
         this._createEvents();
+
+        Utils.exec(o.onInputCreate, null, element[0]);
+        element.fire("inputcreate");
     },
 
     _createStructure: function(){

@@ -1,6 +1,61 @@
+var VideoDefaultConfig = {
+    src: null,
+
+    poster: "",
+    logo: "",
+    logoHeight: 32,
+    logoWidth: "auto",
+    logoTarget: "",
+
+    volume: .5,
+    loop: false,
+    autoplay: false,
+
+    fullScreenMode: Metro.fullScreenMode.DESKTOP,
+    aspectRatio: Metro.aspectRatio.HD,
+
+    controlsHide: 3000,
+
+    showLoop: true,
+    showPlay: true,
+    showStop: true,
+    showMute: true,
+    showFull: true,
+    showStream: true,
+    showVolume: true,
+    showInfo: true,
+
+    loopIcon: "<span class='default-icon-loop'></span>",
+    stopIcon: "<span class='default-icon-stop'></span>",
+    playIcon: "<span class='default-icon-play'></span>",
+    pauseIcon: "<span class='default-icon-pause'></span>",
+    muteIcon: "<span class='default-icon-mute'></span>",
+    volumeLowIcon: "<span class='default-icon-low-volume'></span>",
+    volumeMediumIcon: "<span class='default-icon-medium-volume'></span>",
+    volumeHighIcon: "<span class='default-icon-high-volume'></span>",
+    screenMoreIcon: "<span class='default-icon-enlarge'></span>",
+    screenLessIcon: "<span class='default-icon-shrink'></span>",
+
+    onPlay: Metro.noop,
+    onPause: Metro.noop,
+    onStop: Metro.noop,
+    onEnd: Metro.noop,
+    onMetadata: Metro.noop,
+    onTime: Metro.noop,
+    onVideoCreate: Metro.noop
+};
+
+Metro.videoSetup = function (options) {
+    VideoDefaultConfig = $.extend({}, VideoDefaultConfig, options);
+};
+
+if (typeof window.metroVideoSetup !== undefined) {
+    Metro.videoSetup(window.metroVideoSetup);
+}
+
 var Video = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, VideoDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.fullscreen = false;
@@ -12,58 +67,12 @@ var Video = {
         this.volumeBackup = 0;
         this.muted = false;
         this.fullScreenInterval = false;
+        this.isPlaying = false;
 
         this._setOptionsFromDOM();
         this._create();
 
         return this;
-    },
-
-    options: {
-        src: null,
-
-        poster: "",
-        logo: "",
-        logoHeight: 32,
-        logoWidth: "auto",
-        logoTarget: "",
-
-        volume: .5,
-        loop: false,
-        autoplay: false,
-
-        fullScreenMode: Metro.fullScreenMode.DESKTOP,
-        aspectRatio: Metro.aspectRatio.HD,
-
-        controlsHide: 3000,
-
-        showLoop: true,
-        showPlay: true,
-        showStop: true,
-        showMute: true,
-        showFull: true,
-        showStream: true,
-        showVolume: true,
-        showInfo: true,
-
-        loopIcon: "<span class='default-icon-loop'></span>",
-        stopIcon: "<span class='default-icon-stop'></span>",
-        playIcon: "<span class='default-icon-play'></span>",
-        pauseIcon: "<span class='default-icon-pause'></span>",
-        muteIcon: "<span class='default-icon-mute'></span>",
-        volumeLowIcon: "<span class='default-icon-low-volume'></span>",
-        volumeMediumIcon: "<span class='default-icon-medium-volume'></span>",
-        volumeHighIcon: "<span class='default-icon-high-volume'></span>",
-        screenMoreIcon: "<span class='default-icon-enlarge'></span>",
-        screenLessIcon: "<span class='default-icon-shrink'></span>",
-
-        onPlay: Metro.noop,
-        onPause: Metro.noop,
-        onStop: Metro.noop,
-        onEnd: Metro.noop,
-        onMetadata: Metro.noop,
-        onTime: Metro.noop,
-        onVideoCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -97,6 +106,7 @@ var Video = {
         }
 
         Utils.exec(o.onVideoCreate, [element, this.player], element[0]);
+        element.fire("videocreate");
     },
 
     _createPlayer: function(){
@@ -340,6 +350,7 @@ var Video = {
         player.on(Metro.events.click, ".full", function(e){
             that.fullscreen = !that.fullscreen;
             player.find(".full").html(that.fullscreen === true ? o.screenLessIcon : o.screenMoreIcon);
+
             if (o.fullScreenMode === Metro.fullScreenMode.WINDOW) {
                 if (that.fullscreen === true) {
                     player.addClass("full-screen");
@@ -365,14 +376,22 @@ var Video = {
                 }
             }
 
-            if (that.fullscreen === true) {
-                $(document).on(Metro.events.keyup + "_video", function(e){
-                    if (e.keyCode === 27) {
-                        player.find(".full").click();
-                    }
-                });
-            } else {
-                $(document).off(Metro.events.keyup + "_video");
+            // if (that.fullscreen === true) {
+            //     $(document).on(Metro.events.keyup + "_video", function(e){
+            //         if (e.keyCode === 27) {
+            //             player.find(".full").click();
+            //             console.log('esc');
+            //         }
+            //     });
+            // } else {
+            //     $(document).off(Metro.events.keyup + "_video");
+            // }
+        });
+
+        $(window).on(Metro.events.keyup + "_video", function(e){
+            if (that.fullscreen && e.keyCode === 27) {
+                player.find(".full").click();
+                //console.log('esc');
             }
         });
 
@@ -382,7 +401,7 @@ var Video = {
     },
 
     _onMouse: function(){
-        var player = this.player, o = this.options;
+        var that = this, player = this.player, o = this.options;
 
         if (o.controlsHide > 0) {
             player.on(Metro.events.enter, function(){
@@ -391,7 +410,7 @@ var Video = {
 
             player.on(Metro.events.leave, function(){
                 setTimeout(function(){
-                    player.find(".controls").fadeOut();
+                    if (that.isPlaying) player.find(".controls").fadeOut();
                 }, o.controlsHide);
             });
         }
@@ -479,10 +498,13 @@ var Video = {
             return ;
         }
 
+        this.isPlaying = true;
+
         this.video.play();
     },
 
     pause: function(){
+        this.isPlaying = false;
         this.video.pause();
     },
 
@@ -493,6 +515,7 @@ var Video = {
     },
 
     stop: function(){
+        this.isPlaying = false;
         this.video.pause();
         this.video.currentTime = 0;
         this.stream.data('slider').val(0);

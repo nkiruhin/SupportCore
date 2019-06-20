@@ -1,6 +1,29 @@
+var ProgressDefaultConfig = {
+    value: 0,
+    buffer: 0,
+    type: "bar",
+    small: false,
+    clsBack: "",
+    clsBar: "",
+    clsBuffer: "",
+    onValueChange: Metro.noop,
+    onBufferChange: Metro.noop,
+    onComplete: Metro.noop,
+    onBuffered: Metro.noop,
+    onProgressCreate: Metro.noop
+};
+
+Metro.progressSetup = function (options) {
+    ProgressDefaultConfig = $.extend({}, ProgressDefaultConfig, options);
+};
+
+if (typeof window.metroProgressSetup !== undefined) {
+    Metro.bottomSheetSetup(window.metroProgressSetup);
+}
+
 var Progress = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, ProgressDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
         this.value = 0;
@@ -9,24 +32,7 @@ var Progress = {
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onProgressCreate, [this.element]);
-
         return this;
-    },
-
-    options: {
-        value: 0,
-        buffer: 0,
-        type: "bar",
-        small: false,
-        clsBack: "",
-        clsBar: "",
-        clsBuffer: "",
-        onValueChange: Metro.noop,
-        onBufferChange: Metro.noop,
-        onComplete: Metro.noop,
-        onBuffered: Metro.noop,
-        onProgressCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -87,6 +93,9 @@ var Progress = {
 
         this.val(o.value);
         this.buff(o.buffer);
+
+        Utils.exec(o.onProgressCreate, null, element[0]);
+        element.fire("progresscreate");
     },
 
     val: function(v){
@@ -106,12 +115,16 @@ var Progress = {
 
         bar.css("width", this.value + "%");
 
-        element.trigger("valuechange", [this.value]);
-
-        Utils.exec(o.onValueChange, [this.value, element]);
+        Utils.exec(o.onValueChange, [this.value], element[0]);
+        element.fire("valuechange", {
+            vsl: this.value
+        });
 
         if (this.value === 100) {
-            Utils.exec(o.onComplete, [this.value, element]);
+            Utils.exec(o.onComplete, [this.value], element[0]);
+            element.fire("complete", {
+                val: this.value
+            });
         }
     },
 
@@ -132,12 +145,16 @@ var Progress = {
 
         bar.css("width", this.buffer + "%");
 
-        element.trigger("bufferchange", [this.buffer]);
-
-        Utils.exec(o.onBufferChange, [this.buffer, element]);
+        Utils.exec(o.onBufferChange, [this.buffer], element[0]);
+        element.fire("bufferchange", {
+            val: this.buffer
+        });
 
         if (this.buffer === 100) {
-            Utils.exec(o.onBuffered, [this.buffer, element]);
+            Utils.exec(o.onBuffered, [this.buffer], element[0]);
+            element.fire("buffered", {
+                val: this.buffer
+            });
         }
     },
 

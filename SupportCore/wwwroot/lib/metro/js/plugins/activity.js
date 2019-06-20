@@ -1,6 +1,22 @@
+var ActivityDefaultConfig = {
+    type: "ring",
+    style: "light",
+    size: 64,
+    radius: 20,
+    onActivityCreate: Metro.noop
+};
+
+Metro.activitySetup = function(options){
+    ActivityDefaultConfig = $.extend({}, ActivityDefaultConfig, options);
+};
+
+if (typeof window.metroActivitySetup !== undefined) {
+    Metro.activitySetup(window.metroActivitySetup);
+}
+
 var Activity = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, ActivityDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
@@ -8,14 +24,6 @@ var Activity = {
         this._create();
 
         return this;
-    },
-
-    options: {
-        type: "ring",
-        style: "light",
-        size: 64,
-        radius: 20,
-        onActivityCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -77,10 +85,7 @@ var Activity = {
         }
 
         Utils.exec(this.options.onActivityCreate, [this.element]);
-
-        setImmediate(function(){
-            element.fire("activitycreate")
-        });
+        element.fire("activitycreate")
     },
 
     changeAttribute: function(attributeName){

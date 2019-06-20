@@ -1,21 +1,28 @@
+var GravatarDefaultConfig = {
+    email: "",
+    size: 80,
+    default: "mp",
+    onGravatarCreate: Metro.noop
+};
+
+Metro.gravatarSetup = function (options) {
+    GravatarDefaultConfig = $.extend({}, GravatarDefaultConfig, options);
+};
+
+if (typeof window.metroGravatarSetup !== undefined) {
+    Metro.bottomSheetSetup(window.metroGravatarSetup);
+}
+
 var Gravatar = {
     init: function( options, elem ) {
-        this.options = $.extend( {}, this.options, options );
+        this.options = $.extend( {}, GravatarDefaultConfig, options );
         this.elem  = elem;
         this.element = $(elem);
 
         this._setOptionsFromDOM();
         this._create();
 
-        Utils.exec(this.options.onGravatarCreate, [this.element]);
-
         return this;
-    },
-    options: {
-        email: "",
-        size: 80,
-        default: "404",
-        onGravatarCreate: Metro.noop
     },
 
     _setOptionsFromDOM: function(){
@@ -60,6 +67,10 @@ var Gravatar = {
             return;
         }
         img.attr("src", this.getImageSrc(o.email, o.size, o.default));
+
+        Utils.exec(o.onGravatarCreate, null, element[0]);
+        element.fire("gravatarcreate");
+
         return this;
     },
 
