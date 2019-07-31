@@ -22,7 +22,7 @@ namespace SupportCore.Models
         [ScaffoldColumn(false)]
         public string Label { set; get; }
         [Display(Name = "Описание")]
-        public string Discription { set; get; }
+        public string Description { set; get; }
         [ScaffoldColumn(false)]
         public DateTime DateCreate { set; get; }
         [ScaffoldColumn(false)]

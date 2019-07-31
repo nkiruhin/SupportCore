@@ -57,7 +57,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,IsActive,IsDeleted,Discription,FormId")] Category category)
+        public async Task<IActionResult> Create([Bind("Name,IsActive,IsDeleted,Description,FormId")] Category category)
         {
             if (ModelState.IsValid)
             {
@@ -91,7 +91,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Discription,FormId")] Category category)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,FormId")] Category category)
         {
             //if (id != category.Id)
             //{

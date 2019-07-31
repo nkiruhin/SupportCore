@@ -19,7 +19,7 @@ namespace SupportCore.Models
         [ScaffoldColumn(false)]
         public DateTime DateUpdate { set; get; }
         [DisplayName("Описание")]
-        public string Discription { set; get; }
+        public string Description { set; get; }
         [DisplayName("Форма")]
         public int? FormId { set; get; }
         [ScaffoldColumn(false)]

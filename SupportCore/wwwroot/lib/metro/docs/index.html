@@ -107,7 +107,7 @@
                         <div class="info-panel-header bg-orange fg-white">For developers</div>
                         <div class="info-panel-content">
                             <div class="mx-10 my-6"><span class="mif-github mif-8x fg-orange"></span></div>
-                            <span class="text-leader2">Metro 4 is easily expandable to our own needs</span>
+                            <span class="text-leader2">Metro 4 is easily expandable to your own needs</span>
                         </div>
                         <div class="info-panel-footer">
                             <a href="https://github.com/olton/Metro-UI-CSS" class="button large outline warning rounded">Get source</a>
@@ -300,12 +300,12 @@
             }
 
             if (b.length === 0) {
-                div.html("<div class='bg-red fg-white p-4 text-center h3 text-light'>With your help, I can make Metro 4 even better! Please, disable AdBlock or AdGuard.<br>Thank you for your support!</div>");
+                // div.html("<div class='bg-red fg-white p-4 text-center h3 text-light'>With your help, I can make Metro 4 even better! Please, disable AdBlock or AdGuard.<br>Thank you for your support!</div>");
             } else {
                 $.each(b, function(){
                     var bl = $(this);
                     if (bl.height() < 50 || Metro.utils.getStyleOne(bl, 'display') === 'none') {
-                        div.html("<div class='bg-red fg-white p-4 text-center h3 text-light'>With your help, I can make Metro 4 even better! Please, disable AdBlock or AdGuard.<br>Thank you for your support!</div>");
+                        // div.html("<div class='bg-red fg-white p-4 text-center h3 text-light'>With your help, I can make Metro 4 even better! Please, disable AdBlock or AdGuard.<br>Thank you for your support!</div>");
                     }
                 });
             }

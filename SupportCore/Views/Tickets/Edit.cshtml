@@ -156,7 +156,7 @@
                 <div class="form-group">
                     <label asp-for="CoAuthors"></label>
                     <select asp-for="@coauthors" id="CoAuthors"
-                            asp-items="@{new SelectList(Model.CoAuthors,"PersonId","Person.Name")}"
+                            asp-items="@{new SelectList(Model.CoAuthors, "PersonId", "Person.Name");}"
                             data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = false }, "http")"></select>
                 </div>
                 <div class="form-group pb-4-md">

@@ -34,10 +34,10 @@
                 <div class="cell-md-6">
                     <label asp-for="DateCreate1"></label>
                     <input asp-for="DateCreate1" 
-                        data-dialog-mode="true" 
                         data-role="calendarpicker" 
                         data-cls-calendar="compact"
                         data-clear-button="true"
+                        data-dialog-mode="true"
                         data-max-date="@DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")"
                     />
                     @*<input asp-for="DateCreate1" />*@
@@ -45,7 +45,7 @@
                 <div class="cell-md-6">
                     <label asp-for="DateCreate2"></label>
                     <input asp-for="DateCreate2" 
-                     
+                        data-dialog-mode="true"
                         data-role="calendarpicker" 
                         data-cls-calendar="compact"
                         data-clear-button="true"

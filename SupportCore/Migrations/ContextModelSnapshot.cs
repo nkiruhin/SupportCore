@@ -15,7 +15,7 @@ namespace SupportCore.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -29,7 +29,7 @@ namespace SupportCore.Migrations
 
                     b.Property<DateTime>("DateUpdate");
 
-                    b.Property<string>("Discription");
+                    b.Property<string>("Description");
 
                     b.Property<int?>("FormId");
 
@@ -247,7 +247,7 @@ namespace SupportCore.Migrations
 
                     b.Property<DateTime>("DateUpdate");
 
-                    b.Property<string>("Discription");
+                    b.Property<string>("Description");
 
                     b.Property<string>("Label");
 

@@ -19,7 +19,7 @@ namespace SupportCore.App.Classes
             {
                 context.Forms.Add(new Form()
                 { Name = "Основная форма ввода",
-                  Discription = "Системная форма",
+                  Description = "Системная форма",
                   DateCreate =DateTime.Now,
                   Type=0,
                   Fields=new List<Field>{

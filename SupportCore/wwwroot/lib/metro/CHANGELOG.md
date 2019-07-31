@@ -1,14 +1,31 @@
+### 4.2.47
++ [x] Input: fix triggering `change` event, add trigger event `clear` when clear button is pressed
++ [x] Accordion: fixed glitch for frames who must be closed, but initiated as open 
+
+### 4.2.46
++ [x] Table: fixed format value for sorting when value is empty, null or undefined
++ [x] Dropdown: fix set open on init
++ [x] DatePicker: add observation for attribute `data-locale` 
++ [x] DatePicker: add observation for attribute `data-format`
++ [x] Utils: upd func `isLocalhost`
++ [x] Windows: fix make runtime   
++ [x] Dialog: fix make runtime   
++ [x] InfoBox: fix make runtime
++ [x] Validator: fix validating for `integer` and `float` rules, issue #1388 
++ [x] Builder: fix builder `config`  
++ [x] Embed objects: set default width and height to `100%`
+
 ### 4.2.45
 + [x] Calendar picker: fix initial value for i18n
 + [x] Typography: set `line-height: 1.5` for `p` 
 + [x] Examples: fix desktop demo
 + [x] Examples: fix start screen demo
++ [x] Notify system: fix minor bug for creating notify after setup
 
 ### 4.2.44
 + [x] Calendar: fix methods `setMaxDate`, `setMinDate`, issue #1374
 + [x] Datepicker: fix offset for timezones, issue #1372
 + [x] Datepicker: fix `val()` method 
-+ [x] Notify system: fix minor bug for creating notify after setup
 
 ### 4.2.43
 + [x] Inputs: add class `.input-small` for using with `input`, `select`, `spinner`, `tag-input`, `keypad`, `file` , issue #1245

@@ -159,7 +159,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Discription")] Models.Form form)
+        public async Task<IActionResult> Create([Bind("Name,Description")] Models.Form form)
         {
             if (ModelState.IsValid)
             {
@@ -192,7 +192,7 @@ namespace SupportCore.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Type,Name,Label,Discription,DateCreate,DateUpdate")] Models.Form form)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Type,Name,Label,Description,DateCreate,DateUpdate")] Models.Form form)
         {
             if (id != form.Id)
             {

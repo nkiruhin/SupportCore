@@ -7,23 +7,23 @@
     "jquery-validation-unobtrusive": "v3.2.11",
     "datatables": "1.10.19",
     "jquery-ajax-unobtrusive": "v3.2.6",
-    "select2": "4.0.7",
+    "select2": "4.0.8",
     "trumbowyg": "v2.18.0",
     "sip.js": "0.10.0",
-    "chartist": "v0.11.1",
-    "metro": "v4.2.45",
+    "chartist": "v0.11.3",
+    "metro": "v4.2.47",
     "datatables-responsive": "2.2.3"
   },
   "resolutions": {
     "jquery": "3.4.1",
     "jquery-validation": "1.19.1",
-    "select2": "4.0.7",
+    "select2": "4.0.8",
     "jquery-ajax-unobtrusive": "v3.2.6",
     "jquery-validation-unobtrusive": "v3.2.11",
     "trumbowyg": "v2.18.0",
-    "metro": "v4.2.45",
+    "metro": "v4.2.47",
     "sip.js": "0.11.0",
     "datatables": "1.10.19",
-    "chartist": "v0.11.1"
+    "chartist": "v0.11.3"
   }
 }
