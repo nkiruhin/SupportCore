@@ -95,7 +95,7 @@
                         <label asp-for="StaffId"></label>
                         <select asp-for="StaffId"
                                 data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = true }, "http")">
-                            <option value="@Model.StaffId" selected="selected">@Model.Stuff?.Name</option>
+                            <option value="@Model.StaffId" selected="selected">@Model.Staff?.Name</option>
                         </select>
                     </div>
                     <div class="form-group m-0">

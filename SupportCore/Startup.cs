@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SupportCore.App.Classes;
 using SupportCore.App.Interfaces;
 using SupportCore.Models;
+using SupportCore.ViewModels;
 
 namespace SupportCore
 {
@@ -56,6 +57,7 @@ namespace SupportCore
         {
 
             //services.AddMvc();
+
             services.AddDbContext<Context>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddDbContext<IdentityContext>(options => options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
             services.AddIdentity<User, IdentityRole>(options =>

@@ -131,8 +131,6 @@ var Select = {
     _createSelect: function(){
         var that = this, element = this.element, o = this.options;
 
-        var prev = element.prev();
-        var parent = element.parent();
         var container = $("<label>").addClass("select " + element[0].className).addClass(o.clsSelect);
         var multiple = element[0].multiple;
         var select_id = Utils.elementId("select");
@@ -145,12 +143,7 @@ var Select = {
             container.addClass("multiple");
         }
 
-        if (prev.length === 0) {
-            parent.prepend(container);
-        } else {
-            container.insertAfter(prev);
-        }
-
+        container.insertBefore(element);
         element.appendTo(container);
         buttons.appendTo(container);
 
@@ -187,7 +180,10 @@ var Select = {
                     if (drop.is(drop_container)) {
                         return ;
                     }
-                    drop.data('dropdown').close();
+                    var dataDrop = drop.data('dropdown');
+                    if (dataDrop && dataDrop.close) {
+                        dataDrop.close();
+                    }
                 });
 
                 filter_input.val("").trigger(Metro.events.keyup).focus();
@@ -213,7 +209,7 @@ var Select = {
                     list: list[0]
                 });
             }
-        });
+        }).attr("data-role-dropdown", true).attr("data-role", "dropdown");
 
         this.list = list;
 
@@ -532,7 +528,8 @@ var Select = {
 $(document).on(Metro.events.click, function(){
     var selects = $(".select .drop-container");
     $.each(selects, function(){
-        $(this).data('dropdown').close();
+        var drop = $(this).data('dropdown');
+        if (drop && drop.close) drop.close();
     });
     $(".select").removeClass("focused");
 });

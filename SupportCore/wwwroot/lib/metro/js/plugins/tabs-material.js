@@ -144,7 +144,9 @@ var MaterialTabs = {
         $.each(tabs, function(){
             var target = $(this).find("a").attr("href");
             if (!Utils.isValue(target)) return;
-            if (target.trim() !== "#" && $(target).length > 0) $(target).hide();
+            if (target[0] === "#" && target.length > 1) {
+                $(target).hide();
+            }
         });
 
         tab_left = tab.position().left;
@@ -173,7 +175,9 @@ var MaterialTabs = {
 
         target = tab.find("a").attr("href");
         if (Utils.isValue(target)) {
-            if (target.trim() !== "#" && $(target).length > 0) $(target).show();
+            if (target[0] === "#" && target.length > 1) {
+                $(target).show();
+            }
         }
 
         Utils.exec(o.onTabOpen, [tab[0], target, tab_next], element[0]);
@@ -182,6 +186,15 @@ var MaterialTabs = {
             target: target,
             tab_next: tab_next
         });
+    },
+
+    open: function(tab_num){
+        var element = this.element;
+        var tabs = element.find("li");
+        var active_tab = element.find("li.active");
+        var tab = tabs.eq(tab_num - 1);
+        var tab_next = tabs.index(tab) > tabs.index(active_tab);
+        this.openTab(tab, tab_next);
     },
 
     changeAttribute: function(attributeName){

@@ -55,7 +55,7 @@ namespace SupportCore.Models
         //[Required(ErrorMessage = "Поле обязательно")]
         public string StaffId { set; get; }
         [ForeignKey("StaffId")]
-        public Person Stuff { set; get; }
+        public Person Staff { set; get; }
         [DisplayName("Категория заявки")]
         [Required(ErrorMessage = "Поле обязательно")]
         public int CategoryId { set; get; }

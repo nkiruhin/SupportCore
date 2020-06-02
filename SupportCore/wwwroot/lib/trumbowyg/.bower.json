@@ -1,6 +1,6 @@
 {
   "name": "trumbowyg",
-  "version": "2.18.0",
+  "version": "2.19.1",
   "homepage": "https://github.com/Alex-D/Trumbowyg",
   "authors": [
     {
@@ -37,14 +37,14 @@
   "dependencies": {
     "jquery": ">=1.8"
   },
-  "_release": "2.18.0",
+  "_release": "2.19.1",
   "_resolution": {
     "type": "version",
-    "tag": "v2.18.0",
-    "commit": "50609b34c520b77f8d578939454b8e09f44fefb9"
+    "tag": "v2.19.1",
+    "commit": "ade437c500dfe882b6e367d66684019fe363b963"
   },
   "_source": "https://github.com/Alex-D/Trumbowyg.git",
-  "_target": "v2.18.0",
+  "_target": "v2.19.1",
   "_originalSource": "trumbowyg",
   "_direct": true
 }

@@ -18,8 +18,8 @@ Metro.fileSetup = function (options) {
     FileDefaultConfig = $.extend({}, FileDefaultConfig, options);
 };
 
-if (typeof window.metroFileSetup !== undefined) {
-    Metro.fileSetup(window.metroFileSetup);
+if (typeof window["metroFileSetup"] !== undefined) {
+    Metro.fileSetup(window["metroFileSetup"]);
 }
 
 var File = {
@@ -67,7 +67,7 @@ var File = {
         if (o.mode === "input") {
             caption.insertBefore(element);
 
-            button = $("<button>").addClass("button").attr("tabindex", -1).attr("type", "button").html(o.buttonTitle);
+            button = $("<span>").addClass("button").attr("tabindex", -1).html(o.buttonTitle);
             button.appendTo(container);
             button.addClass(o.clsButton);
 

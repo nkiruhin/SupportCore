@@ -33,7 +33,7 @@ public class Templates
             //  .Build();
             var model = await _context.Tickets.AsNoTracking()
                 .Include(n => n.Person)
-                .Include(n => n.Stuff)
+                .Include(n => n.Staff)
                 .SingleOrDefaultAsync(n => n.Id == TicketId);
             var defaultThread = _context.FormEntryValues.AsNoTracking().Where(n => n.Field.Form.Type == 0 && n.TicketId == TicketId);
         string result = template.Body
@@ -43,7 +43,7 @@ public class Templates
         .Replace("@Тема", model.Name)
         .Replace("@ПлановаяДата", model.DueDate.ToShortDateString())
         .Replace("@ДатаЗакрытия", model.Closed.Date.ToString())
-        .Replace("@Сотрудник", model.Stuff?.Name);
+        .Replace("@Сотрудник", model.Staff?.Name);
         //Wait when support net cor 2.1 in RazorLith
             //string result = await engine.CompileRenderAsync(template.Id.ToString(), template.Body.Replace("@", "@Model."), new TemplateView
             //{
@@ -64,16 +64,16 @@ public class Templates
         //  .Build();
         var ticket = await _context.Tickets.AsNoTracking()
                 .Include(n => n.Person)
-                .Include(n => n.Stuff)
+                .Include(n => n.Staff)
                 .SingleOrDefaultAsync(n => n.Id == TicketId);
         var defaultThread = _context.FormEntryValues.AsNoTracking().Where(n => n.Field.Form.Type == 0 && n.TicketId == ticket.Id);
         if (ticket.Person == null)
         {
             ticket.Person = _context.Person.AsNoTracking().SingleOrDefault(n => n.Id == ticket.PersonId);
         }
-        if (ticket.Stuff == null)
+        if (ticket.Staff == null)
         {
-            ticket.Stuff = await _context.Person.AsNoTracking().SingleOrDefaultAsync(n => n.Id == ticket.StaffId);
+            ticket.Staff = await _context.Person.AsNoTracking().SingleOrDefaultAsync(n => n.Id == ticket.StaffId);
         }
         string result = template.Body
        .Replace("@ДатаСоздания", ticket.DateCreate.ToString())
@@ -82,7 +82,7 @@ public class Templates
        .Replace("@Тема", ticket.Name)
        .Replace("@ПлановаяДата", ticket.DueDate.ToShortDateString())
        .Replace("@ДатаЗакрытия", ticket.Closed.Date.ToString())
-       .Replace("@Сотрудник", ticket.Stuff.Name);
+       .Replace("@Сотрудник", ticket.Staff.Name);
         //string result = await engine.CompileRenderAsync(template.Id.ToString(), template.Body.Replace("@", "@Model."), new TemplateView
         //{
         //    ДатаСоздания = ticket.DateCreate,
@@ -104,9 +104,9 @@ public class Templates
         {
             ticket.Person = _context.Person.AsNoTracking().SingleOrDefault(n => n.Id == ticket.PersonId);
         }
-        if (ticket.Stuff == null)
+        if (ticket.Staff == null)
         {
-            ticket.Stuff = await _context.Person.AsNoTracking().SingleOrDefaultAsync(n => n.Id == ticket.StaffId);
+            ticket.Staff = await _context.Person.AsNoTracking().SingleOrDefaultAsync(n => n.Id == ticket.StaffId);
         }
         string result = template.Body
        .Replace("@ДатаСоздания", ticket.DateCreate.ToString())
@@ -115,7 +115,7 @@ public class Templates
        .Replace("@Тема", ticket.Name)
        .Replace("@ПлановаяДата", ticket.DueDate.ToShortDateString())
        .Replace("@ДатаЗакрытия", ticket.Closed.Date.ToString())
-       .Replace("@Сотрудник", ticket.Stuff?.Name);
+       .Replace("@Сотрудник", ticket.Staff?.Name);
         //string result = await engine.CompileRenderAsync(template.Id.ToString(), template.Body.Replace("@", "@Model."), new TemplateView
         //{
         //    ДатаСоздания = ticket.DateCreate,

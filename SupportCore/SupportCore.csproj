@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <AspNetCoreModuleHostingModel>inprocess</AspNetCoreModuleHostingModel>
-    <Version>2.2.5</Version>
+    <Version>2.2.7</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -93,6 +93,8 @@
     <Compile Remove="Migrations\20190228083348_Curator.Designer.cs" />
     <Compile Remove="Migrations\20190321054015_workbase.cs" />
     <Compile Remove="Migrations\20190321054015_workbase.Designer.cs" />
+    <Compile Remove="Migrations\20190909081645_curatorEdit.cs" />
+    <Compile Remove="Migrations\20190909081645_curatorEdit.Designer.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -377,8 +379,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.6" />
+    <PackageReference Include="MailKit" Version="2.3.1.6" />
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.7" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
   </ItemGroup>
 

@@ -1,3 +1,21 @@
+### 4.2.49
++ [x] Select: extended to interop with role=dropdown
++ [x] Docs: upd docs for cards, add `icon-box`, `more-info-box`, `skill-box`, `social-box`
++ [x] Sidebar: fix setup global function name
++ [x] Textarea: fix issue #1400
++ [x] MaterialTabs: fix issue #1402 
++ [x] MaterialTabs: add method `open(tab_num)` for issue #1399
++ [x] Select: fix input autofocus when dropdown
++ [x] Textarea: fix resize when component was created
++ [x] File: fix firing `change` event on Safari
+
+### 4.2.48
++ [x] Select: fix error when using with pair to Select from Metro 4 for React
++ [x] Carousel: moved style props for slide background image from js to css
++ [x] Input: add attribute `data-exclaim` for defining exclamation symbol
++ [x] Input: fix no display clear button when input is readOnly 
++ [x] Textarea: fix no display clear button when input is readOnly 
+ 
 ### 4.2.47
 + [x] Input: fix triggering `change` event, add trigger event `clear` when clear button is pressed
 + [x] Accordion: fixed glitch for frames who must be closed, but initiated as open 

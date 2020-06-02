@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using SupportCore.App.Classes;
 using SupportCore.App.Interfaces;
 using SupportCore.Models;
+using SupportCore.ViewModels;
 
 namespace SupportCore.Controllers
 {
@@ -38,6 +39,7 @@ namespace SupportCore.Controllers
         {
             return PartialView(filter);
         }
+
 
         public JsonResult IndexJson(int length, int start, int draw, int filter,Filter glfilter=null)
         {
@@ -74,7 +76,7 @@ namespace SupportCore.Controllers
             var data = _context.Tickets.AsNoTracking().
                 Include(c => c.Category).
                 Include(p => p.Person).
-                Include(s => s.Stuff).
+                Include(s => s.Staff).
                 Include(co => co.CoAuthors).
                 Include(f => f.Files).
                 Include(t => t.Tasks).
@@ -88,7 +90,7 @@ namespace SupportCore.Controllers
                     dateCreate = d.DateCreate.ToString("g"),
                     d.Name,
                     Person = d.Person.Name,
-                    Staff = d.Stuff.Name,
+                    Staff = d.Staff.Name,
                     Status = d.StatusId,
                     d.SourceId,
                     Closed = d.Closed.ToString("g"),
@@ -116,7 +118,7 @@ namespace SupportCore.Controllers
             var ticket = await _context.Tickets.AsNoTracking()
                 .Include(p=>p.Person)
                 .Include(c=>c.Category)
-                .Include(s=>s.Stuff)
+                .Include(s=>s.Staff)
                 .Include(th=>th.TicketThreads)
                 .Include(c=>c.CoAuthors)
                     .ThenInclude(p=>p.Person)
@@ -148,7 +150,7 @@ namespace SupportCore.Controllers
             var ticket = await _context.Tickets.AsNoTracking()
                 .Include(p => p.Person)
                 .Include(c => c.Category)
-                .Include(s => s.Stuff)
+                .Include(s => s.Staff)
                 .Include(th => th.TicketThreads)
                 .Include(c => c.CoAuthors)
                     .ThenInclude(p => p.Person)
@@ -368,7 +370,10 @@ namespace SupportCore.Controllers
             ViewBag.PersonName = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == filter.PersonId)?.Name;
             ViewBag.StaffName = _context.Person.AsNoTracking().SingleOrDefault(p => p.Id == filter.StaffId)?.Name;
             }
-            if (isWin == 1) ViewBag.isWin = "style=max-width:1000px";
+            if (isWin == 1) {
+                ViewBag.isWin = "true";
+                ViewBag.winStyle = "style=max-width:1000px";
+            }
             ViewData["StatusId"] = new Event().StatusList();
             ViewData["CategoryId"] = new SelectList(_context.Category, "Id", "Name");
             ViewData["SourceId"] = new SourceList().List;

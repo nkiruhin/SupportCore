@@ -27,12 +27,12 @@ namespace SupportCore.Models
         [Phone(ErrorMessage ="Неверный формат")]
         [Display(Name = "Телефон")]
         public string Telephone { set; get; }
+        [Display(Name = "Ответственный сотрудник")]
+        public string CuratorId { set; get; }
         [ScaffoldColumn(false)]
         [ForeignKey("CuratorId")]
         [Display(Name = "Куратор")]
-        public Person Curator { set; get; }
-        [Display(Name = "Ответственный сотрудник")]
-        public string CuratorId { set; get; }
+        public Person Curator { set; get; }     
         [ScaffoldColumn(false)]
         public SLA SLA { set; get; }
         [Display(Name = "SLA")]

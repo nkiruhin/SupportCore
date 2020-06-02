@@ -25,7 +25,7 @@ It's an independent project with its ongoing development made possible entirely 
 <br>
 <hr>
  
-## Current Version 4.2.47
+## Current Version 4.2.49
 
 ### Status
 [![Build Status](https://travis-ci.org/olton/Metro-UI-CSS.svg?branch=master)](https://travis-ci.org/olton/Metro-UI-CSS)
@@ -90,7 +90,13 @@ Latest ✔ | Latest ✔ | Latest ✔ | 11+ ✔ | 9.1+ ✔ | Latest ✔ |
 Cross-browser Testing Platform and Open Source Provided by [Sauce Labs](https://saucelabs.com).
 Sauce Labs ensures your favorite mobile apps and websites work flawlessly on every browser, operating system, and device.
 <p>
-<a href="https://saucelabs.com"><img src="https://metroui.org.ua/images/Sauce-Labs_Horiz_Red-Grey_RGB_200x28.png" style="width: 100px;"></a>
+<a href="https://saucelabs.com"><img src="https://metroui.org.ua/images/Sauce-Labs_Horiz_Red-Grey_RGB_200x28.png" width="200"></a>
+</p>
+
+Cross-browser Testing Platform Provided by [BrowserStack](https://www.browserstack.com/).
+Seamless experience by testing on 2000+ real devices and browsers.
+<p>
+<a href="https://www.browserstack.com/"><img src="https://metroui.org.ua/images/Browserstack-logo.svg" width="200"></a>
 </p>
 
 ### License

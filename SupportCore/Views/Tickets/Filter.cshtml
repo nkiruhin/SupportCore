@@ -1,5 +1,5 @@
 ﻿@model SupportCore.Models.Filter
-<div class="p-6" @ViewBag.isWin>
+<div class="p-6" @ViewBag.winStyle>
     <h4>Фильтр</h4>
     <hr class="thin bg-grayLighter" />
     <form asp-action="Filter" asp-route-id="@Model?.Id"
@@ -15,7 +15,7 @@
                     <label asp-for="PersonId"></label>
                     <select class="jselect2"
                             asp-for="PersonId"
-                            data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = false },"http")">
+                            data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = false }, "http")">
                         @if (Model?.PersonId != null)
                         {
                             <option value="@Model.PersonId" selected="selected">@ViewBag.PersonName</option>}
@@ -25,7 +25,7 @@
                     <label asp-for="StaffId"></label>
                     <select class="jselect2"
                             asp-for="StaffId"
-                            data-ajax-url="@Url.Action("SelectList","Person",new { isStaff = true },"http")">
+                            data-ajax-url="@Url.Action("SelectList", "Person", new { isStaff = true }, "http")">
                         @if (Model?.StaffId != null)
                         {
                             <option value="@Model.StaffId" selected="selected">@ViewBag.StaffName</option>}
@@ -37,18 +37,18 @@
                         data-role="calendarpicker" 
                         data-cls-calendar="compact"
                         data-clear-button="true"
-                        data-dialog-mode="true"
+                        data-dialog-mode="@ViewBag.isWin"
                         data-max-date="@DateTime.Now.AddDays(-1).ToString("yyyy-MM-dd")"
                     />
                     @*<input asp-for="DateCreate1" />*@
                 </div>
                 <div class="cell-md-6">
                     <label asp-for="DateCreate2"></label>
-                    <input asp-for="DateCreate2" 
-                        data-dialog-mode="true"
+                    <input asp-for="DateCreate2"                        
                         data-role="calendarpicker" 
                         data-cls-calendar="compact"
                         data-clear-button="true"
+                        data-dialog-mode="@ViewBag.isWin"
                     />
                 </div>
                 <div class="cell-md-6">

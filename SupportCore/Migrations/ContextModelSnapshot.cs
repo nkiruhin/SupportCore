@@ -15,7 +15,7 @@ namespace SupportCore.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062")
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -359,8 +359,6 @@ namespace SupportCore.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrganizationId");
-
                     b.ToTable("Person");
                 });
 
@@ -667,19 +665,12 @@ namespace SupportCore.Migrations
             modelBuilder.Entity("SupportCore.Models.Organization", b =>
                 {
                     b.HasOne("SupportCore.Models.Person", "Curator")
-                        .WithOne()
+                        .WithOne("Organization")
                         .HasForeignKey("SupportCore.Models.Organization", "CuratorId");
 
                     b.HasOne("SupportCore.Models.SLA", "SLA")
                         .WithMany()
                         .HasForeignKey("SLAId");
-                });
-
-            modelBuilder.Entity("SupportCore.Models.Person", b =>
-                {
-                    b.HasOne("SupportCore.Models.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId");
                 });
 
             modelBuilder.Entity("SupportCore.Models.Phone", b =>
@@ -735,7 +726,7 @@ namespace SupportCore.Migrations
                         .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("SupportCore.Models.Person", "Stuff")
+                    b.HasOne("SupportCore.Models.Person", "Staff")
                         .WithMany()
                         .HasForeignKey("StaffId");
                 });
